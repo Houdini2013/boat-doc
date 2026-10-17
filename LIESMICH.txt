@@ -1,0 +1,21 @@
+BOATSDOC PARTNERPROTOTYP
+========================
+
+Öffnen: index.html per Doppelklick im Browser.
+
+Die vier Mediendateien müssen im selben Ordner liegen wie index.html,
+sonst laufen die beiden Videos nicht.
+
+  index.html        die Seite
+  laser-test.mp4    Video 1 — GFK-Teil, vier Schichten Antifouling
+  laser-poster.jpg  Standbild dazu
+  lack-test.mp4     Video 2 — weißer Lackstreifen auf rotem Gelcoat
+  lack-poster.jpg   Standbild dazu
+
+Sprachen: Deutsch, English, Svenska, Norsk, Dansk, Suomi
+(Auswahl oben rechts; die Seite erkennt beim Öffnen die Browsersprache)
+
+Die Schriften werden von Google Fonts geladen. Ohne Internetverbindung
+läuft alles weiter, nur in Systemschrift statt Archivo und IBM Plex Mono.
+
+Zum Weitergeben: den kompletten Ordner verschicken, nicht nur index.html.
