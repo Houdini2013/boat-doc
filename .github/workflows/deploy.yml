@@ -1,0 +1,43 @@
+# Bei jedem Push auf main: Dateien auf den Server kopieren, Dienst neu starten, prüfen.
+# Läuft erst, wenn die Secrets VPS_HOST und VPS_SSH_KEY eingetragen sind.
+name: Auf Server ausrollen
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency: deploy
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+    steps:
+      - name: Server eingerichtet?
+        id: pruef
+        run: |
+          if [ -z "$VPS_HOST" ]; then echo "Noch kein Server hinterlegt – übersprungen."; echo "los=nein" >> $GITHUB_OUTPUT; else echo "los=ja" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.pruef.outputs.los == 'ja'
+      - name: Node 22
+        if: steps.pruef.outputs.los == 'ja'
+        uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Server startet?
+        if: steps.pruef.outputs.los == 'ja'
+        run: |
+          DATA_DIR=$RUNNER_TEMP/d PORT=8099 node server/server.cjs & sleep 3
+          curl -fsS http://127.0.0.1:8099/api/ping
+          curl -fsS -o /dev/null http://127.0.0.1:8099/kalkulator.html
+          curl -fsS -o /dev/null http://127.0.0.1:8099/partner.html
+      - name: SSH vorbereiten
+        if: steps.pruef.outputs.los == 'ja'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+      - name: Kopieren und neu starten
+        if: steps.pruef.outputs.los == 'ja'
+        run: |
+          rsync -az --delete --exclude .git --exclude .github --exclude data --exclude node_modules ./ root@$VPS_HOST:/srv/boatsdoc/app/
+          ssh root@$VPS_HOST 'chown -R boatsdoc:boatsdoc /srv/boatsdoc/app && systemctl restart boatsdoc && sleep 2 && curl -fsS http://127.0.0.1:8080/api/ping'

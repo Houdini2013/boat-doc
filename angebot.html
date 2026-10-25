@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ihr Angebot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: eine Spalte wie ein Auftragsschein — Marina oben, Stand, Angebot, Entscheidung. */
+:root{
+  color-scheme:light; --mc:#0E6E6A;
+  --paper:#EEF0EC; --card:#FFFFFF; --ink:#10201F; --ink-2:#3D4F4E; --ink-3:#647572; --line:#CDD3CF; --line-2:#E1E5E1;
+  --good:#256B4E; --good-soft:#DDEBE2; --warn:#8A5D0C; --warn-soft:#F4E8CF; --bad:#8C3A2E; --bad-soft:#F3DEDA;
+  --f-disp:"Archivo",ui-sans-serif,system-ui,sans-serif; --f-body:"Source Sans 3",ui-sans-serif,system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:dark; --paper:#0B1614; --card:#132321; --ink:#E6EBE7; --ink-2:#AFBDB8; --ink-3:#83948F; --line:#2A3F3B; --line-2:#1C2E2B; --good:#5CB88C; --good-soft:#12291F; --warn:#D9A54A; --warn-soft:#2E2410; --bad:#E08476; --bad-soft:#36191A}}
+:root[data-theme="dark"]{color-scheme:dark; --paper:#0B1614; --card:#132321; --ink:#E6EBE7; --ink-2:#AFBDB8; --ink-3:#83948F; --line:#2A3F3B; --line-2:#1C2E2B; --good:#5CB88C; --good-soft:#12291F; --warn:#D9A54A; --warn-soft:#2E2410; --bad:#E08476; --bad-soft:#36191A}
+*{box-sizing:border-box}
+html,body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:var(--paper); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased}
+h1,h2{font-family:var(--f-disp); margin:0; letter-spacing:-.02em; line-height:1.15; text-wrap:balance}
+h1{font-size:1.6rem} h2{font-size:1.1rem}
+p{margin:0}
+.wrap{max-width:640px; margin:0 auto; padding-block:0 60px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); display:flex; flex-direction:column; gap:16px}
+.band{background:var(--mc); color:#fff}
+.band .in{max-width:640px; margin:0 auto; padding-block:18px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); display:flex; align-items:center; gap:12px}
+.band b{font-family:var(--f-disp); font-weight:800; font-size:1.1rem}
+.band select{margin-left:auto; background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5); border-radius:3px; padding:5px 8px; font:inherit; font-size:.85rem}
+.band select option{color:#10201F}
+.eye{font-family:var(--f-mono); font-size:.66rem; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:18px; display:flex; flex-direction:column; gap:12px}
+.steps{list-style:none; margin:0; padding:0; display:grid; gap:0}
+.steps li{display:grid; grid-template-columns:22px 1fr; gap:10px; padding:7px 0; color:var(--ink-3); font-size:.95rem}
+.steps li::before{content:""; width:12px; height:12px; border-radius:50%; border:2px solid var(--line); margin-top:5px; justify-self:center}
+.steps li.done{color:var(--ink)} .steps li.done::before{background:var(--mc); border-color:var(--mc)}
+.steps li.now{color:var(--ink); font-weight:600} .steps li.now::before{border-color:var(--mc); box-shadow:0 0 0 4px color-mix(in srgb,var(--mc) 22%,transparent)}
+.steps small{display:block; font-weight:400; color:var(--ink-3); font-size:.82rem}
+.big{font-family:var(--f-mono); font-variant-numeric:tabular-nums; font-size:2rem; font-weight:600; letter-spacing:-.03em; line-height:1.1}
+table{width:100%; border-collapse:collapse; font-size:.92rem}
+td{padding:7px 0; border-top:1px solid var(--line-2); vertical-align:top}
+td:last-child{text-align:right; font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+.opts{display:grid; gap:10px}
+.opt{all:unset; box-sizing:border-box; cursor:pointer; border:1px solid var(--line); border-radius:4px; padding:14px; display:grid; grid-template-columns:1fr auto; gap:3px 12px; background:var(--card)}
+.opt:hover{border-color:var(--mc)}
+.opt[aria-pressed="true"]{border-color:var(--mc); box-shadow:inset 0 0 0 1px var(--mc)}
+.opt b{font-family:var(--f-mono)} .opt small{grid-column:1/-1; color:var(--ink-3); font-size:.84rem}
+.opt:focus-visible,.btn:focus-visible,select:focus-visible{outline:2px solid var(--mc); outline-offset:2px}
+.btn{font:inherit; font-weight:600; border-radius:4px; padding:13px 16px; cursor:pointer; border:1px solid var(--mc); background:var(--mc); color:#fff; width:100%}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+.btn.bad{background:transparent; color:var(--bad); border-color:var(--bad)}
+.btn:disabled{opacity:.5; cursor:wait}
+.note{border-left:3px solid var(--mc); background:color-mix(in srgb,var(--mc) 8%,var(--card)); padding:11px 13px; border-radius:0 3px 3px 0; font-size:.92rem}
+.note.good{border-color:var(--good); background:var(--good-soft)} .note.warn{border-color:var(--warn); background:var(--warn-soft)} .note.bad{border-color:var(--bad); background:var(--bad-soft)}
+.err{color:var(--bad); font-size:.9rem}
+.foot{font-size:.8rem; color:var(--ink-3)}
+.sim{font-family:var(--f-mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--warn)}
+</style></head><body>
+<div class="band"><div class="in"><b id="mName">&nbsp;</b><select id="lang" aria-label="Sprache"></select></div></div>
+<div class="wrap" id="w"><div class="card"><p class="eye" id="lade">…</p></div></div>
+<script src="core.js"></script>
+<script src="store.js"></script>
+<script>
+"use strict";
+const T = {
+de:{probe:"Probe-Anfrage: Dies ist ein Test des Betriebs. Zahlungen werden nur simuliert, es entstehen keine Kosten.",leistung:"Leistung",prod_uws:"Unterwasserschiff",prod_det:"Detailing",pk_af:"Antifouling erneuern",pk_full:"Komplett neu",pk_strip:"Nur entfernen",pk_pflege:"Aufbereitung & Versiegelung",pk_restau:"Restauration",pk_keramik:"Keramik-Komplettpaket",approx:"≈ {x} zum Kurs {k}. Abgerechnet wird in Euro.",n:"Deutsch",h:"Ihre Antifouling-Anfrage",stand:"Stand",s1:"Anfrage gesendet",s1s:"Wir prüfen Ihre Fotos.",s2:"Festpreisangebot",s2s:"Mit festem Termin.",s3:"Angenommen",s3s:"Anzahlung reserviert, noch erstattbar.",s4:"Termin bestätigt",s4s:"Ab jetzt verbindlich.",s5:"Erledigt",s5s:"Abnahme und Restzahlung.",
+ warte:"Wir prüfen Ihre Fotos und melden uns mit einem Festpreisangebot. Sie bekommen eine E-Mail, sobald es da ist.",angebot:"Ihr Festpreis",inkl:"inkl. {m} % MwSt.",netto:"Netto",mwst:"MwSt.",termin:"Arbeitsbeginn",dauer:"Dauer",tage:"{d} Arbeitstage",notiz:"Hinweis",
+ wahl:"So möchten Sie zahlen",anz:"50 % Anzahlung",anzS:"Rest nach der Abnahme. Voll erstattbar, bis der Termin bestätigt ist.",fin:"Finanzieren mit {a}",finS:"{r} im Monat · {m} Monate · eff. Jahreszins {z} %",finRest:" · Rest bei Annahme: {x}",
+ annehmen:"Angebot annehmen",ablehnen:"Angebot ablehnen",sim:"Prototyp: Zahlung wird simuliert",angenommen:"Sie haben angenommen. {b} sind reserviert und werden voll erstattet, solange {f} den Termin noch nicht bestätigt hat.",
+ storno:"Kostenlos stornieren",stornoQ:"Wirklich stornieren? Ihre Anzahlung wird voll erstattet.",ja:"Ja, stornieren",nein:"Nein",bestaetigt:"Ihr Termin ist bestätigt. Die Anzahlung ist jetzt verbindlich.",erledigt:"Der Auftrag ist abgeschlossen. Danke für Ihr Vertrauen.",
+ storniert:"Sie haben storniert. Ihre Anzahlung von {b} wird erstattet.",abgelehnt:"Dieses Angebot ist nicht mehr gültig.",ausf:"Ausgeführt von {n}",fehlt:"Diese Seite gibt es nicht. Bitte prüfen Sie den Link aus Ihrer E-Mail.",boot:"Boot",richt:"Richtpreis aus dem Rechner",wunsch:"Wunschtermin",kontakt:"Fragen? {n}"},
+en:{probe:"Trial request: this is a test by the business. Payments are only simulated; nothing is charged.",leistung:"Service",prod_uws:"Underwater hull",prod_det:"Detailing",pk_af:"Renew antifouling",pk_full:"Full rebuild",pk_strip:"Removal only",pk_pflege:"Refresh & seal",pk_restau:"Restoration",pk_keramik:"Complete ceramic package",approx:"≈ {x} at a rate of {k}. Billed in euros.",n:"English",h:"Your antifouling request",stand:"Status",s1:"Request sent",s1s:"We're reviewing your photos.",s2:"Fixed-price quote",s2s:"With a fixed date.",s3:"Accepted",s3s:"Deposit reserved, still refundable.",s4:"Date confirmed",s4s:"Binding from now on.",s5:"Done",s5s:"Handover and final payment.",
+ warte:"We're reviewing your photos and will send you a fixed-price quote. You'll get an email as soon as it's ready.",angebot:"Your fixed price",inkl:"incl. {m}% VAT",netto:"Net",mwst:"VAT",termin:"Work starts",dauer:"Duration",tage:"{d} working days",notiz:"Note",
+ wahl:"How you'd like to pay",anz:"50% deposit",anzS:"Rest after handover. Fully refundable until the date is confirmed.",fin:"Finance with {a}",finS:"{r} per month · {m} months · APR {z}%",finRest:" · rest on acceptance: {x}",
+ annehmen:"Accept quote",ablehnen:"Decline quote",sim:"Prototype: payment is simulated",angenommen:"You've accepted. {b} is reserved and fully refunded as long as {f} has not confirmed the date.",
+ storno:"Cancel free of charge",stornoQ:"Really cancel? Your deposit will be refunded in full.",ja:"Yes, cancel",nein:"No",bestaetigt:"Your date is confirmed. The deposit is now binding.",erledigt:"The job is complete. Thank you for your trust.",
+ storniert:"You've cancelled. Your deposit of {b} will be refunded.",abgelehnt:"This quote is no longer valid.",ausf:"Work done by {n}",fehlt:"This page doesn't exist. Please check the link in your email.",boot:"Boat",richt:"Estimate from the calculator",wunsch:"Preferred date",kontakt:"Questions? {n}"},
+sv:{probe:"Provförfrågan: detta är ett test av företaget. Betalningar simuleras bara, inget debiteras.",leistung:"Tjänst",prod_uws:"Undervattensskrov",prod_det:"Båtvård",pk_af:"Förnya bottenfärg",pk_full:"Helt ny",pk_strip:"Endast borttagning",pk_pflege:"Rekonditionering & försegling",pk_restau:"Restaurering",pk_keramik:"Komplett keramikpaket",approx:"≈ {x} till kursen {k}. Faktureras i euro.",n:"Svenska",h:"Din förfrågan om bottenfärg",stand:"Status",s1:"Förfrågan skickad",s1s:"Vi granskar dina bilder.",s2:"Fastprisoffert",s2s:"Med fast datum.",s3:"Accepterad",s3s:"Handpenning reserverad, kan återbetalas.",s4:"Datum bekräftat",s4s:"Bindande från och med nu.",s5:"Klart",s5s:"Slutbesiktning och restbetalning.",
+ warte:"Vi granskar dina bilder och skickar en fastprisoffert. Du får ett e-postmeddelande när den är klar.",angebot:"Ditt fasta pris",inkl:"inkl. {m} % moms",netto:"Netto",mwst:"Moms",termin:"Arbetsstart",dauer:"Längd",tage:"{d} arbetsdagar",notiz:"Obs",
+ wahl:"Så vill du betala",anz:"50 % handpenning",anzS:"Resten efter slutbesiktning. Återbetalas helt tills datumet är bekräftat.",fin:"Finansiera med {a}",finS:"{r} per månad · {m} månader · effektiv ränta {z} %",finRest:" · rest vid accept: {x}",
+ annehmen:"Acceptera offerten",ablehnen:"Avböj offerten",sim:"Prototyp: betalningen simuleras",angenommen:"Du har accepterat. {b} är reserverade och återbetalas helt så länge {f} inte har bekräftat datumet.",
+ storno:"Avboka kostnadsfritt",stornoQ:"Vill du verkligen avboka? Handpenningen återbetalas helt.",ja:"Ja, avboka",nein:"Nej",bestaetigt:"Ditt datum är bekräftat. Handpenningen är nu bindande.",erledigt:"Uppdraget är klart. Tack för ditt förtroende.",
+ storniert:"Du har avbokat. Din handpenning på {b} återbetalas.",abgelehnt:"Den här offerten gäller inte längre.",ausf:"Utförs av {n}",fehlt:"Sidan finns inte. Kontrollera länken i ditt e-postmeddelande.",boot:"Båt",richt:"Riktpris från kalkylatorn",wunsch:"Önskat datum",kontakt:"Frågor? {n}"},
+no:{probe:"Prøveforespørsel: dette er en test fra bedriften. Betalinger simuleres bare, ingenting belastes.",leistung:"Tjeneste",prod_uws:"Undervannsskrog",prod_det:"Båtpleie",pk_af:"Fornye bunnstoff",pk_full:"Helt nytt",pk_strip:"Kun fjerning",pk_pflege:"Oppfriskning & forsegling",pk_restau:"Restaurering",pk_keramik:"Komplett keramikkpakke",approx:"≈ {x} til kurs {k}. Faktureres i euro.",n:"Norsk",h:"Din forespørsel om bunnstoff",stand:"Status",s1:"Forespørsel sendt",s1s:"Vi ser på bildene dine.",s2:"Fastpristilbud",s2s:"Med fast dato.",s3:"Akseptert",s3s:"Forskudd reservert, kan refunderes.",s4:"Dato bekreftet",s4s:"Bindende fra nå.",s5:"Ferdig",s5s:"Overlevering og restbetaling.",
+ warte:"Vi ser på bildene og sender et fastpristilbud. Du får en e-post når det er klart.",angebot:"Din fastpris",inkl:"inkl. {m} % mva.",netto:"Netto",mwst:"Mva.",termin:"Arbeidsstart",dauer:"Varighet",tage:"{d} arbeidsdager",notiz:"Merk",
+ wahl:"Slik vil du betale",anz:"50 % forskudd",anzS:"Resten etter overlevering. Refunderes helt til datoen er bekreftet.",fin:"Finansier med {a}",finS:"{r} per måned · {m} måneder · effektiv rente {z} %",finRest:" · rest ved aksept: {x}",
+ annehmen:"Aksepter tilbudet",ablehnen:"Avslå tilbudet",sim:"Prototype: betalingen simuleres",angenommen:"Du har akseptert. {b} er reservert og refunderes helt så lenge {f} ikke har bekreftet datoen.",
+ storno:"Kanseller gratis",stornoQ:"Vil du virkelig kansellere? Forskuddet refunderes helt.",ja:"Ja, kanseller",nein:"Nei",bestaetigt:"Datoen er bekreftet. Forskuddet er nå bindende.",erledigt:"Oppdraget er fullført. Takk for tilliten.",
+ storniert:"Du har kansellert. Forskuddet på {b} refunderes.",abgelehnt:"Dette tilbudet gjelder ikke lenger.",ausf:"Utføres av {n}",fehlt:"Siden finnes ikke. Sjekk lenken i e-posten.",boot:"Båt",richt:"Veiledende pris fra kalkulatoren",wunsch:"Ønsket dato",kontakt:"Spørsmål? {n}"},
+da:{probe:"Prøveforespørgsel: dette er en test fra virksomheden. Betalinger simuleres kun, intet opkræves.",leistung:"Ydelse",prod_uws:"Undervandsskrog",prod_det:"Bådpleje",pk_af:"Forny bundmaling",pk_full:"Helt ny",pk_strip:"Kun fjernelse",pk_pflege:"Opfriskning & forsegling",pk_restau:"Restaurering",pk_keramik:"Komplet keramikpakke",approx:"≈ {x} til kurs {k}. Faktureres i euro.",n:"Dansk",h:"Din forespørgsel om bundmaling",stand:"Status",s1:"Forespørgsel sendt",s1s:"Vi gennemgår dine fotos.",s2:"Fastpristilbud",s2s:"Med fast dato.",s3:"Accepteret",s3s:"Depositum reserveret, kan refunderes.",s4:"Dato bekræftet",s4s:"Bindende fra nu.",s5:"Færdig",s5s:"Aflevering og restbetaling.",
+ warte:"Vi gennemgår dine fotos og sender et fastpristilbud. Du får en e-mail, så snart det er klar.",angebot:"Din fastpris",inkl:"inkl. {m} % moms",netto:"Netto",mwst:"Moms",termin:"Arbejdsstart",dauer:"Varighed",tage:"{d} arbejdsdage",notiz:"Bemærk",
+ wahl:"Sådan vil du betale",anz:"50 % depositum",anzS:"Resten efter aflevering. Refunderes fuldt, indtil datoen er bekræftet.",fin:"Finansiér med {a}",finS:"{r} om måneden · {m} måneder · ÅOP {z} %",finRest:" · rest ved accept: {x}",
+ annehmen:"Acceptér tilbuddet",ablehnen:"Afvis tilbuddet",sim:"Prototype: betalingen simuleres",angenommen:"Du har accepteret. {b} er reserveret og refunderes fuldt, så længe {f} ikke har bekræftet datoen.",
+ storno:"Annullér gratis",stornoQ:"Vil du virkelig annullere? Depositummet refunderes fuldt.",ja:"Ja, annullér",nein:"Nej",bestaetigt:"Din dato er bekræftet. Depositummet er nu bindende.",erledigt:"Opgaven er afsluttet. Tak for tilliden.",
+ storniert:"Du har annulleret. Dit depositum på {b} refunderes.",abgelehnt:"Dette tilbud gælder ikke længere.",ausf:"Udføres af {n}",fehlt:"Siden findes ikke. Tjek linket i din e-mail.",boot:"Båd",richt:"Vejledende pris fra beregneren",wunsch:"Ønsket dato",kontakt:"Spørgsmål? {n}"},
+fi:{probe:"Koepyyntö: tämä on yrityksen testi. Maksut vain simuloidaan, mitään ei veloiteta.",leistung:"Palvelu",prod_uws:"Vedenalainen runko",prod_det:"Veneenhoito",pk_af:"Pohjamaalin uusiminen",pk_full:"Täysin uusi",pk_strip:"Vain poisto",pk_pflege:"Kunnostus & suojaus",pk_restau:"Entisöinti",pk_keramik:"Keraaminen kokonaispaketti",approx:"≈ {x} kurssilla {k}. Laskutus euroina.",n:"Suomi",h:"Pohjamaalauspyyntösi",stand:"Tila",s1:"Pyyntö lähetetty",s1s:"Tarkistamme kuvasi.",s2:"Kiinteähintainen tarjous",s2s:"Kiinteällä ajankohdalla.",s3:"Hyväksytty",s3s:"Ennakko varattu, vielä palautettavissa.",s4:"Ajankohta vahvistettu",s4s:"Sitova tästä eteenpäin.",s5:"Valmis",s5s:"Luovutus ja loppumaksu.",
+ warte:"Tarkistamme kuvasi ja lähetämme kiinteähintaisen tarjouksen. Saat sähköpostin, kun se on valmis.",angebot:"Kiinteä hintasi",inkl:"sis. alv {m} %",netto:"Netto",mwst:"Alv",termin:"Työn alku",dauer:"Kesto",tage:"{d} työpäivää",notiz:"Huom.",
+ wahl:"Näin haluat maksaa",anz:"50 % ennakko",anzS:"Loput luovutuksen jälkeen. Palautetaan kokonaan, kunnes ajankohta on vahvistettu.",fin:"Rahoita: {a}",finS:"{r} kuukaudessa · {m} kk · todellinen vuosikorko {z} %",finRest:" · loput hyväksyttäessä: {x}",
+ annehmen:"Hyväksy tarjous",ablehnen:"Hylkää tarjous",sim:"Prototyyppi: maksu simuloidaan",angenommen:"Olet hyväksynyt. {b} on varattu ja palautetaan kokonaan niin kauan kuin {f} ei ole vahvistanut ajankohtaa.",
+ storno:"Peru maksutta",stornoQ:"Perutaanko varmasti? Ennakko palautetaan kokonaan.",ja:"Kyllä, peru",nein:"Ei",bestaetigt:"Ajankohtasi on vahvistettu. Ennakko on nyt sitova.",erledigt:"Työ on valmis. Kiitos luottamuksestasi.",
+ storniert:"Olet perunut. {b} ennakko palautetaan.",abgelehnt:"Tämä tarjous ei ole enää voimassa.",ausf:"Tekijä {n}",fehlt:"Sivua ei ole. Tarkista sähköpostin linkki.",boot:"Vene",richt:"Ohjehinta laskurista",wunsch:"Toivottu ajankohta",kontakt:"Kysyttävää? {n}"}
+};
+const LOC = {de:"de-DE",en:"en-GB",sv:"sv-SE",no:"nb-NO",da:"da-DK",fi:"fi-FI"};
+const B = window.Boatsdoc, tok = new URLSearchParams(location.search).get("t");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let L = "de", D = null, WAHL = "anzahlung", FRAGE = false;
+const t = (k, v) => { let s = (T[L] || T.de)[k] || T.de[k]; for (const [a, b] of Object.entries(v || {})) s = s.split("{"+a+"}").join(b); return s; };
+const eur = (n, d) => (Number(n)||0).toLocaleString(LOC[L], {style:"currency", currency:"EUR", minimumFractionDigits:d ?? 0, maximumFractionDigits:d ?? 0});
+const dat = s => s ? new Date(s + "T12:00:00").toLocaleDateString(LOC[L], {weekday:"short", day:"2-digit", month:"long", year:"numeric"}) : "–";
+
+async function laden(){
+  try { D = await B.call("GET", "/api/angebot/" + encodeURIComponent(tok || "")); }
+  catch(_){ document.getElementById("w").innerHTML = `<div class="card"><p>${t("fehlt")}</p></div>`; return; }
+  if (!laden.sprache) { laden.sprache = true; L = T[D.eigner.sprache] ? D.eigner.sprache : (T[D.partner.sprache] ? D.partner.sprache : "de"); }
+  document.documentElement.style.setProperty("--mc", D.partner.farbe || "#0E6E6A");
+  render();
+}
+async function aktion(pfad, body){
+  document.querySelectorAll("button").forEach(b => b.disabled = true);
+  try { D = await B.call("POST", "/api/angebot/" + encodeURIComponent(tok) + pfad, body); FRAGE = false; render(); }
+  catch(e){ render(); document.getElementById("err").textContent = e.message; }
+}
+function render(){
+  document.documentElement.lang = L;
+  document.title = D.partner.name + " · " + t("h");
+  document.getElementById("mName").textContent = D.partner.name;
+  const ls = document.getElementById("lang");
+  ls.innerHTML = Object.keys(T).map(l => `<option value="${l}"${l===L?" selected":""}>${T[l].n}</option>`).join("");
+  ls.onchange = () => { L = ls.value; render(); };
+  const st = D.status, a = D.angebot, z = D.zahlung, k = D.kalkulation || {};
+  const stufe = {neu:1, angebot:2, angenommen:3, bestaetigt:4, abgeschlossen:5}[st] || 0;
+  const schritte = [["s1","s1s"],["s2","s2s"],["s3","s3s"],["s4","s4s"],["s5","s5s"]].map(([h,s],i)=>
+    `<li class="${i+1 < stufe ? "done" : i+1 === stufe ? "now" : ""}"><span>${t(h)}<small>${t(s)}</small></span></li>`).join("");
+  const ausf = D.ausfuehrer ? D.ausfuehrer.name : D.partner.name;
+  let haupt = "";
+  if (st === "neu") haupt = `<div class="note">${t("warte")}</div>
+    <table><tr><td>${t("richt")}</td><td>${k.preis_brutto_von ? eur(k.preis_brutto_von)+" – "+eur(k.preis_brutto_bis) : "–"}</td></tr><tr><td>${t("wunsch")}</td><td>${dat(D.wunschtermin)}</td></tr></table>`;
+  if (a && ["angebot","angenommen","bestaetigt","abgeschlossen"].includes(st)) haupt = `
+    <div><div class="eye">${t("angebot")}</div><div class="big">${eur(a.brutto, 2)}</div><div class="foot">${t("inkl",{m:(a.mwst_satz*100).toLocaleString(LOC[L])})}</div>
+      ${D.waehrung && D.waehrung.code !== "EUR" ? `<div class="foot">${t("approx",{x:(Math.round(a.brutto*D.waehrung.kurs/10)*10).toLocaleString(LOC[L],{style:"currency",currency:D.waehrung.code,maximumFractionDigits:0}), k:D.waehrung.kurs.toLocaleString(LOC[L])})}</div>` : ""}</div>
+    <table><tr><td>${t("leistung")}</td><td style="font-family:inherit">${t(k.produkt === "detailing" ? "prod_det" : "prod_uws")} · ${t("pk_"+(k.paket||"af"))}</td></tr><tr><td>${t("netto")}</td><td>${eur(a.festpreis_netto,2)}</td></tr><tr><td>${t("mwst")}</td><td>${eur(a.brutto - a.festpreis_netto,2)}</td></tr>
+      <tr><td>${t("termin")}</td><td>${dat(a.termin)}</td></tr>${a.tage ? `<tr><td>${t("dauer")}</td><td>${t("tage",{d:a.tage})}</td></tr>` : ""}
+      ${D.ausfuehrer ? `<tr><td colspan="2" style="text-align:left;font-family:inherit">${t("ausf",{n:esc(D.ausfuehrer.name)})}</td></tr>` : ""}</table>
+    ${a.notiz ? `<div class="note"><b>${t("notiz")}:</b> ${esc(a.notiz)}</div>` : ""}`;
+  let entscheid = "";
+  if (st === "angebot"){
+    const f = D.finanzierung;
+    entscheid = `<div class="card"><h2>${t("wahl")}</h2><div class="opts">
+      <button class="opt" type="button" data-w="anzahlung" aria-pressed="${WAHL==="anzahlung"}"><span>${t("anz")}</span><b>${eur(a.anzahlung,2)}</b><small>${t("anzS")}</small></button>
+      ${f ? `<button class="opt" type="button" data-w="finanzierung" aria-pressed="${WAHL==="finanzierung"}"><span>${t("fin",{a:f.anbieter})}</span><b>${eur(f.monatsrate,2)}</b><small>${t("finS",{r:eur(f.monatsrate,2), m:f.laufzeit, z:f.zins.toLocaleString(LOC[L])})}${f.rest > 0 ? t("finRest",{x:eur(f.rest,2)}) : ""}</small></button>` : ""}
+    </div><button class="btn" type="button" id="ja">${t("annehmen")}</button><button class="btn ghost" type="button" id="nein">${t("ablehnen")}</button>
+    <p class="sim">${t("sim")}</p><p class="err" id="err"></p></div>`;
+  }
+  if (st === "angenommen") entscheid = `<div class="note good">${t("angenommen",{b:eur(z.betrag,2), f:esc(ausf)})}</div>
+    <div class="card">${FRAGE ? `<p>${t("stornoQ")}</p><button class="btn bad" type="button" id="stJa">${t("ja")}</button><button class="btn ghost" type="button" id="stNein">${t("nein")}</button>` : `<button class="btn ghost" type="button" id="st">${t("storno")}</button>`}<p class="err" id="err"></p></div>`;
+  if (st === "bestaetigt") entscheid = `<div class="note good">${t("bestaetigt")}</div>`;
+  if (st === "abgeschlossen") entscheid = `<div class="note good">${t("erledigt")}</div>`;
+  if (st === "storniert") entscheid = `<div class="note warn">${t("storniert",{b:eur(z ? z.betrag : 0,2)})}</div>`;
+  if (st === "abgelehnt") entscheid = `<div class="note bad">${t("abgelehnt")}</div>`;
+  const kont = [D.partner.kontakt.tel, D.partner.kontakt.web].filter(Boolean).map(esc).join(" · ");
+  document.getElementById("w").innerHTML = `
+    <div style="padding-top:20px"><div class="eye">${esc(D.eigner.name)}</div><h1>${t("h")}</h1></div>
+    ${D.probe ? `<div class="note warn">${t("probe")}</div>` : ""}
+    <div class="card">${haupt}</div>
+    ${entscheid}
+    <div class="card"><div class="eye">${t("stand")}</div><ol class="steps">${schritte}</ol></div>
+    ${kont ? `<p class="foot">${t("kontakt",{n:kont})}</p>` : ""}`;
+  document.querySelectorAll("[data-w]").forEach(b => b.onclick = () => { WAHL = b.dataset.w; render(); });
+  const on = (id, fn) => { const e = document.getElementById(id); if (e) e.onclick = fn; };
+  on("ja", () => aktion("/annehmen", {zahlart:WAHL}));
+  on("nein", () => aktion("/ablehnen"));
+  on("st", () => { FRAGE = true; render(); });
+  on("stNein", () => { FRAGE = false; render(); });
+  on("stJa", () => aktion("/stornieren"));
+}
+laden();
+setInterval(() => { if (D && !document.hidden && !FRAGE) laden(); }, 15000);
+</script>
+</body></html>

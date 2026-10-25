@@ -1,0 +1,7 @@
+[Unit]
+Description=Boatsdoc Backup
+
+[Service]
+Type=oneshot
+User=boatsdoc
+ExecStart=/usr/local/bin/boatsdoc-backup
