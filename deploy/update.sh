@@ -5,7 +5,9 @@ set -euo pipefail
 REPO=/srv/boatsdoc/repo
 APP=/srv/boatsdoc/app
 STAND=/srv/boatsdoc/ausgerollt
-set -a; . /etc/boatsdoc.env; set +a
+# nur die benötigten Werte lesen (die Datei enthält Passwörter mit beliebigen Zeichen, daher nicht "sourcen")
+wert() { grep -E "^$1=" /etc/boatsdoc.env | tail -1 | cut -d= -f2- | sed -E "s/^'(.*)'$/\1/"; }
+BRANCH=$(wert BRANCH); BASE_URL=$(wert BASE_URL)
 BRANCH="${BRANCH:-main}"
 cd "$REPO"
 
