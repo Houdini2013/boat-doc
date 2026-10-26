@@ -1,0 +1,7 @@
+[Unit]
+Description=Boatsdoc: neuen Stand von GitHub holen und ausrollen
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/boatsdoc-update

@@ -14,8 +14,8 @@ Betreiber: ISC Industrie-Service-Czech GmbH.
 | `core.js` | Gemeinsame Logik für Server und Browser-Demo |
 | `store.js` | Erkennt Server (`/api/ping`) oder läuft als Demo im Browser |
 | `server/server.cjs` | Node-22-Server (SQLite eingebaut, keine Pakete) |
-| `deploy/` | Einrichtung des IONOS VPS, Caddy, systemd, Backup, siehe `deploy/ANLEITUNG.md` |
-| `.github/workflows/` | „Server einrichten“ (von Hand) und „Auf Server ausrollen“ (bei jedem Push) |
+| `deploy/` | IONOS VPS: Einrichtung mit einem Befehl, Selbst-Aktualisierung von GitHub, Caddy, Backup, siehe `deploy/ANLEITUNG.md` |
+| `.github/workflows/` | „Prüfen“: Server startet und liefert aus (bei jedem Push) |
 | `tools/` | Tests und Video-Aufnahme, `patch_kalkulator.py` erzeugt den Rechner aus `src/` |
 
 ## Lokal starten
