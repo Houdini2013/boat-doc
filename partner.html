@@ -287,7 +287,7 @@ function renderLogin(err){
       S.me = r.partner; zeige("start"); } catch(x){ renderLogin(x.message); } };
 }
 async function login(email, pw){
-  try { const r = await B.call("POST","/api/auth/login",{email, passwort:pw}); S.me = r.partner; if (I18N_P[S.me.sprache]) { L = S.me.sprache; } zeige(S.me.modus !== "live" ? "start" : "uebersicht"); }
+  try { const r = await B.call("POST","/api/auth/login",{email, passwort:pw}); S.me = r.partner; let gewaehlt = null; try { gewaehlt = localStorage.getItem("bd_lang"); } catch(_){} if (!gewaehlt && I18N_P[S.me.sprache]) { L = S.me.sprache; } zeige(S.me.modus !== "live" ? "start" : "uebersicht"); }
   catch(x){ renderLogin(x.message); }
 }
 const landOpts = sel => ["DE","SE","NO","DK","FI"].map(c=>`<option value="${c}"${c===sel?" selected":""}>${landName(c)}</option>`).join("");

@@ -264,9 +264,9 @@ footer nav{display:flex; flex-wrap:wrap; gap:6px 18px}
 <section class="sec" id="kalkulator"><div class="in">
   <div class="head"><div class="eye" data-t="v_eye"></div><h2 data-t="v_h"></h2><p class="lead" data-t="v_lead"></p></div>
   <div class="vids">
-    <div class="vid"><video controls preload="metadata" playsinline poster="poster-eigner.jpg"><source src="anleitung-eigner.mp4" type="video/mp4"></video>
+    <div class="vid"><video id="vidE" data-name="eigner" controls preload="metadata" playsinline poster="poster-eigner-de.jpg"><source src="anleitung-eigner-de.mp4" type="video/mp4"></video>
       <div class="tx"><div class="eye" data-t="v1_eye"></div><h3 data-t="v1_h"></h3><p data-t="v1_p"></p><div class="row"><a class="btn acc" href="kalkulator.html?p=beispiel-marina" target="_blank" rel="noopener" data-t="v1_btn"></a></div></div></div>
-    <div class="vid"><video controls preload="metadata" playsinline poster="poster-marina.jpg"><source src="anleitung-marina.mp4" type="video/mp4"></video>
+    <div class="vid"><video id="vidM" data-name="marina" controls preload="metadata" playsinline poster="poster-marina-de.jpg"><source src="anleitung-marina-de.mp4" type="video/mp4"></video>
       <div class="tx"><div class="eye" data-t="v2_eye"></div><h3 data-t="v2_h"></h3><p data-t="v2_p"></p><div class="row"><a class="btn" href="#testen" data-t="v2_btn2"></a></div></div></div>
   </div>
   <p class="small" style="margin-top:14px" data-t="v_note"></p>
@@ -389,6 +389,9 @@ function render(){
   $("dets").innerHTML = ["pflege","restau","keramik"].map(pk => { const r = C.richtpreisDet(C.grundpreise(), 10.4, 3.6, "kurzkieler", pk, "mittel");
     return `<div class="det"><span class="eye">${t("dt_"+pk+"_e")}</span><h3>${t("dt_"+pk+"_h")}</h3><p>${t("dt_"+pk+"_p")}</p><ul>${t("dt_"+pk+"_l").split("|").map(x=>`<li>${x}</li>`).join("")}</ul>
       <div class="pr">${eur(r.von)} – ${eur(r.bis)}<small>${t("dt_pr")}</small></div></div>`; }).join("");
+  /* Anleitungsvideos in der gewählten Sprache */
+  for (const v of [$("vidE"), $("vidM")]) { const src = `anleitung-${v.dataset.name}-${L}.mp4`, so = v.querySelector("source");
+    if (!so.getAttribute("src").endsWith(src)) { so.setAttribute("src", src); v.poster = `poster-${v.dataset.name}-${L}.jpg`; v.load(); } }
   testenRender();
   $("mBig").textContent = eur(400);
   $("wBig").textContent = t("w_ab", {r: eur(R500)});

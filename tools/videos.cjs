@@ -4,6 +4,9 @@ const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const B = process.env.BASE || 'http://localhost:8099', OUT = process.argv[2], MEDIA = process.argv[3];
 const W = 1280, H = 800;
+const LANG = process.env.LANG_VIDEO || 'de';
+const TX = require('./video-texte.cjs')[LANG]; let capNr = 0;
+const LOCALE = { de: 'de-DE', en: 'en-GB', sv: 'sv-SE', no: 'nb-NO', da: 'da-DK', fi: 'fi-FI' }[LANG];
 
 /* Untertitel + sichtbarer Mauszeiger, in jede Seite eingespielt */
 const OVERLAY = `
@@ -52,8 +55,8 @@ async function slider(p, sel, ziel) {
 }
 
 async function neueSeite(br, name) {
-  const ctx = await br.newContext({ viewport: { width: W, height: H }, locale: 'de-DE', timezoneId: 'Europe/Berlin', recordVideo: { dir: OUT + '/raw-' + name, size: { width: W, height: H } } });
-  await ctx.addInitScript(OVERLAY);
+  const ctx = await br.newContext({ viewport: { width: W, height: H }, locale: LOCALE, timezoneId: 'Europe/Berlin', recordVideo: { dir: OUT + '/raw-' + name, size: { width: W, height: H } } });
+  await ctx.addInitScript(OVERLAY); await ctx.addInitScript(l => { try { localStorage.setItem('bd_lang', l); } catch (_) {} }, LANG);
   return ctx;
 }
 
@@ -77,38 +80,38 @@ async function neueSeite(br, name) {
 
   /* ================= VIDEO 1: Eigner (Frontend) ================= */
   const c1 = await neueSeite(br, 'eigner'); const p = await c1.newPage();
-  await p.goto(B + '/kalkulator.html?p=marina-schleibucht'); await p.waitForSelector('body:not(.lade)'); await pause(p, 600);
+  await p.goto(B + '/kalkulator.html?p=marina-schleibucht&lang=' + LANG); await p.waitForSelector('body:not(.lade)'); await pause(p, 600);
   await p.mouse.move(W / 2, H / 2);
-  await cap(p, 'Eigner · Schritt 1', 'Der Eigner scannt den QR-Code seiner Marina und landet auf ihrem Rechner, mit Namen, Farbe und Preisen der Marina.'); await pause(p, 3800);
-  await cap(p, 'Schritt 2', 'Er wählt die Leistung: Antifouling erneuern.'); await klick(p, '#pkgChips .chip >> nth=0', { nach: 1400 });
+  await cap(p, ...TX.caps[capNr++]); await pause(p, 3800);
+  await cap(p, ...TX.caps[capNr++]); await klick(p, '#pkgChips .chip >> nth=0', { nach: 1400 });
   await scrolle(p, 330);
-  await cap(p, 'Schritt 3', 'Bootstyp und Größe aus der Liste, dann die Maße genau einstellen.');
+  await cap(p, ...TX.caps[capNr++]);
   await zu(p, '#bootSelect'); await p.selectOption('#bootSelect', '1'); await pause(p, 900);
   await slider(p, '#lwl', 7.6); await slider(p, '#breite', 2.8);
-  await cap(p, 'Schritt 4', 'Zustand der alten Beschichtung angeben. Der Preis rechnet live mit.'); await klick(p, '#condChips .chip >> nth=1', { nach: 1200 });
+  await cap(p, ...TX.caps[capNr++]); await klick(p, '#condChips .chip >> nth=1', { nach: 1200 });
   await scrolle(p, 420);
-  await cap(p, 'Schritt 5', 'Sofort sichtbar: Preisspanne inkl. MwSt., Dauer, 50 % Anzahlung (erstattbar bis zur Bestätigung) und die Monatsrate mit Klarna.');
+  await cap(p, ...TX.caps[capNr++]);
   await zu(p, '#preisSpanne'); await pause(p, 2600); await zu(p, '#finLine'); await pause(p, 3000);
-  await cap(p, 'Zweites Produkt', 'Im selben Rechner: Detailing & Versiegelung. Gleiche Buchung, gleiche Anzahlung.');
+  await cap(p, ...TX.caps[capNr++]);
   await klick(p, '#prodChips .chip >> nth=1', { nach: 1200 }); await klick(p, '#pkgChips .chip >> nth=2', { nach: 1400 });
   await zu(p, '#preisSpanne'); await pause(p, 2800);
-  await cap(p, 'Zurück zum Unterwasserschiff', 'Anna bucht das Antifouling.'); await klick(p, '#prodChips .chip >> nth=0', { nach: 1400 });
+  await cap(p, ...TX.caps[capNr++]); await klick(p, '#prodChips .chip >> nth=0', { nach: 1400 });
   await scrolle(p, 700);
-  await cap(p, 'Schritt 6', 'Fotos hochladen: mindestens 3 Fotos oder 1 Video vom Unterwasserschiff.');
+  await cap(p, ...TX.caps[capNr++]);
   await zu(p, '#drop'); await pause(p, 600);
   await p.setInputFiles('#fileInput', [1, 2, 3].map(i => MEDIA + '/pilot8-' + i + '.jpg')); await pause(p, 2200);
   await scrolle(p, 340);
-  await cap(p, 'Schritt 7', 'Wunschtermin wählen. Das voraussichtliche Zeitfenster wird markiert.');
+  await cap(p, ...TX.caps[capNr++]);
   await klick(p, '#calNext', { nach: 600 }); await klick(p, '#calNext', { nach: 600 }); await klick(p, '#calNext', { nach: 600 }); await klick(p, '#calNext', { nach: 700 });
   await klick(p, '#cal .cal-d.ok >> nth=8', { nach: 1500 });
   await scrolle(p, 330);
-  await cap(p, 'Schritt 8', 'Kontaktdaten eintragen und bestätigen.');
+  await cap(p, ...TX.caps[capNr++]);
   await tippe(p, '#lName', 'Anna Lindqvist'); await tippe(p, '#lEmail', 'anna.lindqvist@example.de'); await tippe(p, '#lPlz', '24376');
   await scrolle(p, 220);
   for (const c of await p.locator('#checks input').all()) await klick(p, c, { nach: 350 });
-  await cap(p, 'Schritt 9', 'Anfrage senden. Fotos und Daten gehen direkt an die Marina.'); await klick(p, '#leadBtn', { nach: 2400 });
+  await cap(p, ...TX.caps[capNr++]); await klick(p, '#leadBtn', { nach: 2400 });
   await p.waitForSelector('#leadOk a');
-  await cap(p, 'Fertig', 'Der Eigner bekommt einen Link, unter dem er jederzeit den Stand seiner Anfrage sieht.'); await zu(p, '#leadOk a'); await pause(p, 3200);
+  await cap(p, ...TX.caps[capNr++]); await zu(p, '#leadOk a'); await pause(p, 3200);
   const link = await p.getAttribute('#leadOk a', 'href');
   const token = new URL(link).searchParams.get('t');
 
@@ -118,10 +121,10 @@ async function neueSeite(br, name) {
   await mApi.request.post(B + '/api/anfragen/' + neu.id + '/angebot', { data: { festpreis_netto: 2600, termin: neu.wunschtermin, tage: 5, notiz: 'Kranen und Aufbocken sind im Preis enthalten.' } });
 
   await p.goto(link); await p.waitForSelector('#ja'); await pause(p, 500);
-  await cap(p, 'Einige Stunden später', 'Die Marina hat die Fotos geprüft. Per E-Mail kommt das Festpreisangebot mit festem Termin.'); await pause(p, 4200);
+  await cap(p, ...TX.caps[capNr++]); await pause(p, 4200);
   await scrolle(p, 330);
-  await cap(p, 'Schritt 10', 'Der Eigner wählt: 50 % Anzahlung oder Finanzierung mit Klarna.'); await klick(p, '[data-w=finanzierung]', { nach: 1800 });
-  await cap(p, 'Schritt 11', 'Angebot annehmen. Bis der ausführende Betrieb den Termin bestätigt, kann er kostenlos stornieren.'); await klick(p, '#ja', { nach: 2200 });
+  await cap(p, ...TX.caps[capNr++]); await klick(p, '[data-w=finanzierung]', { nach: 1800 });
+  await cap(p, ...TX.caps[capNr++]); await klick(p, '#ja', { nach: 2200 });
   await p.waitForSelector('#st'); await zu(p, '.note.good'); await pause(p, 3800);
   await capAus(p); await pause(p, 600);
   await c1.close();
@@ -129,58 +132,58 @@ async function neueSeite(br, name) {
   /* ================= VIDEO 2: Marina (Backend) ================= */
   const c2 = await neueSeite(br, 'marina'); const q = await c2.newPage();
   await q.goto(B + '/partner.html'); await q.waitForSelector('#lgEmail'); await q.mouse.move(W / 2, H / 2);
-  await cap(q, 'Marina · Schritt 1', 'Die Marina meldet sich in ihrem Backend an.'); await pause(q, 2200);
+  await cap(q, ...TX.caps[capNr++]); await pause(q, 2200);
   await tippe(q, '#lgEmail', 'demo@marina-schleibucht.de', { delay: 35 }); await tippe(q, '#lgPw', 'demo1234', { delay: 60 });
   await klick(q, '#loginForm button[type=submit]', { nach: 1500 }); await q.waitForSelector('.test');
-  await cap(q, 'Übersicht', 'Der 6-Wochen-Test: Anfragen, Buchungen und was sie bringen. Weitergeben gegen Provision oder selbst ausführen mit eigenem Laser.');
+  await cap(q, ...TX.caps[capNr++]);
   await zu(q, '.test .cmp'); await pause(q, 5200);
-  await cap(q, 'Übersicht', 'Darunter der Stand aller Aufträge und die reservierten Anzahlungen.'); await scrolle(q, 300); await pause(q, 2600);
+  await cap(q, ...TX.caps[capNr++]); await scrolle(q, 300); await pause(q, 2600);
   await scrolle(q, -300);
-  await cap(q, 'Schritt 2', 'Unter „Anfragen“ liegt jede Anfrage aus dem Rechner, mit Fotos und Richtpreis.'); await klick(q, 'nav.side button[data-v=anfragen]', { nach: 1600 });
+  await cap(q, ...TX.caps[capNr++]); await klick(q, 'nav.side button[data-v=anfragen]', { nach: 1600 });
   await klick(q, '.chip[data-f=alle]', { nach: 1200 });
   await klick(q, '.item:has-text("Lars Brodersen")', { nach: 1400 });
   await q.waitForSelector('#drawerIn .photos');
-  await cap(q, 'Schritt 3', 'Fotos ansehen und den Zustand beurteilen. Eine Besichtigung vor Ort ist nicht nötig.');
+  await cap(q, ...TX.caps[capNr++]);
   await q.locator('#drawerIn').evaluate(e => e.scrollTo({ top: e.querySelector('.photos').offsetTop - 120, behavior: 'smooth' })); await pause(q, 1200);
   await klick(q, '#drawerIn .photos button >> nth=0', { nach: 2200 }); await q.mouse.move(80, 80, { steps: 10 }); await q.mouse.down(); await q.mouse.up(); await pause(q, 800);
   await q.locator('#drawerIn').evaluate(e => e.scrollTo({ top: e.querySelector('.grid').offsetTop - 80, behavior: 'smooth' })); await pause(q, 900);
-  await cap(q, 'Schritt 3', 'Bootsdaten, Richtpreis aus dem Rechner, Wunschtermin und Kontakt auf einen Blick.'); await pause(q, 3600);
+  await cap(q, ...TX.caps[capNr++]); await pause(q, 3600);
   await q.locator('#drawerIn').evaluate(e => e.scrollTo({ top: 0, behavior: 'smooth' })); await pause(q, 900);
-  await cap(q, 'Schritt 4', 'Festpreis, Termin und Dauer eintragen. Brutto, Anzahlung und Plattformgebühr rechnen sich mit.');
+  await cap(q, ...TX.caps[capNr++]);
   await klick(q, '#anNetto', { nach: 200 }); await q.keyboard.press('Control+A'); await q.keyboard.type('2750', { delay: 140 }); await pause(q, 900);
-  await tippe(q, '#anNotiz', 'Bitte den Trailer bis 8 Uhr vor Halle 2 stellen.', { delay: 28 });
+  await tippe(q, '#anNotiz', TX.notiz, { delay: 28 });
   await zu(q, '#anCalc'); await pause(q, 2600);
-  await cap(q, 'Schritt 4', 'Angebot senden. Der Eigner bekommt es per E-Mail und nimmt online an.'); await klick(q, '#fAngebot button[type=submit]', { nach: 2000 });
+  await cap(q, ...TX.caps[capNr++]); await klick(q, '#fAngebot button[type=submit]', { nach: 2000 });
   await klick(q, '#dzu', { nach: 900 });
-  await cap(q, 'Schritt 5', 'Anna Lindqvist hat ihr Angebot bereits mit Klarna angenommen. Die Anzahlung ist reserviert und noch erstattbar.');
+  await cap(q, ...TX.caps[capNr++]);
   await klick(q, '.item:has-text("Anna Lindqvist")', { nach: 1400 }); await pause(q, 3400);
   await zu(q, '#wgZiel');
-  await cap(q, 'Schritt 6', 'Ohne eigenen Laser gibt die Marina den Auftrag an den Laser-Partner im Gebiet weiter. Dort gilt Gebietsschutz. Die Marina erhält 15 % Provision.'); await pause(q, 4400);
+  await cap(q, ...TX.caps[capNr++]); await pause(q, 4400);
   await klick(q, '#wgBtn', { nach: 2200 });
-  await cap(q, 'Schritt 6', 'Weitergegeben. Ab jetzt bestätigt der Laser-Partner den Termin.'); await pause(q, 2600);
+  await cap(q, ...TX.caps[capNr++]); await pause(q, 2600);
   await klick(q, '#dzu', { nach: 900 });
-  await cap(q, 'Schritt 7', 'Unter „Preise & Leistungen“ legt die Marina ihre eigenen Preise fest. Die Boatsdoc-Empfehlung steht daneben.');
+  await cap(q, ...TX.caps[capNr++]);
   await klick(q, 'nav.side button[data-v=preise]', { nach: 1400 });
   await klick(q, '#pr_laser_h', { nach: 200 }); await q.keyboard.press('Control+A'); await q.keyboard.type('185', { delay: 120 }); await pause(q, 600);
-  await zu(q, '#bsp'); await cap(q, 'Schritt 7', 'Rechts sieht sie sofort, was ihr Eigner für typische Boote angezeigt bekommt.'); await pause(q, 3400);
+  await zu(q, '#bsp'); await cap(q, ...TX.caps[capNr++]); await pause(q, 3400);
   await klick(q, '#prSave', { nach: 1600 });
-  await cap(q, 'Schritt 8', 'Unter „Auftritt & Teilen“: Link, QR-Code, Einbettung für die Website, Flyer und E-Mail an die Liegeplatzkunden.');
+  await cap(q, ...TX.caps[capNr++]);
   await klick(q, 'nav.side button[data-v=teilen]', { nach: 1600 }); await zu(q, '#qr'); await pause(q, 2800);
   await scrolle(q, 560); await pause(q, 3200);
-  await cap(q, 'Schritt 9', 'Unter „Finanzierung“: Klarna für die Eigner, mit den Grenzen je Land, und GRENKE-Leasing für den eigenen Laser.');
+  await cap(q, ...TX.caps[capNr++]);
   await klick(q, 'nav.side button[data-v=finanzierung]', { nach: 1600 }); await scrolle(q, 260); await pause(q, 3400);
   await scrolle(q, -260);
 
   /* Laser-Partner bestätigt und schließt ab */
-  await cap(q, 'Laser-Partner', 'Jetzt die Sicht des Laser-Partners: Bootsservice Förde.'); await klick(q, '#logout', { nach: 1200 });
+  await cap(q, ...TX.caps[capNr++]); await klick(q, '#logout', { nach: 1200 });
   await q.waitForSelector('#lgEmail');
   await tippe(q, '#lgEmail', 'demo@bootsservice-foerde.de', { delay: 30 }); await tippe(q, '#lgPw', 'demo1234', { delay: 50 }); await klick(q, '#loginForm button[type=submit]', { nach: 1500 });
   await q.waitForSelector('.test');
   await klick(q, 'nav.side button[data-v=anfragen]', { nach: 1200 }); await klick(q, '.item:has-text("Anna Lindqvist")', { nach: 1400 });
-  await cap(q, 'Schritt 10', 'Der Laser-Partner bestätigt den Termin. Damit wird die Anzahlung verbindlich.'); await pause(q, 2400);
+  await cap(q, ...TX.caps[capNr++]); await pause(q, 2400);
   await klick(q, '#bsBtn', { nach: 2000 });
-  await cap(q, 'Schritt 11', 'Nach der Arbeit und der Abnahme: Auftrag abschließen.'); await klick(q, '#abBtn', { nach: 2000 }); await klick(q, '#dzu', { nach: 800 });
-  await cap(q, 'Abrechnung', 'Die Abrechnung entsteht automatisch: 15 % Provision an die Marina, 5 % an Boatsdoc. Keine Grundgebühr.');
+  await cap(q, ...TX.caps[capNr++]); await klick(q, '#abBtn', { nach: 2000 }); await klick(q, '#dzu', { nach: 800 });
+  await cap(q, ...TX.caps[capNr++]);
   await klick(q, 'nav.side button[data-v=abrechnung]', { nach: 1400 }); await pause(q, 4400);
   await capAus(q); await pause(q, 600);
   await c2.close();
