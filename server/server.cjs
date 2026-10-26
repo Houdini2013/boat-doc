@@ -22,6 +22,9 @@ const MAX_UPLOAD = { foto: 15 * 1024 * 1024, video: 150 * 1024 * 1024 };
 const BASIS_URL = process.env.BASE_URL || "";            // z. B. https://app.boatsdoc.com — für Links in E-Mails
 const SICHER = process.env.COOKIE_SECURE === "1";        // hinter HTTPS auf 1 setzen
 fs.mkdirSync(UPL, { recursive: true });
+/* Hauptdomain (aus BASE_URL). Alles andere, was auf diesen Server zeigt, ist ein White-Label-Rechner. */
+const HAUPT = (() => { try { return new URL(BASIS_URL).hostname.replace(/^www\./, ""); } catch (_) { return "boatsdoc.com"; } })();
+const EIGENE = new Set([HAUPT, "www." + HAUPT, "neu." + HAUPT, "localhost", "127.0.0.1"]);
 
 /* ---------- Datenbank: Dokumente je Tabelle ---------- */
 const sql = new DatabaseSync(path.join(DATA, "boatsdoc.db"));
@@ -79,16 +82,52 @@ function neueSitzung(partnerId) {
 /* ---------- E-Mail (Postausgang) ----------
    Mails landen in der Tabelle postausgang und im Log. Für echten Versand hier einen SMTP-/API-Dienst anbinden. */
 const BETREFF = { angebot: "Ihr Festpreisangebot", bestaetigt: "Ihr Termin ist bestätigt" };
+const Mailer = require("./mailer.cjs");
+const MAILTEXTE = require("./mailtexte.cjs");
+/* Basisadresse für Links in Mails: eigene Adresse der Marina (White-Label), sonst die Hauptdomain */
+function basisFuer(partner, req) {
+  if (partner && partner.domains && partner.domains[0]) return "https://" + partner.domains[0];
+  if (partner && partner.modus === "live" && BASIS_URL && /^https:/.test(BASIS_URL)) return `https://${partner.slug}.${HAUPT}`;
+  return BASIS_URL || `http://${req.headers.host}`;
+}
+function protokoll(eintrag) { db.put("postausgang", Object.assign({ id: Core.zufall(12), t: new Date().toISOString() }, eintrag)); }
 function mail(m, req) {
+  if (Array.isArray(m)) return m.forEach(x => mail(x, req));
   if (m.intern) {   // Benachrichtigung an den Vertrieb (neuer Probezugang, Konto gesichert, live)
-    db.put("postausgang", { id: Core.zufall(12), an: SALES_EMAIL || "(Vertrieb)", typ: m.typ, betreff: `Boatsdoc: ${m.typ} – ${m.partner}`, t: new Date().toISOString() });
+    const betreff = `Boatsdoc: ${m.typ} – ${m.partner}`;
+    protokoll({ an: SALES_EMAIL || "(Vertrieb)", typ: m.typ, betreff });
     console.log(`[Vertrieb] ${m.typ}: ${m.partner}`);
+    if (SALES_EMAIL && Mailer.aktiv()) Mailer.senden({ an: SALES_EMAIL, betreff, text: `${m.typ}: ${m.partner}\n\n${BASIS_URL || ""}/partner.html#admin`, absenderName: "Boatsdoc" })
+      .catch(e => console.error("[Mail] Fehler:", e.message));
     return;
   }
-  const basis = BASIS_URL || `http://${req.headers.host}`;
-  const link = `${basis}/angebot.html?t=${m.token}`;
-  db.put("postausgang", { id: Core.zufall(12), an: m.an, typ: m.typ, betreff: BETREFF[m.typ] || m.typ, link, t: new Date().toISOString() });
-  console.log(`[Mail] an ${m.an}: ${BETREFF[m.typ] || m.typ} → ${link}`);
+  const partner = m.partner_id ? db.get("partner", m.partner_id) : null;
+  const marina = partner ? partner.name : "Boatsdoc";
+  const basis = basisFuer(partner, req);
+  let sprache, link, ersetzen = {};
+  if (m.typ === "marina_anfrage") {
+    const a = db.get("anfragen", m.anfrage_id) || {};
+    sprache = (partner && partner.sprache) || "de";
+    link = `${BASIS_URL || basis}/partner.html#anfragen`;
+    const b = (a.kalkulation && a.kalkulation.boot) || {};
+    ersetzen = { name: (a.eigner && a.eigner.name) || "", boot: [b.rumpf, b.lwl ? b.lwl + " m" : ""].filter(Boolean).join(" ") };
+  } else {
+    const a = Object.values(db.all("anfragen")).find(x => x.token === m.token) || {};
+    sprache = (a.eigner && a.eigner.sprache) || (partner && partner.sprache) || "de";
+    link = `${basis}/angebot.html?t=${m.token}`;
+    ersetzen = { name: (a.eigner && a.eigner.name) || "" };
+  }
+  const T = MAILTEXTE[sprache] || MAILTEXTE.de, vorlage = T[m.typ];
+  if (!vorlage) { console.log(`[Mail] unbekannter Typ ${m.typ}`); return; }
+  const fuell = s => s.replace(/\{marina\}/g, marina).replace(/\{link\}/g, link).replace(/\{name\}/g, ersetzen.name || "").replace(/\{boot\}/g, ersetzen.boot || "");
+  const betreff = fuell(vorlage[0]), text = fuell(vorlage[1]) + (m.typ === "marina_anfrage" ? "" : "\n\n--\n" + fuell(T.fuss));
+  const antwortAn = m.typ === "marina_anfrage" ? (SALES_EMAIL || undefined) : ((partner && partner.impressum && partner.impressum.email) || (partner && partner.email) || undefined);
+  const eintrag = { an: m.an, typ: m.typ, betreff, link, status: "protokolliert" };
+  console.log(`[Mail] an ${m.an}: ${betreff} → ${link}`);
+  if (!Mailer.aktiv()) return protokoll(eintrag);
+  Mailer.senden({ an: m.an, betreff, text, absenderName: m.typ === "marina_anfrage" ? "Boatsdoc" : marina, antwortAn })
+    .then(() => protokoll(Object.assign(eintrag, { status: "gesendet" })))
+    .catch(e => { console.error("[Mail] Fehler:", e.message); protokoll(Object.assign(eintrag, { status: "fehler", fehler: e.message })); });
 }
 
 /* ---------- Hilfen ---------- */
@@ -150,14 +189,42 @@ function upload(req, res, url) {
   out.on("error", () => { if (!abbruch) json(res, 500, { code: "speicher", message: "Speichern fehlgeschlagen." }); });
 }
 
+/* ---------- White-Label ---------- */
+/* <slug>.boatsdoc.com oder eine beim Partner eingetragene Domain (z. B. boatsdoc.gbm.se) → Rechner dieser Marina */
+function whiteLabel(hostHeader) {
+  const h = String(hostHeader || "").toLowerCase().replace(/:\d+$/, "");
+  if (!h || EIGENE.has(h)) return null;
+  const alle = db.all("partner").filter(p => p.aktiv !== false);
+  const perDomain = alle.find(p => (p.domains || []).includes(h));
+  if (perDomain) return perDomain;
+  if (h.endsWith("." + HAUPT)) { const sub = h.slice(0, -(HAUPT.length + 1)); return alle.find(p => p.slug === sub && p.modus === "live") || null; }
+  return null;
+}
+function rechnerFuer(res, p) {
+  fs.readFile(path.join(APP, "kalkulator.html"), "utf8", (err, html) => {
+    if (err) { res.writeHead(500); return res.end(); }
+    const tag = `<script>window.BD_PARTNER=${JSON.stringify(p.slug)};</script>`;
+    const out = Buffer.from(html.replace("<head>", "<head>\n" + tag), "utf8");
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Content-Length": out.length, "Cache-Control": "no-cache" });
+    res.end(out);
+  });
+}
+
 /* ---------- Server ---------- */
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   const p = decodeURIComponent(url.pathname);
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "same-origin");
+  /* Der Eigner-Rechner darf auf der Website der Marina eingebettet werden, alles andere nicht */
+  if (!/^\/(kalkulator\.html|impressum\.html|core\.js|store\.js|api\/|uploads\/)/.test(p) && p !== "/") res.setHeader("X-Frame-Options", "SAMEORIGIN");
   try {
     if (p === "/api/ping") return json(res, 200, { boatsdoc: true, version: 1 });
+    /* Caddy fragt vor dem Ausstellen eines Zertifikats, ob die Adresse zu uns gehört */
+    if (p === "/api/tls-ok") { const d = String(url.searchParams.get("domain") || "").toLowerCase(); return json(res, EIGENE.has(d) || whiteLabel(d) ? 200 : 404, {}); }
+    const wl = whiteLabel(req.headers.host);
+    if (wl && (p === "/" || p === "/index.html")) return rechnerFuer(res, wl);
+    if (wl && p === "/impressum") { res.writeHead(302, { Location: "/impressum.html?p=" + wl.slug }); return res.end(); }
     /* Land für die MwSt.: aus dem CDN-Header (z. B. Cloudflare), sonst leer → der Kalkulator nutzt Zeitzone/Sprache */
     if (p === "/api/region") return json(res, 200, { land: String(req.headers["cf-ipcountry"] || req.headers["x-country"] || "").toUpperCase() || null });
     /* Wechselkurse: hier kann ein EZB-Abruf angebunden werden; ohne Angabe nutzt der Kalkulator seine hinterlegten Kurse */

@@ -182,7 +182,8 @@
   function oeffentlich(p) {
     return { slug: p.slug, name: p.name, farbe: p.farbe, logo: p.logo || null, land: p.land, sprache: p.sprache, modus: p.modus || "live",
       kontakt: p.kontakt || {}, preise: p.preise, pakete: p.pakete, detailing: p.detailing,
-      finanzierung: p.finanzierung, kalender: p.kalender, rolle: p.rolle };
+      finanzierung: p.finanzierung, kalender: p.kalender, rolle: p.rolle,
+      design: p.design || {}, impressum: p.impressum && p.impressum.firma ? p.impressum : null, domain: (p.domains || [])[0] || null };
   }
   /* Partner ohne Geheimnisse (für das eigene Backend) */
   function privat(p) { const c = Object.assign({}, p); delete c.pw; return c; }
@@ -207,6 +208,10 @@
       sandbox: !!d.sandbox, modus: d.modus === "live" ? "live" : "probe", live_seit: d.modus === "live" ? jetzt() : null,
       liegeplaetze: Number(d.liegeplaetze) || null, quelle: d.quelle || null,
       onboarding: Object.assign({}, d.onboarding || {}), akzeptiert: null,
+      /* White-Label: Darstellung, Impressum, eigene Adressen (Domains setzt Boatsdoc) */
+      design: Object.assign({ bg: "", akzent2: "", schrift: "" }, d.design || {}),
+      impressum: Object.assign({ firma: "", orgnr: "", adresse: "", vertreten: "", email: "", telefon: "", ust: "" }, d.impressum || {}),
+      domains: Array.isArray(d.domains) ? d.domains : [],
       erstellt: jetzt(), zuletzt_aktiv: jetzt()
     };
   }
@@ -333,13 +338,15 @@
     R("GET", "/api/partner", ({ session }) => ({ data: privat(brauchtLogin(session)) }));
     R("PUT", "/api/partner", ({ session, body }) => {
       const p = Object.assign({}, brauchtLogin(session));
-      const erlaubt = ["name", "farbe", "logo", "sprache", "kontakt", "preise", "pakete", "detailing", "finanzierung", "kalender", "rolle", "region", "test"];
+      const erlaubt = ["name", "farbe", "logo", "sprache", "kontakt", "preise", "pakete", "detailing", "finanzierung", "kalender", "rolle", "region", "test", "design", "impressum"];
       for (const k of erlaubt) if (body[k] !== undefined) {
         p[k] = (typeof body[k] === "object" && body[k] && !Array.isArray(body[k])) ? Object.assign({}, p[k], body[k]) : body[k];
       }
       if (p.rolle !== "ausfuehrend") p.rolle = "vermittler";
       if (!SPRACHEN.includes(p.sprache)) p.sprache = "de";
       if (!/^#[0-9a-fA-F]{6}$/.test(p.farbe || "")) p.farbe = "#0E6E6A";
+      if (p.design) for (const k of ["bg", "akzent2"]) if (p.design[k] && !/^#[0-9a-fA-F]{6}$/.test(p.design[k])) p.design[k] = "";
+      if (p.impressum) for (const k of Object.keys(p.impressum)) p.impressum[k] = String(p.impressum[k] || "").slice(0, 300);
       for (const [k, v] of Object.entries(p.preise || {})) { const n = Number(v); p.preise[k] = isFinite(n) && n >= 0 ? n : PREIS_EMPFEHLUNG[k] ? PREIS_EMPFEHLUNG[k].wert : 0; }
       if (p.finanzierung && !FINANZIERER[p.finanzierung.anbieter]) p.finanzierung.anbieter = "keine";
       p.name = String(p.name || "").trim() || session.partner.name;
@@ -352,6 +359,13 @@
     });
 
     /* --- Öffentlich: Kalkulator --- */
+    /* White-Label: zu welcher Marina gehört dieser Hostname? <slug>.<hauptdomain> oder eingetragene Domain */
+    R("GET", "/api/host/:host", ({ params }) => {
+      const h = String(params.host || "").toLowerCase();
+      const p = partnerAlle().find(x => x.aktiv !== false && (x.domains || []).includes(h));
+      if (!p) throw fehler(404, "unbekannt", "Keine Marina für diese Adresse.");
+      return { data: { slug: p.slug } };
+    });
     R("GET", "/api/public/:slug", ({ params }) => {
       const p = partnerBySlug(params.slug);
       if (!p || p.aktiv === false) throw fehler(404, "unbekannt", "Diesen Rechner gibt es nicht.");
@@ -376,7 +390,10 @@
       log(a, "anfrage", "eigner");
       db.put("anfragen", a);
       if (a.probe) { schritt(p.id, "probeanfrage"); schritt(p.id, "rechner"); }
-      return { status: 201, data: { id: a.id, token: a.token, probe: a.probe } };
+      const mails = a.probe ? undefined : [
+        { an: a.eigner.email, typ: "eigner_anfrage", token: a.token, partner_id: p.id },
+        { an: (p.impressum && p.impressum.email) || p.email, typ: "marina_anfrage", anfrage_id: a.id, partner_id: p.id }];
+      return { status: 201, data: { id: a.id, token: a.token, probe: a.probe }, mail: mails };
     });
 
     /* --- Eigner: Angebotsseite per Token --- */
@@ -456,7 +473,7 @@
       log(a, "angebot", p.name);
       db.put("anfragen", a);
       if (a.probe) { schritt(a.partner_id, "angebot"); return { data: mitNamen(a) }; }
-      return { data: mitNamen(a), mail: { an: a.eigner.email, typ: "angebot", token: a.token } };
+      return { data: mitNamen(a), mail: { an: a.eigner.email, typ: "angebot", token: a.token, partner_id: a.partner_id } };
     });
     R("POST", "/api/anfragen/:id/ablehnen", ({ session, params, body }) => {
       const p = brauchtLogin(session), a = ladeFuer(p, params.id);
@@ -556,6 +573,7 @@
       if (body.gebietsschutz === false) c.gebietsschutz_bis = null;
       if (body.region) c.region = Object.assign({}, c.region, body.region);
       if (body.aktiv !== undefined) c.aktiv = !!body.aktiv;
+      if (Array.isArray(body.domains)) c.domains = body.domains.map(d => String(d).trim().toLowerCase()).filter(d => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d));
       db.put("partner", c);
       return { data: privat(c) };
     });

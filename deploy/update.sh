@@ -31,6 +31,17 @@ git checkout -q -B "$BRANCH" FETCH_HEAD
 rsync -a --delete --exclude .git --exclude .github --exclude data ./ "$APP/"
 chown -R boatsdoc:boatsdoc "$APP"
 systemctl restart boatsdoc
+
+# Caddy-Konfiguration mitziehen, wenn sie sich im Repo geändert hat
+DOMAIN=$(echo "${BASE_URL:-https://boatsdoc.com}" | sed -E 's#^https?://##; s#/.*$##; s#^www\.##')
+sed "s/{{DOMAIN}}/$DOMAIN/g" deploy/Caddyfile > /tmp/Caddyfile.neu
+if ! cmp -s /tmp/Caddyfile.neu /etc/caddy/Caddyfile; then
+  if caddy validate --adapter caddyfile --config /tmp/Caddyfile.neu >/dev/null 2>&1; then
+    cp /tmp/Caddyfile.neu /etc/caddy/Caddyfile && systemctl reload caddy && echo "Caddy neu geladen"
+  else
+    echo "WARNUNG: neue Caddy-Konfiguration ungültig, alte bleibt aktiv" >&2
+  fi
+fi
 for i in 1 2 3 4 5 6 7 8 9 10; do
   if curl -fsS http://127.0.0.1:8080/api/ping >/dev/null 2>&1; then
     echo "$NEU" > "$STAND"

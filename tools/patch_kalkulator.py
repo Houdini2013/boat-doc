@@ -127,7 +127,7 @@ for (const l in NEU){ const x = NEU[l], t = I18N[l]; if (!t) continue;
 }
 async function ladePartner(){
   const q = new URLSearchParams(location.search);
-  SLUG = q.get("p") || "marina-schleibucht";
+  SLUG = q.get("p") || window.BD_PARTNER || "marina-schleibucht";
   try { PARTNER = await Boatsdoc.call("GET", "/api/public/" + encodeURIComponent(SLUG)); }
   catch(e){ document.querySelector("main").innerHTML = `<p class="gone">${(NEU[LANG]||NEU.de).gone}</p>`; document.body.classList.remove("lade"); return false; }
   const P = PARTNER, K = Boatsdoc.core.kalkCfg(P.preise);
@@ -152,6 +152,27 @@ async function ladePartner(){
   document.title = P.name + " · Antifouling";
   const r = document.documentElement.style;
   r.setProperty("--acc", P.farbe); r.setProperty("--acc2", `color-mix(in srgb, ${P.farbe} 80%, #fff)`); r.setProperty("--accsoft", `color-mix(in srgb, ${P.farbe} 50%, #fff)`);
+  /* White-Label: Hintergrundfarbe und Schrift des Partners */
+  const D = P.design || {};
+  if (/^#[0-9a-fA-F]{6}$/.test(D.bg || "")) {
+    const m = (p, w) => `color-mix(in srgb, ${D.bg} ${p}%, ${w})`;
+    r.setProperty("--bg", D.bg); r.setProperty("--bg2", m(92, "#fff")); r.setProperty("--panel", m(86, "#fff")); r.setProperty("--panel2", m(80, "#fff"));
+    r.setProperty("--line", m(70, "#fff")); r.setProperty("--line2", m(62, "#fff"));
+    const top = document.querySelector(".top"); if (top) top.style.background = `color-mix(in srgb, ${D.bg} 92%, transparent)`;
+  }
+  if (D.akzent2 && /^#[0-9a-fA-F]{6}$/.test(D.akzent2)) r.setProperty("--ok", D.akzent2);
+  const SCHRIFTEN = ["Catamaran","Playfair Display","Source Sans 3","Open Sans","Lato","Montserrat","Roboto","Nunito Sans","Raleway","Work Sans"];
+  if (SCHRIFTEN.includes(D.schrift)) {
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(D.schrift) + ":wght@400;600;700;800&display=swap"; document.head.appendChild(l);
+    r.setProperty("--sans", `"${D.schrift}", system-ui, sans-serif`);
+  }
+  /* Impressum des Betreibers dieses Rechners */
+  if (P.impressum && P.impressum.firma) {
+    const f = document.querySelector("footer"); const a = document.createElement("a");
+    a.href = "impressum.html?p=" + encodeURIComponent(P.slug); a.className = "by"; a.style.color = "inherit";
+    a.textContent = ({de:"Impressum",en:"Legal notice",sv:"Företagsuppgifter",no:"Firmaopplysninger",da:"Virksomhedsoplysninger",fi:"Yritystiedot"})[LANG] || "Impressum";
+    f.appendChild(a);
+  }
   return true;
 }
 let PROBE = false;

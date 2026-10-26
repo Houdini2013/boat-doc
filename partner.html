@@ -231,7 +231,15 @@ try { L = localStorage.getItem("bd_lang") || ((navigator.language||"de").slice(0
 if (!C.SPRACHEN.includes(L)) L = "en";
 const t = (k, v) => { let s = (I18N_P[L] && I18N_P[L][k]) ?? I18N_P.de[k] ?? k; if (v) for (const [a,b] of Object.entries(v)) s = s.split("{"+a+"}").join(b); return s; };
 const LOC = {de:"de-DE", en:"en-GB", sv:"sv-SE", no:"nb-NO", da:"da-DK", fi:"fi-FI"};
-const eur = (n, d) => (Number(n)||0).toLocaleString(LOC[L], {style:"currency", currency:"EUR", maximumFractionDigits:d ?? 0, minimumFractionDigits:d ?? 0});
+/* Geld: intern immer EUR, angezeigt und eingegeben in der Währung des Partnerlandes (SEK, NOK, DKK, EUR) */
+const WC = () => C.WAEHRUNG[(S.me && S.me.land) || "DE"] || "EUR";
+const KF = () => C.KURS[WC()] || 1;
+const SYM = () => WC() === "EUR" ? "€" : "kr";
+const inLokal = n => (Number(n)||0) * KF();
+const ausLokal = n => (Number(n)||0) / KF();
+const eur = (n, d) => { const dd = WC() === "EUR" ? (d ?? 0) : 0; return inLokal(n).toLocaleString(LOC[L], {style:"currency", currency:WC(), maximumFractionDigits:dd, minimumFractionDigits:dd}); };
+const zahl = n => nf(inLokal(n));
+const tw = k => t(k).split("€").join(SYM());
 const nf = (n, d) => (Number(n)||0).toLocaleString(LOC[L], {maximumFractionDigits:d ?? 0});
 const dat = s => s ? new Date(s.length <= 10 ? s + "T12:00:00" : s).toLocaleDateString(LOC[L], {day:"2-digit", month:"2-digit", year:"numeric"}) : "–";
 const datZ = s => s ? new Date(s).toLocaleString(LOC[L], {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}) : "";
@@ -427,7 +435,7 @@ function liste(arr){
     return `<button class="item" type="button" data-id="${a.id}">
       <span class="thumb" style="${f ? `background-image:url('${esc(f.url)}')` : ""}">${f ? "" : (a.medien||[]).length ? "▶" : "—"}</span>
       <span class="t">${esc(a.eigner.name)}</span>
-      <span class="r">${a.probe ? `<span class="pill st-abgeschlossen">${t("probe_pill")}</span>` : ""}${stPill(a.status)}<span class="num">${a.angebot ? eur(a.angebot.festpreis_netto) : a.kalkulation && a.kalkulation.preis_netto_von ? eur(a.kalkulation.preis_netto_von)+"–"+nf(a.kalkulation.preis_netto_bis) : ""}</span></span>
+      <span class="r">${a.probe ? `<span class="pill st-abgeschlossen">${t("probe_pill")}</span>` : ""}${stPill(a.status)}<span class="num">${a.angebot ? eur(a.angebot.festpreis_netto) : a.kalkulation && a.kalkulation.preis_netto_von ? eur(a.kalkulation.preis_netto_von)+"–"+zahl(a.kalkulation.preis_netto_bis) : ""}</span></span>
       <span class="m">${esc(bootText(a))} · ${t("wunsch")} ${dat(a.wunschtermin)} · ${(a.medien||[]).length} ${t("medien")}${fremd ? " · " + fremd : ""}</span>
     </button>`; }).join("")}</div>`;
 }
@@ -452,7 +460,7 @@ async function oeffne(id){
   const aktionen = [];
   if (["neu","angebot"].includes(a.status) && (binIchMarina || binIchAusf)) aktionen.push(`
     <form class="panel stack" id="fAngebot"><h3>${a.status === "angebot" ? t("angebot_aendern") : t("angebot_h")}</h3><p class="small muted">${t("angebot_p")}</p>
-      <div class="grid g3"><label class="f">${t("festpreis_netto")}<input type="number" id="anNetto" min="0" step="1" value="${a.angebot ? a.angebot.festpreis_netto : mitte}" required></label>
+      <div class="grid g3"><label class="f">${tw("festpreis_netto")}<input type="number" id="anNetto" min="0" step="1" value="${Math.round(inLokal(a.angebot ? a.angebot.festpreis_netto : mitte))}" required></label>
       <label class="f">${t("termin")}<input type="date" id="anTermin" value="${(a.angebot && a.angebot.termin) || a.wunschtermin || ""}" required></label>
       <label class="f">${t("dauer_tage")}<input type="number" id="anTage" min="1" max="30" value="${(a.angebot && a.angebot.tage) || (String(k.tage||"").split("-")[1]) || 3}"></label></div>
       <label class="f">${t("notiz")}<textarea id="anNotiz" placeholder="${t("notiz_ph")}">${esc(a.angebot ? a.angebot.notiz : "")}</textarea></label>
@@ -505,10 +513,10 @@ async function oeffne(id){
   const neu = async (pfad, body) => { try { await B.call("POST", "/api/anfragen/"+a.id+pfad, body); toast(t("gespeichert")); await zeige(S.view); await oeffne(a.id); } catch(x){ toast(x.message); } };
   const fA = $("#fAngebot");
   if (fA){
-    const calc = () => { const n = +$("#anNetto").value || 0, br = n*(1+satz);
+    const calc = () => { const n = ausLokal(+$("#anNetto").value || 0), br = n*(1+satz);
       $("#anCalc").innerHTML = t("angebot_calc", {brutto:eur(br), mwst:nf(satz*100,1), anz:eur(br*C.ANZAHLUNG), geb:eur(n*C.GEBUEHR)}); };
     $("#anNetto").oninput = calc; calc();
-    fA.onsubmit = async e => { e.preventDefault(); await neu("/angebot", {festpreis_netto:+$("#anNetto").value, termin:$("#anTermin").value, tage:+$("#anTage").value, notiz:$("#anNotiz").value}); };
+    fA.onsubmit = async e => { e.preventDefault(); await neu("/angebot", {festpreis_netto:Math.round(ausLokal(+$("#anNetto").value)*100)/100, termin:$("#anTermin").value, tage:+$("#anTage").value, notiz:$("#anNotiz").value}); };
   }
   if ($("#wgBtn")) $("#wgBtn").onclick = () => neu("/weitergeben", {an:$("#wgZiel").value});
   if ($("#bsBtn")) $("#bsBtn").onclick = () => neu("/bestaetigen");
@@ -523,16 +531,18 @@ function lightbox(src){ const d = document.createElement("div"); d.className = "
 
 /* ---------- Preise ---------- */
 const PREISGRUPPEN = [
-  ["gr_abtrag", [["ruest","€"],["laser_h","€/h"],["laser_m2h","m²/h"],["km","€/km"]]],
-  ["gr_aufbau", [["schliff_h","€/h"],["primer_l","€/l"],["af_l","€/l"],["lack_l","€/l"]]],
+  ["gr_abtrag", [["ruest","¤"],["laser_h","¤/h"],["laser_m2h","m²/h"],["km","¤/km"]]],
+  ["gr_aufbau", [["schliff_h","¤/h"],["primer_l","¤/l"],["af_l","¤/l"],["lack_l","¤/l"]]],
   ["gr_angebot", [["spanne","± %"]]]
 ];
 async function vPreise(){
   const p = await B.call("GET","/api/partner"); S.me = p;
   const E = C.PREIS_EMPFEHLUNG;
-  const row = ([k,u]) => `<div class="price-row"><span class="lbl">${t("pr_"+k)}</span>
-    <span class="inp"><input type="number" id="pr_${k}" step="${k==="km"||k==="laser_m2h"?"0.1":"1"}" min="0" value="${p.preise[k]}"><span class="u">${u}</span></span>
-    <span class="rec">${t("empfehlung")} ${nf(E[k].von, k==="km"||k==="laser_m2h"?2:0)}–${nf(E[k].bis, k==="km"||k==="laser_m2h"?2:0)} ${u}<button type="button" data-rs="${k}">${t("uebernehmen")} ${nf(E[k].wert, k==="km"||k==="laser_m2h"?2:0)}</button></span></div>`;
+  const geldFeld = k => !["laser_m2h","spanne"].includes(k);   // diese Felder sind Geld und werden umgerechnet
+  const zeige_ = (k, v) => geldFeld(k) ? Math.round(inLokal(v) * (k==="km" ? 100 : 1)) / (k==="km" ? 100 : 1) : v;
+  const row = ([k,u0]) => { const u = u0.replace("¤", SYM()); return `<div class="price-row"><span class="lbl">${t("pr_"+k)}</span>
+    <span class="inp"><input type="number" id="pr_${k}" step="${k==="km"||k==="laser_m2h"?"0.1":"1"}" min="0" value="${zeige_(k, p.preise[k])}"><span class="u">${u}</span></span>
+    <span class="rec">${t("empfehlung")} ${nf(zeige_(k,E[k].von), k==="km"||k==="laser_m2h"?2:0)}–${nf(zeige_(k,E[k].bis), k==="km"||k==="laser_m2h"?2:0)} ${u}<button type="button" data-rs="${k}">${t("uebernehmen")} ${nf(zeige_(k,E[k].wert), k==="km"||k==="laser_m2h"?2:0)}</button></span></div>`; };
   $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_preise")}</h1><p>${t("preise_p")}</p></div></div>
     <div class="grid" style="grid-template-columns:minmax(0,1fr)"><div class="grid g2" style="align-items:start">
       <div class="stack">
@@ -541,8 +551,8 @@ async function vPreise(){
           ${["af","full","strip"].map(k=>`<label class="toggle"><input type="checkbox" id="pk_${k}"${p.pakete[k]?" checked":""}>${t("pk_"+k)}</label>`).join("")}
           <label class="toggle"><input type="checkbox" id="det_aktiv"${p.detailing.aktiv?" checked":""}>${t("detailing")}</label>
           <div class="grid g2" id="detF"${p.detailing.aktiv?"":" hidden"}>
-            <label class="f">${t("pr_det_h")}<input type="number" id="pr_det_h" value="${p.preise.det_h}"></label>
-            <label class="f">${t("pr_det_min")}<input type="number" id="pr_det_min" value="${p.preise.det_min}"></label></div>
+            <label class="f">${t("pr_det_h")} (${SYM()}/h)<input type="number" id="pr_det_h" value="${zeige_("det_h", p.preise.det_h)}"></label>
+            <label class="f">${t("pr_det_min")} (${SYM()})<input type="number" id="pr_det_min" value="${zeige_("det_min", p.preise.det_min)}"></label></div>
         </section>
         <section class="panel stack"><h3>${t("kalender")}</h3>
           <label class="f">${t("vorlauf")}<input type="number" id="kVor" min="1" max="120" value="${p.kalender.vorlauf_tage}"><span class="hint">${t("vorlauf_hint")}</span></label>
@@ -554,14 +564,14 @@ async function vPreise(){
         <div class="row"><button class="btn acc" type="button" id="prSave">${t("speichern")}</button><a class="btn ghost" href="${B.url("kalkulator.html",{p:p.slug})}" target="_blank" rel="noopener">${t("rechner_oeffnen")} ↗</a></div>
       </div>
     </div></div>`;
-  const lese = () => { const pr = {}; for (const k of Object.keys(E)) { const el = $("#pr_"+k); if (el) pr[k] = +el.value; } return pr; };
+  const lese = () => { const pr = {}; for (const k of Object.keys(E)) { const el = $("#pr_"+k); if (el) pr[k] = geldFeld(k) ? Math.round(ausLokal(+el.value)*1000)/1000 : +el.value; } return pr; };
   const bsp = () => { const pr = lese(), satz = C.MWST[p.land] ?? 0.19;
     const zeilen = [["af",33],["af",20.6],["full",33],["strip",33]].filter(([pk])=>$("#pk_"+pk).checked);
     $("#bsp").innerHTML = `<table class="t"><tr><th>${t("paket")}</th><th>${t("flaeche")}</th><th style="text-align:right">${t("netto")}</th><th style="text-align:right">${t("brutto")}</th></tr>
-      ${zeilen.map(([pk,fl])=>{ const r = C.richtpreis(pr, fl, pk); return `<tr><td>${t("pk_"+pk)}<br><span class="hint">${fl===33?t("motorboot")+" 10 m":t("kurzkieler")+" 9 m"}</span></td><td class="n">${nf(fl,1)} m²</td><td class="n">${eur(r.von)}–${nf(r.bis)}</td><td class="n">${eur(r.von*(1+satz))}–${nf(r.bis*(1+satz))}</td></tr>`; }).join("")}
-      ${$("#det_aktiv").checked ? ["pflege","restau","keramik"].map(pk=>{ const r = C.richtpreisDet(pr, 10.4, 3.6, "kurzkieler", pk, "mittel"); return `<tr><td>${t("prod_det")}: ${t("pk_"+pk)}<br><span class="hint">${t("kurzkieler")} 10 m</span></td><td class="n">${nf(r.flaeche,1)} m²</td><td class="n">${eur(r.von)}–${nf(r.bis)}</td><td class="n">${eur(r.von*(1+satz))}–${nf(r.bis*(1+satz))}</td></tr>`; }).join("") : ""}</table>`; };
+      ${zeilen.map(([pk,fl])=>{ const r = C.richtpreis(pr, fl, pk); return `<tr><td>${t("pk_"+pk)}<br><span class="hint">${fl===33?t("motorboot")+" 10 m":t("kurzkieler")+" 9 m"}</span></td><td class="n">${nf(fl,1)} m²</td><td class="n">${eur(r.von)}–${zahl(r.bis)}</td><td class="n">${eur(r.von*(1+satz))}–${zahl(r.bis*(1+satz))}</td></tr>`; }).join("")}
+      ${$("#det_aktiv").checked ? ["pflege","restau","keramik"].map(pk=>{ const r = C.richtpreisDet(pr, 10.4, 3.6, "kurzkieler", pk, "mittel"); return `<tr><td>${t("prod_det")}: ${t("pk_"+pk)}<br><span class="hint">${t("kurzkieler")} 10 m</span></td><td class="n">${nf(r.flaeche,1)} m²</td><td class="n">${eur(r.von)}–${zahl(r.bis)}</td><td class="n">${eur(r.von*(1+satz))}–${zahl(r.bis*(1+satz))}</td></tr>`; }).join("") : ""}</table>`; };
   document.querySelectorAll("#main input").forEach(i => i.addEventListener("input", bsp));
-  document.querySelectorAll("[data-rs]").forEach(b => b.onclick = () => { $("#pr_"+b.dataset.rs).value = E[b.dataset.rs].wert; bsp(); });
+  document.querySelectorAll("[data-rs]").forEach(b => b.onclick = () => { $("#pr_"+b.dataset.rs).value = zeige_(b.dataset.rs, E[b.dataset.rs].wert); bsp(); });
   $("#det_aktiv").onchange = e => { $("#detF").hidden = !e.target.checked; bsp(); };
   bsp();
   $("#prSave").onclick = async () => {
@@ -575,7 +585,12 @@ async function vPreise(){
 async function vTeilen(){
   B.call("POST","/api/schritt/teilen").catch(()=>{});
   const p = await B.call("GET","/api/partner"); S.me = p;
-  const link = B.url("kalkulator.html",{p:p.slug});
+  /* Eigene Adresse (White-Label) hat Vorrang, sonst <slug>.boatsdoc.com im Livebetrieb, sonst der normale Link */
+  const haupt = /(^|\.)boatsdoc\.com$/.test(location.hostname);
+  const eigene = (p.domains && p.domains[0]) ? "https://" + p.domains[0] : (haupt && p.modus === "live" ? "https://" + p.slug + ".boatsdoc.com" : "");
+  const link = eigene || B.url("kalkulator.html",{p:p.slug});
+  const D = p.design || {}, I = p.impressum || {};
+  const SCHRIFTEN = ["Catamaran","Playfair Display","Source Sans 3","Open Sans","Lato","Montserrat","Roboto","Nunito Sans","Raleway","Work Sans"];
   const embed = `<iframe src="${link}" title="${p.name} – Antifouling-Rechner" style="width:100%;height:1500px;border:0" loading="lazy"></iframe>`;
   const fl = FLYER[p.sprache] || FLYER.de;
   const mail = (MAILV[p.sprache] || MAILV.de).replace(/\{name\}/g, p.name).replace("{link}", link);
@@ -592,9 +607,19 @@ async function vTeilen(){
           <label class="btn ghost" style="cursor:pointer">${t("logo_waehlen")}<input type="file" id="logoIn" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden></label>
           ${p.logo ? `<button class="btn ghost" type="button" id="logoWeg">${t("logo_entf")}</button>` : ""}</div>
         <span class="hint">${t("logo_hint")}</span>
+        <h3 style="margin-top:10px">${t("design_h")}</h3><span class="hint">${t("design_p")}</span>
+        <div class="row"><label class="f">${t("bg")}<input type="color" id="dBg" value="${esc(D.bg || "#0e1816")}"></label>
+          <label class="f">${t("akzent2")}<input type="color" id="dAk2" value="${esc(D.akzent2 || "#5fb88a")}"></label>
+          <label class="f" style="flex:1">${t("schrift")}<select id="dSchrift"><option value="">${t("schrift_std")}</option>${SCHRIFTEN.map(f=>`<option${f===D.schrift?" selected":""}>${f}</option>`).join("")}</select></label></div>
+        <h3 style="margin-top:10px">${t("impressum_h")}</h3><span class="hint">${t("impressum_p")}</span>
+        <label class="f">${t("imp_firma")}<input type="text" id="iFirma" value="${esc(I.firma)}"></label>
+        <label class="f">${t("imp_adresse")}<input type="text" id="iAdr" value="${esc(I.adresse)}"></label>
+        <div class="grid g2"><label class="f">${t("imp_orgnr")}<input type="text" id="iOrg" value="${esc(I.orgnr)}"></label><label class="f">${t("imp_ust")}<input type="text" id="iUst" value="${esc(I.ust)}"></label></div>
+        <div class="grid g2"><label class="f">${t("imp_vertreten")}<input type="text" id="iVer" value="${esc(I.vertreten)}"></label><label class="f">${t("imp_telefon")}<input type="tel" id="iTel" value="${esc(I.telefon)}"></label></div>
+        <label class="f">${t("imp_email")}<input type="email" id="iMail" value="${esc(I.email)}"><span class="hint">${t("imp_email_hint")}</span></label>
         <div><button class="btn acc" type="button" id="aSave">${t("speichern")}</button></div>
       </section>
-      <section class="panel stack"><h3>${t("ihr_link")}</h3>
+      <section class="panel stack"><h3>${eigene ? t("eigene_adresse") : t("ihr_link")}</h3>${eigene ? `<span class="hint">${t("eigene_adresse_p")}</span>` : ""}
         <div class="row"><span class="code" style="flex:1;min-width:0">${esc(link)}</span><button class="btn ghost" type="button" id="cpL">${t("kopieren")}</button></div>
         <div class="row" style="align-items:flex-start;gap:16px"><div class="qr" id="qr" role="img" aria-label="QR-Code"></div>
           <div class="stack small" style="flex:1;min-width:180px"><b>${t("qr_h")}</b><span class="muted">${t("qr_p")}</span></div></div>
@@ -616,7 +641,7 @@ async function vTeilen(){
           <div class="eye" style="margin-top:8px">${t("momente")}</div>
           <ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">${t("momente_l").split("|").map(x=>`<li>${x}</li>`).join("")}</ul></div>
       </div></section>
-    <section class="stack"><div class="eye">${t("vorschau")}</div><div class="preview"><iframe id="pv" src="${esc(link)}&vorschau=1" title="${t("vorschau")}"></iframe></div></section>`;
+    <section class="stack"><div class="eye">${t("vorschau")}</div><div class="preview"><iframe id="pv" src="${esc(B.url("kalkulator.html",{p:p.slug}))}&vorschau=1" title="${t("vorschau")}"></iframe></div></section>`;
   qr("#qr", link); qr("#qr2", link);
   $("#cpL").onclick = e => copy(link, e.target); $("#cpEm").onclick = e => copy(embed, e.target); $("#cpM").onclick = e => copy(mail, e.target);
   if ($("#druck")) $("#druck").onclick = () => { const w = window.open(""); if (!w) return; w.document.write(`<title>Flyer</title><style>@page{size:A5;margin:0}body{margin:0;font-family:Archivo,Arial,sans-serif}.flyer{width:148mm;height:210mm;padding:14mm;box-sizing:border-box;display:flex;flex-direction:column;gap:5mm;position:relative}.bar{position:absolute;left:0;right:0;top:0;height:5mm}.fh{font-size:24pt;font-weight:800;line-height:1.1}.fs{font-size:11pt}.fn{font:10pt monospace;letter-spacing:.12em;text-transform:uppercase}.fq{width:45mm;height:45mm}.fq img,.fq svg{width:100%;height:100%}.row{display:flex;gap:5mm;align-items:flex-end;margin-top:auto}</style>${$("#flyer").outerHTML}`); w.document.close(); w.focus(); setTimeout(()=>w.print(), 400); };
@@ -624,7 +649,9 @@ async function vTeilen(){
     try { const u = await B.upload(f); S.me = await B.call("PUT","/api/partner",{logo:u.url}); toast(t("gespeichert")); vTeilen(); } catch(x){ toast(x.message); } };
   if ($("#logoWeg")) $("#logoWeg").onclick = async () => { S.me = await B.call("PUT","/api/partner",{logo:null}); vTeilen(); };
   $("#aSave").onclick = async () => { try { S.me = await B.call("PUT","/api/partner",{name:$("#aName").value, farbe:$("#aFarbe").value, sprache:$("#aSpr").value,
-      kontakt:{tel:$("#aTel").value, web:$("#aWeb").value, adresse:$("#aAdr").value}}); toast(t("gespeichert")); vTeilen(); } catch(x){ toast(x.message); } };
+      kontakt:{tel:$("#aTel").value, web:$("#aWeb").value, adresse:$("#aAdr").value},
+      design:{bg:$("#dBg").value === "#0e1816" ? "" : $("#dBg").value, akzent2:$("#dAk2").value === "#5fb88a" ? "" : $("#dAk2").value, schrift:$("#dSchrift").value},
+      impressum:{firma:$("#iFirma").value, adresse:$("#iAdr").value, orgnr:$("#iOrg").value, ust:$("#iUst").value, vertreten:$("#iVer").value, telefon:$("#iTel").value, email:$("#iMail").value}}); toast(t("gespeichert")); vTeilen(); } catch(x){ toast(x.message); } };
 }
 function qr(sel, text){ const el = $(sel); if (!el) return; if (typeof qrcode !== "function") { el.textContent = "QR"; return; } const q = qrcode(0, "M"); q.addData(text); q.make(); el.innerHTML = q.createSvgTag({cellSize:4, margin:0, scalable:true}); }
 

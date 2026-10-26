@@ -45,6 +45,11 @@ COOKIE_SECURE=1
 SEED_DEMO=0
 SALES_EMAIL=
 ADMIN_EMAILS=
+SMTP_HOST=smtp.ionos.de
+SMTP_PORT=465
+SMTP_USER=info@boatsdoc.com
+SMTP_PASS=
+MAIL_FROM=info@boatsdoc.com
 BRANCH=$BRANCH
 EOF
   chmod 640 /etc/boatsdoc.env; chgrp boatsdoc /etc/boatsdoc.env

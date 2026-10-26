@@ -1,19 +1,38 @@
 # Boatsdoc — HTTPS-Zertifikate holt Caddy automatisch (Let's Encrypt), sobald die Namen auf den Server zeigen.
 # neu.{{DOMAIN}} ist zum Testen vor dem Umstellen der Hauptdomain gedacht.
+# White-Label: <marina>.{{DOMAIN}} und eigene Domains der Partner (z. B. boatsdoc.gbm.se) bekommen ihr Zertifikat
+# beim ersten Aufruf; vorher fragt Caddy den Server, ob die Adresse zu einer Marina gehört (/api/tls-ok).
 
-{{DOMAIN}}, neu.{{DOMAIN}} {
+{
+	on_demand_tls {
+		ask http://127.0.0.1:8080/api/tls-ok
+	}
+}
+
+(boatsdoc) {
 	encode zstd gzip
 	request_body {
 		max_size 160MB
 	}
 	header {
 		Strict-Transport-Security "max-age=31536000"
-		X-Frame-Options "SAMEORIGIN"
 		-Server
 	}
 	reverse_proxy 127.0.0.1:8080
 }
 
+{{DOMAIN}}, neu.{{DOMAIN}} {
+	import boatsdoc
+}
+
 www.{{DOMAIN}} {
 	redir https://{{DOMAIN}}{uri} permanent
+}
+
+# alle übrigen Adressen: White-Label-Rechner der Marinas
+https:// {
+	tls {
+		on_demand
+	}
+	import boatsdoc
 }

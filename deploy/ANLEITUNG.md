@@ -45,6 +45,11 @@ COOKIE_SECURE=1
 SEED_DEMO=0          # keine Demo-Marinas im Livebetrieb; die Beispiel-Marina gibt es immer
 SALES_EMAIL=         # hier landet „neuer Probezugang“, z. B. sales@boatsdoc.com
 ADMIN_EMAILS=        # Konten mit Sales-Cockpit, kommagetrennt (Konto vorher normal über „Jetzt testen“ anlegen und sichern)
+SMTP_HOST=smtp.ionos.de   # E-Mail-Versand über das Postfach info@boatsdoc.com
+SMTP_PORT=465
+SMTP_USER=info@boatsdoc.com
+SMTP_PASS=           # Passwort des Postfachs (nur hier, nie im Repo)
+MAIL_FROM=info@boatsdoc.com
 BRANCH=main          # welcher Zweig ausgerollt wird
 PROBE_PRO_MINUTE=5   # optional: Schutz vor massenhaften Testzugängen
 ```
@@ -52,9 +57,16 @@ PROBE_PRO_MINUTE=5   # optional: Schutz vor massenhaften Testzugängen
 Nach Änderungen: `systemctl restart boatsdoc`. Sofort ausrollen: `boatsdoc-update --force`.
 Protokoll: `journalctl -u boatsdoc -u boatsdoc-update -n 100`.
 
+## White-Label (Rechner unter eigener Adresse)
+
+- Jede live geschaltete Marina ist automatisch unter `https://<name>.boatsdoc.com` erreichbar (DNS: `*`-Eintrag auf den Server).
+- Eigene Domain der Marina, z. B. `boatsdoc.gbm.se`: die Marina setzt bei ihrem DNS-Anbieter einen CNAME `boatsdoc` → `boatsdoc.com`
+  (oder A-Eintrag auf die Server-IP); Boatsdoc trägt die Domain im Sales-Cockpit bzw. per API beim Partner ein. Das Zertifikat kommt automatisch.
+- Farben, Schrift und Impressum pflegt die Marina selbst unter „Auftritt & Teilen“.
+- E-Mails an Eigner gehen von info@boatsdoc.com mit dem Namen der Marina als Absender; Antworten landen bei der Marina.
+
 ## Noch offen (Phase 3)
 
-- Mailversand über IONOS SMTP, Port 587 (Port 25 ist bei IONOS gesperrt); bis dahin stehen Mails im Postausgang der Datenbank und im Log
 - Zahlungen: Stripe Connect + Klarna für die ISC
 - AGB, AVV und Datenschutz anwaltlich prüfen (die Entwürfe sind als solche gekennzeichnet)
 - Externes Backup (z. B. IONOS S3 Object Storage)
