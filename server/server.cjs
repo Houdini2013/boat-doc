@@ -172,7 +172,7 @@ const server = http.createServer(async (req, res) => {
       const s = sitzung(req);
       const r = api.handle(req.method, p, { body: b, session: s });
       const h = {};
-      if (r.login) h["Set-Cookie"] = neueSitzung(r.login);
+      if (r.login) { adminsSetzen(); h["Set-Cookie"] = neueSitzung(r.login); }
       if (r.logout) { if (s) db.del("sitzungen", s.id); h["Set-Cookie"] = `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`; }
       if (r.mail) mail(r.mail, req);
       return json(res, r.status || 200, r.data, h);
@@ -195,6 +195,14 @@ const server = http.createServer(async (req, res) => {
     return json(res, status, { code: e.code || "fehler", message: status >= 500 ? "Interner Fehler." : e.message });
   }
 });
+/* Boatsdoc-Team: Konten mit diesen E-Mails (ADMIN_EMAILS, kommagetrennt) bekommen das Sales-Cockpit.
+   Ablauf: ganz normal über „Jetzt testen“ ein Konto anlegen und sichern, E-Mail in /etc/boatsdoc.env eintragen. */
+const ADMINS = String(process.env.ADMIN_EMAILS || "").toLowerCase().split(",").map(x => x.trim()).filter(Boolean);
+function adminsSetzen() {
+  if (!ADMINS.length) return;
+  for (const x of db.all("partner")) if (ADMINS.includes(x.email) && !x.admin) { db.put("partner", Object.assign({}, x, { admin: true, modus: "live" })); console.log("Sales-Cockpit freigeschaltet für", x.email); }
+}
+adminsSetzen();
 /* Probezugänge ohne Konto nach 30 Tagen entfernen: beim Start und täglich */
 const aufraeumen = () => { try { const n = api.aufraeumen(30); if (n) console.log(`Aufgeräumt: ${n} alte Probezugänge`); } catch (e) { console.error(e); } };
 aufraeumen(); setInterval(aufraeumen, 864e5).unref();

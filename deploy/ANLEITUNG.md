@@ -44,6 +44,7 @@ BASE_URL=https://boatsdoc.com
 COOKIE_SECURE=1
 SEED_DEMO=0          # keine Demo-Marinas im Livebetrieb; die Beispiel-Marina gibt es immer
 SALES_EMAIL=         # hier landet „neuer Probezugang“, z. B. sales@boatsdoc.com
+ADMIN_EMAILS=        # Konten mit Sales-Cockpit, kommagetrennt (Konto vorher normal über „Jetzt testen“ anlegen und sichern)
 BRANCH=main          # welcher Zweig ausgerollt wird
 PROBE_PRO_MINUTE=5   # optional: Schutz vor massenhaften Testzugängen
 ```

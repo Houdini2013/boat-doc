@@ -44,6 +44,7 @@ BASE_URL=https://$DOMAIN
 COOKIE_SECURE=1
 SEED_DEMO=0
 SALES_EMAIL=
+ADMIN_EMAILS=
 BRANCH=$BRANCH
 EOF
   chmod 640 /etc/boatsdoc.env; chgrp boatsdoc /etc/boatsdoc.env
