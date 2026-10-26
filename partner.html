@@ -375,7 +375,11 @@ async function vStart(){
   if (S.scrollZu && $("#"+S.scrollZu)) { $("#"+S.scrollZu).scrollIntoView({behavior:"smooth", block:"center"}); S.scrollZu = null; }
 }
 /* Zurück aus dem Rechner-Tab: Fortschritt neu laden */
-addEventListener("focus", () => { if (S.me && S.view === "start" && $("#drawer").hidden) vStart().catch(()=>{}); });
+addEventListener("focus", () => {
+  if (!S.me) return;
+  if (!$("#drawer").hidden && S.sel) { oeffne(S.sel.id).catch(()=>{}); return; }   // offene Anfrage aktuell halten (z. B. Eigner hat inzwischen angenommen)
+  if (S.view === "start") vStart().catch(()=>{});
+});
 
 /* ---------- Übersicht ---------- */
 async function vUebersicht(){

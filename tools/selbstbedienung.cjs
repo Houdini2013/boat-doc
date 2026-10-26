@@ -37,8 +37,8 @@ const MEDIA = path.join(__dirname, '..', 'media');
   await p.click('.item:has-text("Test Eigner")'); await p.waitForSelector('#fAngebot');
   await p.screenshot({ path: OUT + '/4-probeanfrage.png' });
   await p.fill('#anNetto', '2400'); await p.click('#fAngebot button[type=submit]'); await p.waitForTimeout(800);
-  await p.click('#wgBtn'); await p.waitForTimeout(600);   // an Test-Laser-Partner
-  await p.click('#dzu');
+  await p.click('#wgBtn'); await p.waitForResponse(r => r.url().includes('/api/') && r.request().method() !== 'GET'); await p.waitForTimeout(800);   // an Test-Laser-Partner
+  await p.click('#dzu'); await p.waitForSelector('#drawer', { state: 'hidden' });
   /* Eigner nimmt an */
   const a = await ctx.newPage(); watch(a, 'angebot'); await a.goto(link); await a.waitForSelector('#ja');
   await a.screenshot({ path: OUT + '/5-angebot-probe.png', fullPage: true });
