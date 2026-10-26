@@ -5,7 +5,18 @@ const fs = require('fs'), path = require('path');
 const B = process.env.BASE || 'http://localhost:8099', OUT = process.argv[2], MEDIA = process.argv[3];
 const W = 1280, H = 800;
 const LANG = process.env.LANG_VIDEO || 'de';
-const TX = require('./video-texte.cjs')[LANG]; let capNr = 0;
+const TX = JSON.parse(JSON.stringify(require('./video-texte.cjs')[LANG])); let capNr = 0;
+/* Szenario je Sprache: Schweden mit GBM Marin, Norwegen mit Ravns Garage (Pilotpartner), sonst deutsche Beispiel-Marina */
+const SZ = {
+  sv: { neu: true, land: 'SE', marina: { name: 'GBM Marin', email: 'gbm-marin@demo.boatsdoc.com', farbe: '#1F4E8C', kontakt: { adresse: 'Havstenssund, Bohuslän' } },
+        laser: { slug: 'bohusvarvet', email: 'demo@bohusvarvet.se', name: 'Bohusvarvet' },
+        plz: ['45772', '45773'], namen: ['Johan Berg', 'Lars Nilsson'], tel: '+46 70 000 00 00', nachricht: 'Står på trailern vid hall 2.' },
+  no: { neu: true, land: 'NO', marina: { name: 'Ravns Garage', email: 'ravns-garage@demo.boatsdoc.com', farbe: '#7A2E1F', kontakt: {} },
+        laser: { neu: true, name: 'Fjord Båtservice', email: 'fjord-batservice@demo.boatsdoc.com', plz: ['31'] },
+        plz: ['3110', '3111'], namen: ['Ola Nordmann', 'Lars Haugen'], tel: '+47 400 00 000', nachricht: 'Står på hengeren ved hall 2.' },
+}[LANG] || { land: 'DE', marina: { slug: 'marina-schleibucht', email: 'demo@marina-schleibucht.de' }, laser: { slug: 'bootsservice-foerde', email: 'demo@bootsservice-foerde.de', name: 'Bootsservice Förde' },
+  plz: ['24376', '24399'], namen: ['Jens Petersen', 'Lars Brodersen'], tel: '+49 170 0000000', nachricht: 'Steht auf dem Trailer, Halle 2.' };
+TX.caps = TX.caps.map(([a, b]) => [a, b.replace('Bootsservice Förde', SZ.laser.name)]);
 const LOCALE = { de: 'de-DE', en: 'en-GB', sv: 'sv-SE', no: 'nb-NO', da: 'da-DK', fi: 'fi-FI' }[LANG];
 
 /* Untertitel + sichtbarer Mauszeiger, in jede Seite eingespielt */
@@ -65,22 +76,36 @@ async function neueSeite(br, name) {
   const api = await (await chromium.launch()).newContext();   // für Vorbereitung ohne Video
 
   /* ---------- Vorbereitung: zwei frühere Anfragen, damit das Backend realistisch aussieht ---------- */
-  const r0 = await api.request.post(B + '/api/public/marina-schleibucht/anfragen', { data: { eigner: { name: 'Jens Petersen', email: 'jens@example.de', plz: '24376', sprache: 'de' },
-    kalkulation: { land: 'DE', flaeche_m2: 33, preis_netto_von: 3480, preis_netto_bis: 4430, preis_brutto_von: 4140, preis_brutto_bis: 5270, paket: 'af', material: 'gfk', tage: '4-5', boot: { lwl: 8.5, breite: 3.0, tiefgang: 0.9, rumpf: 'motorboot', zustand: 'mittel' } }, wunschtermin: '2027-03-15', medien: [] } });
+  /* Pilotpartner als Video-Konten anlegen (nur auf dem Aufnahme-Server) */
+  const neuesKonto = async (name, email, extra) => { const c = await (await chromium.launch()).newContext();
+    await c.request.post(B + '/api/auth/register', { data: { name, email, passwort: 'demo1234', land: SZ.land, sprache: LANG, rolle: extra.rolle } });
+    await c.request.put(B + '/api/partner', { data: extra.daten }); await c.request.post(B + '/api/live', { data: { agb: true, avv: true } }); return (await (await c.request.get(B + '/api/partner')).json()); };
+  const testStart = new Date(Date.now() - 9 * 864e5).toISOString().slice(0, 10);
+  if (SZ.neu) {
+    const m = await neuesKonto(SZ.marina.name, SZ.marina.email, { rolle: 'vermittler', daten: { farbe: SZ.marina.farbe, kontakt: SZ.marina.kontakt, test: { start: testStart, wochen: 6 }, region: { plz: [SZ.plz[0].slice(0, 2)] } } });
+    SZ.marina.slug = (m.partner || m).slug;
+    if (SZ.laser.neu) {
+      const l = await neuesKonto(SZ.laser.name, SZ.laser.email, { rolle: 'ausfuehrend', daten: { farbe: '#1F6E4A', region: { name: '', plz: SZ.laser.plz } } });
+      const adm = await (await chromium.launch()).newContext(); await adm.request.post(B + '/api/auth/login', { data: { email: 'admin@boatsdoc.com', passwort: 'demo1234' } });
+      await adm.request.put(B + '/api/admin/partner/' + (l.partner || l).id, { data: { gebietsschutz: true } });
+    }
+  }
+  const r0 = await api.request.post(B + '/api/public/' + SZ.marina.slug + '/anfragen', { data: { eigner: { name: SZ.namen[0], email: 'kunde1@example.com', plz: SZ.plz[0], sprache: LANG },
+    kalkulation: { land: SZ.land, flaeche_m2: 33, preis_netto_von: 3480, preis_netto_bis: 4430, preis_brutto_von: 4140, preis_brutto_bis: 5270, paket: 'af', material: 'gfk', tage: '4-5', boot: { lwl: 8.5, breite: 3.0, tiefgang: 0.9, rumpf: 'motorboot', zustand: 'mittel' } }, wunschtermin: '2027-03-15', medien: [] } });
   const a0 = await r0.json();
   const login = async (email) => { const c = await (await chromium.launch()).newContext(); await c.request.post(B + '/api/auth/login', { data: { email, passwort: 'demo1234' } }); return c; };
-  const mApi = await login('demo@marina-schleibucht.de');
+  const mApi = await login(SZ.marina.email);
   await mApi.request.post(B + '/api/anfragen/' + a0.id + '/angebot', { data: { festpreis_netto: 3900, termin: '2027-03-15', tage: 5 } });
   await api.request.post(B + '/api/angebot/' + a0.token + '/annehmen', { data: { zahlart: 'anzahlung' } });
   const fotos = [];
   for (const i of [1, 2, 3]) { const r = await api.request.put(B + '/api/upload?name=finnmaster-' + i + '.jpg', { headers: { 'Content-Type': 'image/jpeg' }, data: fs.readFileSync(MEDIA + '/finnmaster-' + i + '.jpg') }); fotos.push(await r.json()); }
-  await api.request.post(B + '/api/public/marina-schleibucht/anfragen', { data: { eigner: { name: 'Lars Brodersen', email: 'lars@example.de', plz: '24399', telefon: '+49 170 0000000', sprache: 'de', nachricht: 'Steht auf dem Trailer, Halle 2.' },
-    kalkulation: { land: 'DE', produkt: 'unterwasserschiff', flaeche_m2: 19.0, preis_netto_von: 2390, preis_netto_bis: 3040, preis_brutto_von: 2840, preis_brutto_bis: 3620, paket: 'af', material: 'gfk', tage: '3-4', boot: { lwl: 6.4, breite: 2.4, tiefgang: 0.6, rumpf: 'motorboot', zustand: 'stark' } },
+  await api.request.post(B + '/api/public/' + SZ.marina.slug + '/anfragen', { data: { eigner: { name: SZ.namen[1], email: 'kunde2@example.com', plz: SZ.plz[1], telefon: SZ.tel, sprache: LANG, nachricht: SZ.nachricht },
+    kalkulation: { land: SZ.land, produkt: 'unterwasserschiff', flaeche_m2: 19.0, preis_netto_von: 2390, preis_netto_bis: 3040, preis_brutto_von: 2840, preis_brutto_bis: 3620, paket: 'af', material: 'gfk', tage: '3-4', boot: { lwl: 6.4, breite: 2.4, tiefgang: 0.6, rumpf: 'motorboot', zustand: 'stark' } },
     wunschtermin: '2027-04-06', medien: fotos, bestaetigungen: { osmosefrei: true } } });
 
   /* ================= VIDEO 1: Eigner (Frontend) ================= */
   const c1 = await neueSeite(br, 'eigner'); const p = await c1.newPage();
-  await p.goto(B + '/kalkulator.html?p=marina-schleibucht&lang=' + LANG); await p.waitForSelector('body:not(.lade)'); await pause(p, 600);
+  await p.goto(B + '/kalkulator.html?p=' + SZ.marina.slug + '&lang=' + LANG); await p.waitForSelector('body:not(.lade)'); await pause(p, 600);
   await p.mouse.move(W / 2, H / 2);
   await cap(p, ...TX.caps[capNr++]); await pause(p, 3800);
   await cap(p, ...TX.caps[capNr++]); await klick(p, '#pkgChips .chip >> nth=0', { nach: 1400 });
@@ -106,7 +131,7 @@ async function neueSeite(br, name) {
   await klick(p, '#cal .cal-d.ok >> nth=8', { nach: 1500 });
   await scrolle(p, 330);
   await cap(p, ...TX.caps[capNr++]);
-  await tippe(p, '#lName', 'Anna Lindqvist'); await tippe(p, '#lEmail', 'anna.lindqvist@example.de'); await tippe(p, '#lPlz', '24376');
+  await tippe(p, '#lName', 'Anna Lindqvist'); await tippe(p, '#lEmail', 'anna.lindqvist@example.de'); await tippe(p, '#lPlz', SZ.plz[0]);
   await scrolle(p, 220);
   for (const c of await p.locator('#checks input').all()) await klick(p, c, { nach: 350 });
   await cap(p, ...TX.caps[capNr++]); await klick(p, '#leadBtn', { nach: 2400 });
@@ -133,7 +158,7 @@ async function neueSeite(br, name) {
   const c2 = await neueSeite(br, 'marina'); const q = await c2.newPage();
   await q.goto(B + '/partner.html'); await q.waitForSelector('#lgEmail'); await q.mouse.move(W / 2, H / 2);
   await cap(q, ...TX.caps[capNr++]); await pause(q, 2200);
-  await tippe(q, '#lgEmail', 'demo@marina-schleibucht.de', { delay: 35 }); await tippe(q, '#lgPw', 'demo1234', { delay: 60 });
+  await tippe(q, '#lgEmail', SZ.marina.email, { delay: 35 }); await tippe(q, '#lgPw', 'demo1234', { delay: 60 });
   await klick(q, '#loginForm button[type=submit]', { nach: 1500 }); await q.waitForSelector('.test');
   await cap(q, ...TX.caps[capNr++]);
   await zu(q, '.test .cmp'); await pause(q, 5200);
@@ -141,7 +166,7 @@ async function neueSeite(br, name) {
   await scrolle(q, -300);
   await cap(q, ...TX.caps[capNr++]); await klick(q, 'nav.side button[data-v=anfragen]', { nach: 1600 });
   await klick(q, '.chip[data-f=alle]', { nach: 1200 });
-  await klick(q, '.item:has-text("Lars Brodersen")', { nach: 1400 });
+  await klick(q, '.item:has-text("' + SZ.namen[1] + '")', { nach: 1400 });
   await q.waitForSelector('#drawerIn .photos');
   await cap(q, ...TX.caps[capNr++]);
   await q.locator('#drawerIn').evaluate(e => e.scrollTo({ top: e.querySelector('.photos').offsetTop - 120, behavior: 'smooth' })); await pause(q, 1200);
@@ -177,7 +202,7 @@ async function neueSeite(br, name) {
   /* Laser-Partner bestätigt und schließt ab */
   await cap(q, ...TX.caps[capNr++]); await klick(q, '#logout', { nach: 1200 });
   await q.waitForSelector('#lgEmail');
-  await tippe(q, '#lgEmail', 'demo@bootsservice-foerde.de', { delay: 30 }); await tippe(q, '#lgPw', 'demo1234', { delay: 50 }); await klick(q, '#loginForm button[type=submit]', { nach: 1500 });
+  await tippe(q, '#lgEmail', SZ.laser.email, { delay: 30 }); await tippe(q, '#lgPw', 'demo1234', { delay: 50 }); await klick(q, '#loginForm button[type=submit]', { nach: 1500 });
   await q.waitForSelector('.test');
   await klick(q, 'nav.side button[data-v=anfragen]', { nach: 1200 }); await klick(q, '.item:has-text("Anna Lindqvist")', { nach: 1400 });
   await cap(q, ...TX.caps[capNr++]); await pause(q, 2400);
