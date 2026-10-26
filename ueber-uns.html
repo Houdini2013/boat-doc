@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Boatsdoc · Über uns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{color-scheme:light; --paper:#EAECE8; --card:#FFFFFF; --ink:#10201F; --ink-2:#3D4F4E; --ink-3:#5F706D; --line:#CDD3CF; --deep:#12302F; --deep-ink:#E8EDE9; --deep-mut:#A9BCB6; --accent:#C24A21;
+  --f-disp:"Archivo",ui-sans-serif,system-ui,sans-serif; --f-body:"Source Sans 3",ui-sans-serif,system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:dark; --paper:#0B1614; --card:#132321; --ink:#E6EBE7; --ink-2:#B3C1BC; --ink-3:#8A9B96; --line:#2A3F3B; --deep:#06100E; --deep-ink:#E6EBE7; --deep-mut:#94A8A2; --accent:#E2714A}}
+:root[data-theme="dark"]{color-scheme:dark; --paper:#0B1614; --card:#132321; --ink:#E6EBE7; --ink-2:#B3C1BC; --ink-3:#8A9B96; --line:#2A3F3B; --deep:#06100E; --deep-ink:#E6EBE7; --deep-mut:#94A8A2; --accent:#E2714A}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--paper); color:var(--ink); font-family:var(--f-body); font-size:17px; line-height:1.55}
+h1,h2,h3{font-family:var(--f-disp); margin:0; letter-spacing:-.02em; line-height:1.1; text-wrap:balance}
+h1{font-size:clamp(2rem,5vw,3.2rem); font-weight:900} h2{font-size:1.6rem; font-weight:800} h3{font-size:1.15rem}
+p{margin:0} a{color:inherit} :focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.in{max-width:1080px; margin:0 auto; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{background:var(--deep); color:var(--deep-ink)} .top .in{display:flex; align-items:center; gap:14px; padding-block:12px}
+.brand{font-family:var(--f-disp); font-weight:900; text-decoration:none; display:flex; gap:9px; align-items:center} .brand i{width:11px; height:11px; background:var(--accent); transform:rotate(45deg); border-radius:2px; display:inline-block}
+.top a.back{margin-left:auto; color:var(--deep-mut); font-size:.9rem}
+.top select{background:transparent; color:var(--deep-ink); border:1px solid rgba(232,237,233,.3); border-radius:3px; padding:5px 8px; font:inherit; font-size:.82rem} .top select option{color:#10201F}
+.eye{font-family:var(--f-mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3)}
+main .in{padding-block:56px 72px; display:flex; flex-direction:column; gap:44px}
+.lead{font-size:1.12rem; color:var(--ink-2); max-width:62ch; margin-top:14px}
+.grid{display:grid; gap:14px} @media(min-width:820px){.grid{grid-template-columns:1fr 1fr}}
+.p{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:22px; display:flex; flex-direction:column; gap:8px}
+.p .role{font-family:var(--f-mono); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent)}
+.p p{color:var(--ink-2); font-size:.97rem} .p .where{font-size:.86rem; color:var(--ink-3)}
+.p.core{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.imp{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:22px; font-size:.95rem; line-height:1.7}
+footer{background:var(--deep); color:var(--deep-mut); font-size:.88rem} footer .in{padding-block:20px}
+</style></head><body>
+<header class="top"><div class="in"><a class="brand" href="index.html"><i></i>BOATSDOC</a><a class="back" href="index.html" data-t="back"></a><select id="lang" aria-label="Language"></select></div></header>
+<main><div class="in">
+  <div><div class="eye" data-t="eye"></div><h1 data-t="h"></h1><p class="lead" data-t="lead"></p></div>
+  <section><h2 data-t="ph" style="margin-bottom:16px"></h2><div class="grid" id="partner"></div></section>
+  <section id="impressum"><h2 data-t="ih" style="margin-bottom:16px"></h2>
+    <div class="imp"><b>ISC Industrie-Service-Czech GmbH</b><br>An den Wulzen 2–6, 15806 Zossen<br><span data-t="i_gf"></span><br><span data-t="i_tel"></span>: 03377 202730 · E-Mail: info@i-s-c-gmbh.de<br><span data-t="i_reg"></span>: Amtsgericht Potsdam, HRB 17870 P<br><span data-t="i_ust"></span>: DE 236116430<br><span data-t="i_ver"></span><br><br><span data-t="i_kontakt"></span>: partner@boatsdoc.eu</div>
+  </section>
+</div></main>
+<footer><div class="in" data-t="ft"></div></footer>
+<script>
+"use strict";
+const TX = {
+de:{sprache:"Deutsch",back:"← Zur Startseite",eye:"Über uns",h:"Wer hinter Boatsdoc steht",lead:"Boatsdoc verbindet Marinas, Werkstätten und Eigner über eine Plattform. Dahinter stehen Betriebe, die Strahltechnik, Beschichtung und Hafenbetrieb seit Jahren selbst machen.",ph:"Partner",ih:"Impressum",
+ i_gf:"Vertreten durch den Geschäftsführer Henry Czech",i_tel:"Telefon",i_reg:"Registergericht",i_ust:"USt-IdNr.",i_ver:"Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV: Henry Czech, Anschrift wie oben.",i_kontakt:"Anfragen zur Plattform",ft:"Boatsdoc · ein Angebot der ISC Industrie-Service-Czech GmbH, Zossen",
+ p:[["Kernfirma","ISC Industrie-Service-Czech GmbH","Strahltechnik in allen Verfahren: Trockeneis, Sand, Soda, Sponge-Jet, Laser. Über Jahre angewendet, verkauft und vermietet. ISC betreibt Boatsdoc.","Zossen bei Berlin",1],["Beschichtung","NautiCare","Generalimporteur von De IJssel Coatings für Deutschland, Österreich und die Schweiz. Liefert Antifouling und den kompletten Beschichtungsaufbau.","Krefeld",0],["Pilotpartner Schweden","GBM Marin","Werft und Marina an der Westküste Schwedens. Pilotbetrieb für Schweden.","Havstenssund, Bohuslän",0],["Pilotpartner Norwegen","Ravns Garage","Pilotbetrieb für Norwegen.","Norwegen",0],["Gerätefinanzierung","GRENKE","Leasing und Mietkauf für die Lasergeräte in Deutschland und den nordischen Ländern.","",0]]},
+en:{sprache:"English",back:"← Back to home",eye:"About us",h:"Who is behind Boatsdoc",lead:"Boatsdoc connects marinas, boatyards and owners on one platform. Behind it are businesses that have done blasting, coating and harbour operations themselves for years.",ph:"Partners",ih:"Legal notice (Impressum)",
+ i_gf:"Represented by managing director Henry Czech",i_tel:"Phone",i_reg:"Register court",i_ust:"VAT ID",i_ver:"Responsible for content under § 18(2) MStV: Henry Czech, address as above.",i_kontakt:"Platform enquiries",ft:"Boatsdoc · offered by ISC Industrie-Service-Czech GmbH, Zossen, Germany",
+ p:[["Core company","ISC Industrie-Service-Czech GmbH","Blasting technology in every process: dry ice, sand, soda, Sponge-Jet, laser. Applied, sold and rented out for years. ISC operates Boatsdoc.","Zossen near Berlin",1],["Coatings","NautiCare","General importer of De IJssel Coatings for Germany, Austria and Switzerland. Supplies antifouling and the full coating build-up.","Krefeld",0],["Pilot partner Sweden","GBM Marin","Boatyard and marina on the Swedish west coast. Pilot business for Sweden.","Havstenssund, Bohuslän",0],["Pilot partner Norway","Ravns Garage","Pilot business for Norway.","Norway",0],["Machine financing","GRENKE","Leasing and hire purchase for the laser machines in Germany and the Nordics.","",0]]},
+sv:{sprache:"Svenska",back:"← Till startsidan",eye:"Om oss",h:"Vem som står bakom Boatsdoc",lead:"Boatsdoc förbinder marinor, varv och båtägare på en plattform. Bakom står företag som själva arbetat med blästring, beläggning och hamndrift i många år.",ph:"Partner",ih:"Juridisk information (Impressum)",
+ i_gf:"Företrädd av verkställande direktör Henry Czech",i_tel:"Telefon",i_reg:"Registerdomstol",i_ust:"Momsreg.nr",i_ver:"Ansvarig för innehållet enligt § 18 st. 2 MStV: Henry Czech, adress enligt ovan.",i_kontakt:"Frågor om plattformen",ft:"Boatsdoc · ett erbjudande från ISC Industrie-Service-Czech GmbH, Zossen, Tyskland",
+ p:[["Kärnföretag","ISC Industrie-Service-Czech GmbH","Blästerteknik i alla metoder: torris, sand, soda, Sponge-Jet, laser. Använt, sålt och uthyrt i många år. ISC driver Boatsdoc.","Zossen nära Berlin",1],["Beläggning","NautiCare","Generalimportör av De IJssel Coatings för Tyskland, Österrike och Schweiz. Levererar bottenfärg och hela skiktuppbyggnaden.","Krefeld",0],["Pilotpartner Sverige","GBM Marin","Varv och marina på svenska västkusten. Pilotföretag för Sverige.","Havstenssund, Bohuslän",0],["Pilotpartner Norge","Ravns Garage","Pilotföretag för Norge.","Norge",0],["Maskinfinansiering","GRENKE","Leasing och avbetalning för lasermaskinerna i Tyskland och Norden.","",0]]},
+no:{sprache:"Norsk",back:"← Til forsiden",eye:"Om oss",h:"Hvem som står bak Boatsdoc",lead:"Boatsdoc knytter marinaer, verksteder og båteiere sammen på én plattform. Bak står bedrifter som selv har drevet med blåsing, belegg og havnedrift i mange år.",ph:"Partnere",ih:"Juridisk informasjon (Impressum)",
+ i_gf:"Representert ved daglig leder Henry Czech",i_tel:"Telefon",i_reg:"Registerdomstol",i_ust:"MVA-nr.",i_ver:"Ansvarlig for innholdet etter § 18 ledd 2 MStV: Henry Czech, adresse som over.",i_kontakt:"Spørsmål om plattformen",ft:"Boatsdoc · et tilbud fra ISC Industrie-Service-Czech GmbH, Zossen, Tyskland",
+ p:[["Kjernebedrift","ISC Industrie-Service-Czech GmbH","Blåseteknikk i alle metoder: tørris, sand, soda, Sponge-Jet, laser. Brukt, solgt og leid ut i mange år. ISC driver Boatsdoc.","Zossen ved Berlin",1],["Belegg","NautiCare","Generalimportør av De IJssel Coatings for Tyskland, Østerrike og Sveits. Leverer bunnstoff og hele oppbyggingen.","Krefeld",0],["Pilotpartner Sverige","GBM Marin","Verft og marina på den svenske vestkysten. Pilotbedrift for Sverige.","Havstenssund, Bohuslän",0],["Pilotpartner Norge","Ravns Garage","Pilotbedrift for Norge.","Norge",0],["Maskinfinansiering","GRENKE","Leasing og leiekjøp for lasermaskinene i Tyskland og Norden.","",0]]},
+da:{sprache:"Dansk",back:"← Til forsiden",eye:"Om os",h:"Hvem der står bag Boatsdoc",lead:"Boatsdoc forbinder havne, værfter og bådejere på én platform. Bag den står virksomheder, der selv har arbejdet med blæsning, belægning og havnedrift i mange år.",ph:"Partnere",ih:"Juridisk information (Impressum)",
+ i_gf:"Repræsenteret ved administrerende direktør Henry Czech",i_tel:"Telefon",i_reg:"Registerret",i_ust:"Momsnr.",i_ver:"Ansvarlig for indholdet efter § 18 stk. 2 MStV: Henry Czech, adresse som ovenfor.",i_kontakt:"Henvendelser om platformen",ft:"Boatsdoc · et tilbud fra ISC Industrie-Service-Czech GmbH, Zossen, Tyskland",
+ p:[["Kernevirksomhed","ISC Industrie-Service-Czech GmbH","Blæseteknik i alle metoder: tøris, sand, soda, Sponge-Jet, laser. Anvendt, solgt og udlejet i mange år. ISC driver Boatsdoc.","Zossen ved Berlin",1],["Belægning","NautiCare","Generalimportør af De IJssel Coatings for Tyskland, Østrig og Schweiz. Leverer bundmaling og hele lagopbygningen.","Krefeld",0],["Pilotpartner Sverige","GBM Marin","Værft og marina på den svenske vestkyst. Pilotvirksomhed for Sverige.","Havstenssund, Bohuslän",0],["Pilotpartner Norge","Ravns Garage","Pilotvirksomhed for Norge.","Norge",0],["Maskinfinansiering","GRENKE","Leasing og afbetaling af lasermaskinerne i Tyskland og Norden.","",0]]},
+fi:{sprache:"Suomi",back:"← Etusivulle",eye:"Meistä",h:"Kuka on Boatsdocin takana",lead:"Boatsdoc yhdistää satamat, telakat ja veneilijät yhdelle alustalle. Taustalla ovat yritykset, jotka ovat tehneet puhallustekniikkaa, pinnoitusta ja satamatoimintaa itse vuosia.",ph:"Kumppanit",ih:"Oikeudelliset tiedot (Impressum)",
+ i_gf:"Edustaja: toimitusjohtaja Henry Czech",i_tel:"Puhelin",i_reg:"Rekisterituomioistuin",i_ust:"ALV-tunniste",i_ver:"Sisällöstä vastaa MStV:n 18 §:n 2 mom. mukaan Henry Czech, osoite kuten yllä.",i_kontakt:"Alustaa koskevat kysymykset",ft:"Boatsdoc · tarjoaja ISC Industrie-Service-Czech GmbH, Zossen, Saksa",
+ p:[["Ydinyritys","ISC Industrie-Service-Czech GmbH","Puhallustekniikkaa kaikilla menetelmillä: kuivajää, hiekka, sooda, Sponge-Jet, laser. Käytetty, myyty ja vuokrattu vuosia. ISC ylläpitää Boatsdocia.","Zossen Berliinin lähellä",1],["Pinnoitteet","NautiCare","De IJssel Coatingsin päämaahantuoja Saksaan, Itävaltaan ja Sveitsiin. Toimittaa pohjamaalin ja koko pinnoitusrakenteen.","Krefeld",0],["Pilottikumppani Ruotsi","GBM Marin","Telakka ja satama Ruotsin länsirannikolla. Pilottiyritys Ruotsissa.","Havstenssund, Bohuslän",0],["Pilottikumppani Norja","Ravns Garage","Pilottiyritys Norjassa.","Norja",0],["Laiterahoitus","GRENKE","Leasing ja osamaksu laserlaitteille Saksassa ja Pohjoismaissa.","",0]]}
+};
+const SPR = Object.keys(TX); let L = "de";
+try { L = localStorage.getItem("bd_site_lang") || ""; } catch(_){}
+if (!SPR.includes(L)) { const n = (navigator.language||"de").slice(0,2); L = SPR.includes(n) ? n : (n === "nb" ? "no" : "en"); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function render(){
+  const T = TX[L]; document.documentElement.lang = L;
+  document.querySelectorAll("[data-t]").forEach(e => e.textContent = T[e.dataset.t]);
+  document.getElementById("lang").innerHTML = SPR.map(l => `<option value="${l}"${l===L?" selected":""}>${TX[l].sprache}</option>`).join("");
+  document.getElementById("partner").innerHTML = T.p.map(([r,n,d,w,k]) => `<div class="p${k?" core":""}"><span class="role">${esc(r)}</span><h3>${esc(n)}</h3><p>${esc(d)}</p>${w?`<span class="where">${esc(w)}</span>`:""}</div>`).join("");
+}
+document.getElementById("lang").onchange = e => { L = e.target.value; try { localStorage.setItem("bd_site_lang", L); } catch(_){} render(); };
+render();
+if (location.hash) setTimeout(() => { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }, 50);
+</script>
+</body></html>

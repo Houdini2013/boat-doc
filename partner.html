@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Boatsdoc Partner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: Arbeitsfläche einer Marina — schmale Navigation links, Arbeitsbereich rechts; auf dem Handy Reiter oben. */
+:root{
+  color-scheme: light;
+  --paper:#EAECE8; --card:#FFFFFF; --card-2:#F4F5F2;
+  --ink:#10201F; --ink-2:#3D4F4E; --ink-3:#647572;
+  --line:#CDD3CF; --line-2:#DFE3DF;
+  --deep:#12302F; --deep-ink:#E8EDE9;
+  --accent:#C24A21; --accent-soft:#F6E2D9;
+  --good:#256B4E; --good-soft:#DDEBE2; --warn:#8A5D0C; --warn-soft:#F4E8CF; --bad:#8C3A2E; --bad-soft:#F3DEDA; --info:#1F4E8C; --info-soft:#DCE6F3;
+  --f-disp:"Archivo", ui-sans-serif, system-ui, sans-serif;
+  --f-body:"Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme: dark;
+  --paper:#0B1614; --card:#132321; --card-2:#0F1D1B; --ink:#E6EBE7; --ink-2:#AFBDB8; --ink-3:#83948F;
+  --line:#2A3F3B; --line-2:#1C2E2B; --deep:#081210; --deep-ink:#E6EBE7; --accent:#E2714A; --accent-soft:#3A1F14;
+  --good:#5CB88C; --good-soft:#12291F; --warn:#D9A54A; --warn-soft:#2E2410; --bad:#E08476; --bad-soft:#36191A; --info:#7FA8E0; --info-soft:#14223A;
+}}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#0B1614; --card:#132321; --card-2:#0F1D1B; --ink:#E6EBE7; --ink-2:#AFBDB8; --ink-3:#83948F;
+  --line:#2A3F3B; --line-2:#1C2E2B; --deep:#081210; --deep-ink:#E6EBE7; --accent:#E2714A; --accent-soft:#3A1F14;
+  --good:#5CB88C; --good-soft:#12291F; --warn:#D9A54A; --warn-soft:#2E2410; --bad:#E08476; --bad-soft:#36191A; --info:#7FA8E0; --info-soft:#14223A;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:60; background:var(--deep)}
+h1,h2,h3{font-family:var(--f-disp); margin:0; letter-spacing:-.02em; line-height:1.15; text-wrap:balance}
+h1{font-size:1.5rem; font-weight:800} h2{font-size:1.15rem; font-weight:700} h3{font-size:.98rem; font-weight:700}
+p{margin:0}
+button,input,select,textarea{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.num{font-family:var(--f-mono); font-variant-numeric:tabular-nums; letter-spacing:-.02em}
+.eye{font-family:var(--f-mono); font-size:.66rem; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3)}
+.muted{color:var(--ink-3)} .small{font-size:.85rem}
+
+/* Kopfzeile */
+.top{position:sticky; top:env(safe-area-inset-top,0px); z-index:50; background:var(--deep); color:var(--deep-ink)}
+.top-in{display:flex; align-items:center; gap:12px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-disp); font-weight:800; font-size:.95rem; display:flex; align-items:center; gap:8px; white-space:nowrap}
+.brand i{width:9px; height:9px; background:var(--accent); border-radius:2px; transform:rotate(45deg); display:inline-block}
+.who{font-size:.85rem; opacity:.85; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}
+.sp{flex:1}
+.top select,.top .tb{background:transparent; color:var(--deep-ink); border:1px solid color-mix(in srgb,var(--deep-ink) 30%,transparent); border-radius:3px; padding:5px 9px; font-size:.8rem; cursor:pointer}
+.top select option{color:#10201F}
+.top select{width:auto; max-width:140px}
+.demo-tag{font-family:var(--f-mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; background:var(--accent); color:#fff; padding:3px 7px; border-radius:2px}
+
+/* Gerüst */
+.shell{display:grid; grid-template-columns:1fr; max-width:1280px; margin:0 auto; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:18px 80px; gap:18px}
+@media(min-width:960px){.shell{grid-template-columns:210px 1fr; gap:26px; padding-top:26px}}
+nav.side{display:flex; gap:4px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none}
+@media(min-width:960px){nav.side{flex-direction:column; position:sticky; top:calc(env(safe-area-inset-top,0px) + 76px); align-self:start; overflow:visible}}
+nav.side button{display:flex; align-items:center; gap:8px; justify-content:space-between; white-space:nowrap; text-align:left; border:1px solid transparent; background:transparent; padding:8px 11px; border-radius:3px; cursor:pointer; color:var(--ink-2); font-weight:600; font-size:.9rem}
+nav.side button:hover{background:var(--card-2)}
+nav.side button[aria-current="page"]{background:var(--card); border-color:var(--line); color:var(--ink)}
+.badge{font-family:var(--f-mono); font-size:.68rem; background:var(--accent); color:#fff; border-radius:10px; padding:0 7px; line-height:1.6}
+main{min-width:0; display:flex; flex-direction:column; gap:18px}
+.head{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:10px}
+.head p{color:var(--ink-2); max-width:62ch; margin-top:4px}
+
+.panel{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:18px}
+.panel > h2 + p,.panel > h3 + p{margin-top:4px; color:var(--ink-2)}
+.grid{display:grid; gap:14px}
+@media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}}
+.stack{display:flex; flex-direction:column; gap:12px}
+.row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+
+/* Kennzahlen */
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden}
+.kpi{background:var(--card); padding:14px 15px}
+.kpi .v{font-family:var(--f-mono); font-variant-numeric:tabular-nums; font-size:1.4rem; font-weight:600; letter-spacing:-.03em; margin-top:3px; line-height:1.15}
+.kpi .s{font-size:.78rem; color:var(--ink-3); margin-top:2px}
+.kpi.hi .v{color:var(--good)}
+
+/* Testphase */
+.test{background:var(--deep); color:var(--deep-ink); border-radius:4px; padding:20px; display:grid; gap:16px}
+@media(min-width:860px){.test{grid-template-columns:1.1fr 1fr}}
+.test .eye{color:color-mix(in srgb,var(--deep-ink) 60%,transparent)}
+.test h2{color:var(--deep-ink)} .test p{color:color-mix(in srgb,var(--deep-ink) 82%,transparent)}
+.prog{height:8px; background:color-mix(in srgb,var(--deep-ink) 16%,transparent); border-radius:4px; overflow:hidden; margin-top:10px}
+.prog i{display:block; height:100%; background:var(--accent)}
+.cmp{display:grid; gap:8px}
+.cmp .c{border:1px solid color-mix(in srgb,var(--deep-ink) 22%,transparent); border-radius:3px; padding:10px 12px; display:grid; grid-template-columns:1fr auto; gap:2px 10px; align-items:baseline}
+.cmp .c b{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+.cmp .c small{grid-column:1/-1; color:color-mix(in srgb,var(--deep-ink) 68%,transparent); font-size:.78rem}
+.cmp .c.win{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 14%,transparent)}
+
+/* Status */
+.pill{display:inline-flex; align-items:center; gap:6px; font-family:var(--f-mono); font-size:.66rem; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:20px; white-space:nowrap; font-weight:500}
+.pill::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor}
+.st-neu{background:var(--info-soft); color:var(--info)}
+.st-angebot{background:var(--warn-soft); color:var(--warn)}
+.st-angenommen{background:var(--accent-soft); color:var(--accent)}
+.st-bestaetigt{background:var(--good-soft); color:var(--good)}
+.st-abgeschlossen{background:var(--card-2); color:var(--ink-2)}
+.st-abgelehnt,.st-storniert{background:var(--bad-soft); color:var(--bad)}
+.pipe{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px}
+.pipe button{all:unset; cursor:pointer; background:var(--card); border:1px solid var(--line); border-radius:4px; padding:12px; display:flex; flex-direction:column; gap:6px}
+.pipe button:hover{border-color:var(--ink-3)}
+.pipe b{font-family:var(--f-mono); font-size:1.5rem; font-weight:600}
+
+/* Liste */
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{border:1px solid var(--line); background:var(--card); border-radius:20px; padding:5px 12px; font-size:.82rem; cursor:pointer; color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.list{display:flex; flex-direction:column; border:1px solid var(--line); border-radius:4px; overflow:hidden; background:var(--line); gap:1px}
+.item{all:unset; box-sizing:border-box; cursor:pointer; background:var(--card); padding:13px 15px; display:grid; grid-template-columns:52px 1fr auto; gap:4px 14px; align-items:center}
+.item:hover{background:var(--card-2)}
+.item:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+.thumb{width:52px; height:52px; border-radius:3px; background:var(--card-2) center/cover; border:1px solid var(--line-2); grid-row:span 2; display:grid; place-items:center; color:var(--ink-3); font-size:.7rem}
+.item .t{font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.item .m{font-size:.82rem; color:var(--ink-3); min-width:0}
+.item .r{text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:5px; grid-row:span 2}
+.item .r .num{font-size:.9rem}
+.empty{padding:28px; text-align:center; color:var(--ink-3); background:var(--card)}
+
+/* Detail */
+.drawer{position:fixed; inset:0; z-index:70; display:flex; justify-content:flex-end; background:color-mix(in srgb,#000 40%,transparent)}
+.drawer[hidden]{display:none}
+.drawer .in{background:var(--paper); width:min(760px,100%); height:100%; overflow:auto; padding-block:calc(env(safe-area-inset-top,0px) + 16px) calc(env(safe-area-inset-bottom,0px) + 40px); padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); display:flex; flex-direction:column; gap:14px}
+.x{border:1px solid var(--line); background:var(--card); border-radius:3px; padding:6px 11px; cursor:pointer}
+.photos{display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:8px}
+.photos button{all:unset; cursor:zoom-in; aspect-ratio:4/3; border-radius:3px; background:var(--card-2) center/cover; border:1px solid var(--line); max-width:100%}
+.photos .vid{display:grid; place-items:center; font-size:.8rem; color:var(--ink-2); cursor:default}
+.dl{display:grid; grid-template-columns:140px 1fr; gap:6px 12px; font-size:.9rem}
+.dl dt{color:var(--ink-3); font-size:.82rem} .dl dd{margin:0; min-width:0; overflow-wrap:anywhere}
+.tl{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; font-size:.86rem}
+.tl li{display:grid; grid-template-columns:110px 1fr; gap:10px}
+.tl time{font-family:var(--f-mono); font-size:.75rem; color:var(--ink-3)}
+.lightbox{position:fixed; inset:0; z-index:90; background:rgba(0,0,0,.88); display:grid; place-items:center; padding:20px; cursor:zoom-out}
+.lightbox img{max-height:90vh; max-width:100%; border-radius:3px}
+
+/* Formulare */
+label.f{display:flex; flex-direction:column; gap:5px; font-size:.84rem; font-weight:600; color:var(--ink-2)}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],input[type=url],input[type=tel],select,textarea{width:100%; background:var(--card); border:1px solid var(--line); border-radius:3px; padding:8px 10px; font-weight:400; color:var(--ink)}
+textarea{min-height:80px; resize:vertical}
+input[type=color]{width:46px; height:36px; border:1px solid var(--line); border-radius:3px; background:var(--card); padding:2px}
+.hint{font-size:.78rem; color:var(--ink-3); font-weight:400}
+.btn{border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:3px; padding:9px 15px; font-weight:600; cursor:pointer; font-size:.9rem}
+.btn.acc{background:var(--accent); border-color:var(--accent); color:#fff}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+.btn.bad{background:transparent; color:var(--bad); border-color:var(--bad)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.note{border-left:3px solid var(--info); background:var(--info-soft); padding:10px 12px; border-radius:0 3px 3px 0; font-size:.88rem}
+.note.warn{border-color:var(--warn); background:var(--warn-soft)}
+.note.good{border-color:var(--good); background:var(--good-soft)}
+.err{color:var(--bad); font-size:.86rem}
+.price-row{display:grid; grid-template-columns:1fr 130px; gap:6px 12px; align-items:center; padding:10px 0; border-top:1px solid var(--line-2)}
+.price-row:first-of-type{border-top:0}
+.price-row .lbl{font-weight:600; font-size:.9rem}
+.price-row .rec{grid-column:1; font-size:.76rem; color:var(--ink-3)}
+.price-row .rec button{all:unset; cursor:pointer; color:var(--accent); text-decoration:underline; margin-left:6px}
+.price-row input{text-align:right; font-family:var(--f-mono)}
+.price-row .inp{grid-row:span 2; grid-column:2; display:flex; align-items:center; gap:6px}
+.price-row .u{font-size:.75rem; color:var(--ink-3); white-space:nowrap}
+.toggle{display:flex; align-items:center; gap:10px; padding:6px 0; font-size:.92rem; cursor:pointer}
+.toggle input{width:18px; height:18px; accent-color:var(--accent)}
+table.t{width:100%; border-collapse:collapse; font-size:.86rem}
+table.t th{text-align:left; font-family:var(--f-mono); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:500; padding:0 8px 8px 0}
+table.t td{padding:8px 8px 8px 0; border-top:1px solid var(--line-2); vertical-align:top}
+table.t td.n{text-align:right; font-family:var(--f-mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+.scroll{overflow-x:auto}
+.code{font-family:var(--f-mono); font-size:.78rem; background:var(--card-2); border:1px solid var(--line); border-radius:3px; padding:10px; white-space:pre-wrap; overflow-wrap:anywhere}
+.qr{background:#fff; padding:10px; border-radius:3px; width:180px; height:180px; border:1px solid var(--line)}
+.qr img,.qr canvas,.qr svg{width:100%; height:100%; display:block}
+.flyer{background:#fff; color:#10201F; border:1px solid var(--line); border-radius:3px; aspect-ratio:148/210; max-width:340px; width:100%; padding:22px; display:flex; flex-direction:column; gap:10px; position:relative; overflow:hidden}
+.flyer .fh{font-family:var(--f-disp); font-weight:800; font-size:1.35rem; line-height:1.1}
+.flyer .fs{font-size:.86rem; color:#3D4F4E}
+.flyer .fq{width:150px; height:150px; margin-top:auto}
+.flyer .fn{font-family:var(--f-mono); font-size:.62rem; letter-spacing:.12em; text-transform:uppercase}
+.flyer .bar{position:absolute; inset:0 0 auto 0; height:8px}
+.preview{border:1px solid var(--line); border-radius:4px; overflow:hidden; background:var(--card)}
+.preview iframe{width:100%; height:720px; border:0; display:block}
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom,0px) + 22px); background:var(--ink); color:var(--paper); padding:10px 16px; border-radius:3px; z-index:95; font-size:.9rem; box-shadow:0 6px 24px rgba(0,0,0,.2)}
+
+/* Anmeldung */
+.login{min-height:100vh; display:grid; place-items:center; padding-block:30px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login .box{width:min(460px,100%); display:flex; flex-direction:column; gap:16px}
+.demo-acc{display:grid; gap:8px}
+.demo-acc button{all:unset; box-sizing:border-box; cursor:pointer; background:var(--card); border:1px solid var(--line); border-radius:4px; padding:12px 14px; display:grid; grid-template-columns:1fr auto; gap:2px 10px}
+.demo-acc button:hover{border-color:var(--accent)}
+.demo-acc small{color:var(--ink-3); grid-column:1}
+.col{min-width:0; display:flex; flex-direction:column; gap:14px}
+.banner{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; border:1px solid var(--warn); background:var(--warn-soft); border-radius:4px; padding:10px 14px; font-size:.92rem}
+.banner.sb{border-color:var(--accent); background:var(--accent-soft)}
+.banner .btn{padding:6px 12px; font-size:.85rem}
+.banner span{flex:1; min-width:200px}
+.stp{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+.stp li{display:grid; grid-template-columns:34px 1fr auto; gap:4px 14px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:4px; padding:14px 16px}
+.stp li .nr{width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-family:var(--f-mono); font-size:.8rem; border:1.5px solid var(--line); color:var(--ink-2); grid-row:span 2}
+.stp li.ok .nr{background:var(--good); border-color:var(--good); color:#fff}
+.stp li.next{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.stp li .ds{grid-column:2; font-size:.86rem; color:var(--ink-3)}
+.stp li .ac{grid-row:span 2; grid-column:3}
+@media(max-width:620px){.stp li{grid-template-columns:34px 1fr}.stp li .ac{grid-column:2; grid-row:auto; justify-self:start; margin-top:6px}}
+.bar{height:8px; background:var(--line-2); border-radius:4px; overflow:hidden}
+.bar i{display:block; height:100%; background:var(--good)}
+.mini{display:inline-block; width:70px; height:6px; background:var(--line-2); border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:6px}
+.mini i{display:block; height:100%; background:var(--good)}
+tr.haengt td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.logo-prev{width:120px; height:60px; border:1px dashed var(--line); border-radius:3px; display:grid; place-items:center; background:var(--card-2) center/contain no-repeat; font-size:.75rem; color:var(--ink-3)}
+@media (prefers-reduced-motion:no-preference){.drawer .in{animation:sl .22s ease-out}@keyframes sl{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+</head><body>
+<div id="app"></div>
+<div class="drawer" id="drawer" hidden><div class="in" id="drawerIn" role="dialog" aria-modal="true"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="core.js"></script>
+<script src="store.js"></script>
+<script src="i18n-partner.js"></script>
+<script>
+"use strict";
+const B = window.Boatsdoc, C = B.core;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let L = "de";
+try { L = localStorage.getItem("bd_lang") || ((navigator.language||"de").slice(0,2) === "nb" ? "no" : (navigator.language||"de").slice(0,2)); } catch(_){}
+if (!C.SPRACHEN.includes(L)) L = "en";
+const t = (k, v) => { let s = (I18N_P[L] && I18N_P[L][k]) ?? I18N_P.de[k] ?? k; if (v) for (const [a,b] of Object.entries(v)) s = s.split("{"+a+"}").join(b); return s; };
+const LOC = {de:"de-DE", en:"en-GB", sv:"sv-SE", no:"nb-NO", da:"da-DK", fi:"fi-FI"};
+/* Geld: intern immer EUR, angezeigt und eingegeben in der Währung des Partnerlandes (SEK, NOK, DKK, EUR) */
+const WC = () => C.WAEHRUNG[(S.me && S.me.land) || "DE"] || "EUR";
+const KF = () => C.KURS[WC()] || 1;
+const SYM = () => WC() === "EUR" ? "€" : "kr";
+const inLokal = n => (Number(n)||0) * KF();
+const ausLokal = n => (Number(n)||0) / KF();
+const eur = (n, d) => { const dd = WC() === "EUR" ? (d ?? 0) : 0; return inLokal(n).toLocaleString(LOC[L], {style:"currency", currency:WC(), maximumFractionDigits:dd, minimumFractionDigits:dd}); };
+const zahl = n => nf(inLokal(n));
+const tw = k => t(k).split("€").join(SYM());
+const nf = (n, d) => (Number(n)||0).toLocaleString(LOC[L], {maximumFractionDigits:d ?? 0});
+const dat = s => s ? new Date(s.length <= 10 ? s + "T12:00:00" : s).toLocaleDateString(LOC[L], {day:"2-digit", month:"2-digit", year:"numeric"}) : "–";
+const datZ = s => s ? new Date(s).toLocaleString(LOC[L], {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}) : "";
+function toast(msg){ const d = document.createElement("div"); d.className = "toast"; d.textContent = msg; document.body.appendChild(d); setTimeout(()=>d.remove(), 2600); }
+async function copy(text, btn){ try { await navigator.clipboard.writeText(text); toast(t("kopiert")); } catch(_) { const r = document.createRange(); const el = btn && btn.previousElementSibling; if (el){ r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } toast(t("markiert")); } }
+
+const S = { me:null, view:"uebersicht", filter:"offen", anfragen:[], sel:null };
+try { const h = location.hash.slice(1); if (h) S.view = h; } catch(_){}
+
+/* ---------- Start ---------- */
+async function start(){
+  await B.init();
+  try { S.me = (await B.call("GET","/api/me")).partner; } catch(_){ S.me = null; }
+  if (S.me && I18N_P[S.me.sprache] && !localStorage.getItem("bd_lang")) L = S.me.sprache;
+  if (S.me && !location.hash && S.me.modus !== "live") S.view = "start";
+  const ein = /^#einladung=([a-z0-9]+)$/.exec(location.hash);
+  if (ein) return renderEinladung(ein[1]);
+  S.me ? await zeige(S.view) : renderLogin();
+}
+/* Einladung: Partner setzt E-Mail und Passwort selbst (Sales hat den Zugang vorbereitet) */
+async function renderEinladung(token){
+  let info; try { info = await B.call("GET","/api/einladung/"+token); } catch(x){ return renderLogin(x.message); }
+  if (I18N_P[info.sprache] && !localStorage.getItem("bd_lang")) L = info.sprache;
+  $("#app").innerHTML = `<div class="login"><div class="box">
+    <div class="row" style="justify-content:space-between"><div class="brand" style="color:var(--ink)"><i></i>BOATSDOC <span class="muted" style="font-weight:600">Partner</span></div>${langSel()}</div>
+    <h1 style="margin-top:18px">${t("ei_h",{n:esc(info.name)})}</h1><p class="muted">${t("ei_p")}</p>
+    <form id="eiF" class="stack"><label class="f">E-Mail<input type="email" id="eiMail" required autocomplete="email"></label>
+      <label class="f">${t("passwort")}<input type="password" id="eiPw" minlength="8" required autocomplete="new-password"></label>
+      <p class="hint" id="eiErr" style="color:var(--accent)"></p><button class="btn acc" type="submit">${t("ei_btn")}</button></form></div></div>`;
+  bindLang();
+  $("#eiF").onsubmit = async e => { e.preventDefault();
+    try { const r = await B.call("POST","/api/einladung/"+token,{email:$("#eiMail").value, passwort:$("#eiPw").value}); S.me = r.partner; history.replaceState(null,"",location.pathname); zeige(S.me.modus !== "live" ? "start" : "uebersicht"); }
+    catch(x){ $("#eiErr").textContent = x.message; } };
+}
+
+/* ---------- Anmeldung ---------- */
+function renderLogin(err){
+  const demo = B.modus === "demo";
+  $("#app").innerHTML = `<div class="login"><div class="box">
+    <div class="row" style="justify-content:space-between"><div class="brand" style="color:var(--ink)"><i></i>BOATSDOC <span class="muted" style="font-weight:600">Partner</span></div>${langSel()}</div>
+    <div><h1>${t("login_h")}</h1><p class="muted" style="margin-top:6px">${t("login_p")}</p></div>
+    ${demo ? `<div class="stack"><div class="eye">${t("demo_konten")}</div><div class="demo-acc">
+      ${[["demo@marina-schleibucht.de","Marina Schleibucht",t("rolle_vermittler")],["demo@bootsservice-foerde.de","Bootsservice Förde",t("rolle_ausfuehrend")],["demo@bohusvarvet.se","Bohusvarvet (SE)",t("rolle_ausfuehrend")],["admin@boatsdoc.com","Boatsdoc",t("admin")]]
+        .map(([e,n,r])=>`<button type="button" data-demo="${e}"><b>${n}</b><span class="pill st-neu">${r}</span><small>${e}</small></button>`).join("")}
+    </div><p class="hint">${t("demo_hinweis")}</p></div>` : ""}
+    <div class="note good">${t("kein_zugang")} <a href="index.html#testen"><b>${t("jetzt_testen")} →</b></a></div>
+    <form class="panel stack" id="loginForm">
+      <label class="f">${t("email")}<input type="email" id="lgEmail" autocomplete="username" required></label>
+      <label class="f">${t("passwort")}<input type="password" id="lgPw" autocomplete="current-password" required></label>
+      ${err ? `<div class="err">${esc(err)}</div>` : ""}
+      <div class="row"><button class="btn acc" type="submit">${t("anmelden")}</button><button class="btn ghost" type="button" id="toReg">${t("konto_anlegen")}</button></div>
+    </form>
+    <form class="panel stack" id="regForm" hidden>
+      <h2>${t("konto_anlegen")}</h2>
+      <label class="f">${t("firmenname")}<input type="text" id="rgName" required></label>
+      <label class="f">${t("email")}<input type="email" id="rgEmail" required></label>
+      <label class="f">${t("passwort")}<input type="password" id="rgPw" minlength="8" required><span class="hint">${t("pw_hint")}</span></label>
+      <div class="grid g2"><label class="f">${t("land")}<select id="rgLand">${landOpts("DE")}</select></label>
+      <label class="f">${t("rolle")}<select id="rgRolle"><option value="vermittler">${t("rolle_vermittler")}</option><option value="ausfuehrend">${t("rolle_ausfuehrend")}</option></select></label></div>
+      <div class="row"><button class="btn acc" type="submit">${t("konto_anlegen")}</button><button class="btn ghost" type="button" id="toLogin">${t("zurueck")}</button></div>
+    </form>
+  </div></div>`;
+  bindLang();
+  document.querySelectorAll("[data-demo]").forEach(b => b.onclick = () => login(b.dataset.demo, "demo1234"));
+  $("#loginForm").onsubmit = e => { e.preventDefault(); login($("#lgEmail").value, $("#lgPw").value); };
+  $("#toReg").onclick = () => { $("#loginForm").hidden = true; $("#regForm").hidden = false; };
+  $("#toLogin").onclick = () => { $("#loginForm").hidden = false; $("#regForm").hidden = true; };
+  $("#regForm").onsubmit = async e => { e.preventDefault();
+    try { const r = await B.call("POST","/api/auth/register",{name:$("#rgName").value, email:$("#rgEmail").value, passwort:$("#rgPw").value, land:$("#rgLand").value, rolle:$("#rgRolle").value, sprache:L});
+      S.me = r.partner; zeige("start"); } catch(x){ renderLogin(x.message); } };
+}
+async function login(email, pw){
+  try { const r = await B.call("POST","/api/auth/login",{email, passwort:pw}); S.me = r.partner; let gewaehlt = null; try { gewaehlt = localStorage.getItem("bd_lang"); } catch(_){} if (!gewaehlt && I18N_P[S.me.sprache]) { L = S.me.sprache; } zeige(S.me.modus !== "live" ? "start" : "uebersicht"); }
+  catch(x){ renderLogin(x.message); }
+}
+const landOpts = sel => ["DE","SE","NO","DK","FI"].map(c=>`<option value="${c}"${c===sel?" selected":""}>${landName(c)}</option>`).join("");
+function landName(c){ try { return new Intl.DisplayNames([LOC[L]],{type:"region"}).of(c); } catch(_){ return c; } }
+const langSel = () => `<select id="langSel" aria-label="Sprache">${C.SPRACHEN.map(l=>`<option value="${l}"${l===L?" selected":""}>${I18N_P[l].sprachname}</option>`).join("")}</select>`;
+function bindLang(){ const s = $("#langSel"); if (s) s.onchange = () => { L = s.value; try{localStorage.setItem("bd_lang",L);}catch(_){} S.me ? zeige(S.view) : renderLogin(); }; }
+
+/* ---------- Gerüst ---------- */
+const VIEWS = ["uebersicht","anfragen","preise","teilen","finanzierung","abrechnung","konto"];
+const views = () => (S.me && S.me.modus !== "live" ? ["start"] : []).concat(VIEWS, S.me && S.me.admin ? ["admin"] : []);
+async function zeige(v){
+  if (!views().includes(v)) v = S.me.modus !== "live" ? "start" : "uebersicht";
+  if (v !== S.view) schliessen();
+  S.view = v;
+  try { history.replaceState(null, "", "#" + v); } catch(_){}
+  try { S.anfragen = await B.call("GET","/api/anfragen"); } catch(x){ if (x.status === 401){ S.me = null; return renderLogin(); } }
+  const neu = S.anfragen.filter(a => a.status === "neu" || (a.status === "angenommen" && ausf(a) === S.me.id)).length;
+  $("#app").innerHTML = `<header class="top"><div class="top-in">
+      <div class="brand"><i></i>BOATSDOC</div>${B.modus === "demo" ? `<span class="demo-tag">${t("demo")}</span>` : ""}
+      <div class="who">${esc(S.me.name)} · ${S.me.rolle === "ausfuehrend" ? t("rolle_ausfuehrend") : t("rolle_vermittler")}</div><div class="sp"></div>
+      ${langSel()}<button class="tb" id="logout" type="button">${t("abmelden")}</button></div></header>
+    <div class="shell"><nav class="side" aria-label="${t("navigation")}">
+      ${views().map(k=>`<button type="button" data-v="${k}"${k===v?' aria-current="page"':""}>${t("nav_"+k)}${k==="anfragen" && neu ? `<span class="badge">${neu}</span>` : ""}</button>`).join("")}
+    </nav><div class="col"><div id="banner"></div><main id="main"></main></div></div>`;
+  bindLang();
+  $("#logout").onclick = async () => { await B.call("POST","/api/auth/logout"); S.me = null; renderLogin(); };
+  document.querySelectorAll("nav.side button").forEach(b => b.onclick = () => zeige(b.dataset.v));
+  banner();
+  await ({start:vStart, uebersicht:vUebersicht, anfragen:vAnfragen, preise:vPreise, teilen:vTeilen, finanzierung:vFinanzierung, abrechnung:vAbrechnung, konto:vKonto, admin:vAdmin})[v]();
+}
+const ausf = a => a.ausfuehrer_id || a.partner_id;
+const stPill = s => `<span class="pill st-${s}">${t("st_"+s)}</span>`;
+const wert = a => a.angebot ? a.angebot.festpreis_netto : a.kalkulation && a.kalkulation.preis_netto_von ? (a.kalkulation.preis_netto_von + a.kalkulation.preis_netto_bis)/2 : 0;
+function bootText(a){ const k = a.kalkulation || {}, b = k.boot || {};
+  const prod = k.produkt === "detailing" ? t("prod_det") + ": " + t("pk_"+(k.paket||"pflege")) : "";
+  const typ = {motorboot:t("motorboot"), kurzkieler:t("kurzkieler"), langkieler:t("langkieler")}[b.rumpf] || "";
+  return [prod, typ, b.lwl ? nf(b.lwl,1) + " m" : "", k.flaeche_m2 ? nf(k.flaeche_m2,1) + " m²" : ""].filter(Boolean).join(" · "); }
+
+/* ---------- Hinweisleiste: Probemodus / ungesicherter Zugang ---------- */
+function banner(){
+  const el = $("#banner"); if (!el) return;
+  if (S.me.modus === "live") { el.innerHTML = ""; return; }
+  el.innerHTML = S.me.sandbox
+    ? `<div class="banner sb"><span>${t("ban_sandbox")}</span><button class="btn acc" type="button" id="banGo">${t("ban_sandbox_btn")}</button></div>`
+    : `<div class="banner"><span>${t("ban_probe")}</span><button class="btn" type="button" id="banGo">${t("ban_probe_btn")}</button></div>`;
+  $("#banGo").onclick = () => { S.scrollZu = S.me.sandbox ? "kontoForm" : "liveForm"; S.view === "start" ? vStart() : zeige("start"); };
+}
+
+/* ---------- Startassistent ---------- */
+async function vStart(){
+  const u = await B.call("GET","/api/uebersicht"), st = u.start, p = S.me = await B.call("GET","/api/partner");
+  const fertig = st.schritte.filter(x => x.erledigt).length, naechster = (st.schritte.find(x => !x.erledigt) || {}).k;
+  const link = B.url("kalkulator.html",{p:p.slug}), probe = B.url("kalkulator.html",{p:p.slug, probe:1});
+  const aktion = {
+    profil: `<button class="btn ghost" type="button" data-go="teilen">${t("s_profil_btn")}</button>`,
+    preise: `<button class="btn ghost" type="button" data-go="preise">${t("s_preise_btn")}</button>`,
+    rechner: `<a class="btn ghost" href="${esc(link)}" target="_blank" rel="noopener" data-mark="rechner">${t("s_rechner_btn")} ↗</a>`,
+    probeanfrage: `<a class="btn ghost" href="${esc(probe)}" target="_blank" rel="noopener">${t("s_probeanfrage_btn")} ↗</a>`,
+    angebot: `<button class="btn ghost" type="button" data-go="anfragen">${t("s_angebot_btn")}</button>`,
+    teilen: `<button class="btn ghost" type="button" data-go="teilen">${t("s_teilen_btn")}</button>`
+  };
+  $("#main").innerHTML = `<div class="head"><div><div class="eye">${t("nav_start")}</div><h1>${t("st_h",{n:esc(p.name)})}</h1><p>${t("st_p")}</p></div></div>
+    <div class="stack" style="gap:6px"><div class="row" style="justify-content:space-between"><b>${t("st_fort",{x:fertig, y:st.schritte.length})}</b><span class="small muted">${t("st_zeit")}</span></div><div class="bar"><i style="width:${Math.round(fertig/st.schritte.length*100)}%"></i></div></div>
+    <ol class="stp">${st.schritte.map((x,i)=>`<li class="${x.erledigt?"ok":x.k===naechster?"next":""}"><span class="nr">${x.erledigt?"✓":i+1}</span><b>${t("s_"+x.k+"_h")}</b><span class="ac">${aktion[x.k]}</span><span class="ds">${t("s_"+x.k+"_p")}</span></li>`).join("")}</ol>
+    ${p.sandbox ? `<form class="panel stack" id="kontoForm"><h2>${t("ks_h")}</h2><p class="muted">${t("ks_p")}</p>
+        <div class="grid g3"><label class="f">${t("email")}<input type="email" id="ksMail" autocomplete="email" required></label>
+        <label class="f">${t("passwort")}<input type="password" id="ksPw" minlength="8" autocomplete="new-password" required><span class="hint">${t("pw_hint")}</span></label>
+        <label class="f">${t("telefon")}<input type="tel" id="ksTel" autocomplete="tel"><span class="hint">${t("ks_tel_hint")}</span></label></div>
+        <div class="row"><button class="btn acc" type="submit">${t("ks_btn")}</button><span class="err" id="ksErr"></span></div></form>`
+      : `<form class="panel stack" id="liveForm"><h2>${t("live_h")}</h2><p class="muted">${t("live_p")}</p>
+        <label class="toggle"><input type="checkbox" id="lvAgb" required><span>${t("live_agb")}</span></label>
+        <label class="toggle"><input type="checkbox" id="lvAvv" required><span>${t("live_avv")}</span></label>
+        <div class="note">${t("live_zahlung")}</div>
+        <div class="row"><button class="btn acc" type="submit">${t("live_btn")}</button><span class="err" id="lvErr"></span></div></form>`}`;
+  document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { if (b.dataset.go === "anfragen") S.filter = "offen"; zeige(b.dataset.go); });
+  document.querySelectorAll("[data-mark]").forEach(a => a.addEventListener("click", () => { B.call("POST","/api/schritt/"+a.dataset.mark).catch(()=>{}); }));
+  const kf = $("#kontoForm");
+  if (kf) kf.onsubmit = async e => { e.preventDefault();
+    try { S.me = await B.call("POST","/api/konto/sichern",{email:$("#ksMail").value, passwort:$("#ksPw").value, telefon:$("#ksTel").value}); toast(t("gespeichert")); zeige("start"); }
+    catch(x){ $("#ksErr").textContent = x.message; } };
+  const lf = $("#liveForm");
+  if (lf) lf.onsubmit = async e => { e.preventDefault();
+    try { S.me = await B.call("POST","/api/live",{agb:$("#lvAgb").checked, avv:$("#lvAvv").checked}); toast(t("live_ok_toast")); zeige("uebersicht"); }
+    catch(x){ $("#lvErr").textContent = x.message; } };
+  if (S.scrollZu && $("#"+S.scrollZu)) { $("#"+S.scrollZu).scrollIntoView({behavior:"smooth", block:"center"}); S.scrollZu = null; }
+}
+/* Zurück aus dem Rechner-Tab: Fortschritt neu laden */
+addEventListener("focus", () => {
+  if (!S.me) return;
+  if (!$("#drawer").hidden && S.sel) { oeffne(S.sel.id).catch(()=>{}); return; }   // offene Anfrage aktuell halten (z. B. Eigner hat inzwischen angenommen)
+  if (S.view === "start") vStart().catch(()=>{});
+});
+
+/* ---------- Übersicht ---------- */
+async function vUebersicht(){
+  const u = await B.call("GET","/api/uebersicht"), T = u.test;
+  const tag = Math.max(0, Math.min(42, Math.floor((Date.now() - new Date(T.start+"T00:00:00"))/864e5)));
+  const g = T.geraete, deck500 = T.umsatz_gebucht / g.bd500.jahresrate, deck1000 = T.umsatz_gebucht / g.bd1000.jahresrate;
+  const zZiel = S.me.rolle === "ausfuehrend";
+  $("#main").innerHTML = `
+    <div class="head"><div><div class="eye">${esc(S.me.name)}</div><h1>${t("nav_uebersicht")}</h1></div>
+      <a class="btn ghost" href="${B.url("kalkulator.html",{p:S.me.slug})}" target="_blank" rel="noopener">${t("rechner_oeffnen")} ↗</a></div>
+    <section class="test">
+      <div class="stack">
+        <div class="eye">${t("test_eye")}</div>
+        <h2>${t("test_h", {tag:tag, gesamt:42})}</h2>
+        <p>${t(zZiel ? "test_p_laser" : "test_p", {ende:dat(T.ende)})}</p>
+        <div class="prog" aria-hidden="true"><i style="width:${Math.round(tag/42*100)}%"></i></div>
+        <div class="row small" style="gap:18px"><span>${t("anfragen")}: <b class="num">${T.anfragen}</b></span><span>${t("gebucht")}: <b class="num">${T.gebucht}</b></span><span>${t("umsatz_gebucht")}: <b class="num">${eur(T.umsatz_gebucht)}</b></span></div>
+      </div>
+      <div class="cmp">
+        <div class="eye">${t("test_vergleich")}</div>
+        <div class="c ${deck500 < 1 ? "win" : ""}"><span>${t("vermitteln")}</span><b>${eur(T.provision_bei_weitergabe)}</b><small>${t("vermitteln_s")}</small></div>
+        <div class="c ${deck500 >= 1 && deck1000 < 1 ? "win" : ""}"><span>${t("selbst")} BD-500</span><b>${nf(deck500*100)} %</b><small>${t("deckung_s", {rate:eur(g.bd500.monatsrate), jahr:eur(g.bd500.jahresrate)})}</small></div>
+        <div class="c ${deck1000 >= 1 ? "win" : ""}"><span>${t("selbst")} BD-1000</span><b>${nf(deck1000*100)} %</b><small>${t("deckung_s", {rate:eur(g.bd1000.monatsrate), jahr:eur(g.bd1000.jahresrate)})}</small></div>
+      </div>
+    </section>
+    <div class="pipe">${["neu","angebot","angenommen","bestaetigt","abgeschlossen"].map(s=>`<button type="button" data-f="${s}">${stPill(s)}<b>${u.zaehler[s]}</b></button>`).join("")}</div>
+    <div class="kpis">
+      <div class="kpi"><div class="eye">${t("reserviert")}</div><div class="v">${eur(u.reserviert)}</div><div class="s">${t("reserviert_s")}</div></div>
+      <div class="kpi"><div class="eye">${t("offen_wert")}</div><div class="v">${eur(T.umsatz_offen)}</div><div class="s">${t("offen_wert_s")}</div></div>
+      <div class="kpi"><div class="eye">${t("gebiet")}</div><div class="v" style="font-size:1rem">${u.gebietsschutz_bis ? t("schutz_bis",{d:dat(u.gebietsschutz_bis)}) : t("kein_schutz")}</div><div class="s">${esc(S.me.region && S.me.region.name || "")}</div></div>
+    </div>
+    <section class="stack"><div class="row" style="justify-content:space-between"><h2>${t("neueste")}</h2><button class="btn ghost" type="button" id="alle">${t("alle_anfragen")}</button></div>
+      ${liste(S.anfragen.slice(0,5))}</section>`;
+  document.querySelectorAll(".pipe button").forEach(b => b.onclick = () => { S.filter = b.dataset.f; zeige("anfragen"); });
+  $("#alle").onclick = () => { S.filter = "offen"; zeige("anfragen"); };
+  bindListe();
+}
+
+/* ---------- Anfragen ---------- */
+function liste(arr){
+  if (!arr.length) return `<div class="list"><div class="empty">${t("keine_anfragen")}<br><span class="small">${t("keine_anfragen_s")}</span></div></div>`;
+  return `<div class="list">${arr.map(a=>{
+    const f = (a.medien||[]).find(m=>m.typ==="foto" && m.url);
+    const fremd = a.partner_id !== S.me.id ? t("von_marina",{n:esc(a.partner_name)}) : a.ausfuehrer_id ? t("bei_laser",{n:esc(a.ausfuehrer_name)}) : "";
+    return `<button class="item" type="button" data-id="${a.id}">
+      <span class="thumb" style="${f ? `background-image:url('${esc(f.url)}')` : ""}">${f ? "" : (a.medien||[]).length ? "▶" : "—"}</span>
+      <span class="t">${esc(a.eigner.name)}</span>
+      <span class="r">${a.probe ? `<span class="pill st-abgeschlossen">${t("probe_pill")}</span>` : ""}${stPill(a.status)}<span class="num">${a.angebot ? eur(a.angebot.festpreis_netto) : a.kalkulation && a.kalkulation.preis_netto_von ? eur(a.kalkulation.preis_netto_von)+"–"+zahl(a.kalkulation.preis_netto_bis) : ""}</span></span>
+      <span class="m">${esc(bootText(a))} · ${t("wunsch")} ${dat(a.wunschtermin)} · ${(a.medien||[]).length} ${t("medien")}${fremd ? " · " + fremd : ""}</span>
+    </button>`; }).join("")}</div>`;
+}
+function bindListe(){ document.querySelectorAll(".item[data-id]").forEach(b => b.onclick = () => oeffne(b.dataset.id)); }
+async function vAnfragen(){
+  const F = {offen:a=>C.OFFEN.includes(a.status), neu:a=>a.status==="neu", angebot:a=>a.status==="angebot", angenommen:a=>a.status==="angenommen", bestaetigt:a=>a.status==="bestaetigt", abgeschlossen:a=>a.status==="abgeschlossen", alle:()=>true};
+  if (!F[S.filter]) S.filter = "offen";
+  $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_anfragen")}</h1><p>${t("anfragen_p")}</p></div></div>
+    <div class="chips">${Object.keys(F).map(k=>`<button class="chip" type="button" data-f="${k}" aria-pressed="${k===S.filter}">${k==="offen"||k==="alle" ? t("f_"+k) : t("st_"+k)} <span class="muted">${S.anfragen.filter(F[k]).length}</span></button>`).join("")}</div>
+    ${liste(S.anfragen.filter(F[S.filter]))}`;
+  document.querySelectorAll(".chip").forEach(b => b.onclick = () => { S.filter = b.dataset.f; vAnfragen(); });
+  bindListe();
+}
+
+/* ---------- Detail ---------- */
+async function oeffne(id){
+  const a = await B.call("GET","/api/anfragen/"+id);
+  S.sel = a;
+  const k = a.kalkulation || {}, b = k.boot || {}, ich = S.me.id, binIchAusf = ausf(a) === ich, binIchMarina = a.partner_id === ich;
+  const mitte = Math.round(wert(a)/10)*10;
+  const satz = C.MWST[k.land || S.me.land] ?? 0.19;
+  const aktionen = [];
+  if (["neu","angebot"].includes(a.status) && (binIchMarina || binIchAusf)) aktionen.push(`
+    <form class="panel stack" id="fAngebot"><h3>${a.status === "angebot" ? t("angebot_aendern") : t("angebot_h")}</h3><p class="small muted">${t("angebot_p")}</p>
+      <div class="grid g3"><label class="f">${tw("festpreis_netto")}<input type="number" id="anNetto" min="0" step="1" value="${Math.round(inLokal(a.angebot ? a.angebot.festpreis_netto : mitte))}" required></label>
+      <label class="f">${t("termin")}<input type="date" id="anTermin" value="${(a.angebot && a.angebot.termin) || a.wunschtermin || ""}" required></label>
+      <label class="f">${t("dauer_tage")}<input type="number" id="anTage" min="1" max="30" value="${(a.angebot && a.angebot.tage) || (String(k.tage||"").split("-")[1]) || 3}"></label></div>
+      <label class="f">${t("notiz")}<textarea id="anNotiz" placeholder="${t("notiz_ph")}">${esc(a.angebot ? a.angebot.notiz : "")}</textarea></label>
+      <div class="note" id="anCalc"></div>
+      <div class="row"><button class="btn acc" type="submit">${t("angebot_senden")}</button><span class="err" id="anErr"></span></div></form>`);
+  if (binIchMarina && ["neu","angebot","angenommen"].includes(a.status) && !(a.ausfuehrer_id)) aktionen.push(`
+    <div class="panel stack"><h3>${t("weitergeben_h")}</h3><p class="small muted">${a.exklusiv ? t("weitergeben_exkl") : t("weitergeben_p")}</p>
+      ${a.laserpartner.length ? `<div class="row"><select id="wgZiel" style="max-width:340px">${a.laserpartner.map(x=>`<option value="${x.id}">${esc(x.name)}${x.region && x.region.name ? " · " + esc(x.region.name) : ""}${x.geschuetzt ? " · " + t("geschuetzt") : ""}</option>`).join("")}</select>
+      <button class="btn" type="button" id="wgBtn">${t("weitergeben")}</button></div>` : `<p class="small">${t("kein_laserpartner")}</p>`}
+      <p class="hint">${t("provision_hinweis")}</p></div>`);
+  if (a.status === "angenommen") aktionen.push(binIchAusf && S.me.rolle === "ausfuehrend"
+    ? `<div class="panel stack"><h3>${t("bestaetigen_h")}</h3><p class="small muted">${t("bestaetigen_p")}</p><div class="row"><button class="btn acc" type="button" id="bsBtn">${t("bestaetigen")}</button></div></div>`
+    : `<div class="note warn">${binIchAusf ? t("bestaetigen_kein_laser") : t("wartet_auf_ausf",{n:esc(a.ausfuehrer_name || "")})}</div>`);
+  if (a.status === "bestaetigt" && binIchAusf) aktionen.push(`<div class="panel stack"><h3>${t("abschliessen_h")}</h3><p class="small muted">${t("abschliessen_p")}</p><div class="row"><button class="btn acc" type="button" id="abBtn">${t("abschliessen")}</button></div></div>`);
+  if (["neu","angebot"].includes(a.status) && (binIchMarina || binIchAusf)) aktionen.push(`<details class="panel"><summary style="cursor:pointer;font-weight:600">${t("ablehnen_h")}</summary><div class="stack" style="margin-top:10px"><label class="f">${t("grund")}<input type="text" id="ablGrund"></label><div><button class="btn bad" type="button" id="ablBtn">${t("ablehnen")}</button></div></div></details>`);
+
+  const eignerLink = B.url("angebot.html",{t:a.token});
+  $("#drawerIn").innerHTML = `
+    <div class="row" style="justify-content:space-between"><div><div class="eye">${t("anfrage_vom",{d:dat(a.erstellt)})}</div><h2>${esc(a.eigner.name)}</h2></div><button class="x" type="button" id="dzu">${t("schliessen")} ✕</button></div>
+    <div class="row">${stPill(a.status)}${a.partner_id !== ich ? `<span class="pill st-abgeschlossen">${t("von_marina",{n:esc(a.partner_name)})}</span>` : ""}${a.ausfuehrer_id ? `<span class="pill st-abgeschlossen">${t("bei_laser",{n:esc(a.ausfuehrer_name)})}</span>` : ""}
+      ${a.zahlung ? `<span class="pill ${a.zahlung.status==="erstattet"?"st-storniert":a.zahlung.status==="gebunden"?"st-bestaetigt":"st-angenommen"}">${t("zahlung_"+a.zahlung.status)} · ${eur(a.zahlung.betrag)}</span>` : ""}</div>
+    ${aktionen.join("")}
+    <section class="panel stack"><h3>${t("fotos")}</h3>
+      ${(a.medien||[]).length ? `<div class="photos">${a.medien.map((m,i)=> m.typ==="foto" && m.url ? `<button type="button" data-img="${i}" style="background-image:url('${esc(m.url)}')" aria-label="${esc(m.name)}"></button>` : m.url ? `<video src="${esc(m.url)}" controls preload="metadata" style="width:100%;border-radius:3px"></video>` : `<div class="vid" style="aspect-ratio:4/3;border:1px solid var(--line);border-radius:3px;display:grid;place-items:center;font-size:.8rem;color:var(--ink-3);padding:8px;text-align:center">▶ ${esc(m.name)}</div>`).join("")}</div>` : `<p class="muted small">${t("keine_medien")}</p>`}
+    </section>
+    <section class="grid g2">
+      <div class="panel"><h3>${t("boot")}</h3><dl class="dl" style="margin-top:10px">
+        <dt>${t("rumpf")}</dt><dd>${esc(bootText(a)) || "–"}${a.groesse_freitext ? "<br>" + esc(a.groesse_freitext) : ""}</dd>
+        <dt>${t("masse")}</dt><dd class="num">${b.lwl ? `LWL ${nf(b.lwl,1)} · B ${nf(b.breite,1)} · T ${nf(b.tiefgang,1)} m` : "–"}</dd>
+        <dt>${t("material")}</dt><dd>${esc((k.material||"").toUpperCase())}</dd>
+        <dt>${t("zustand")}</dt><dd>${esc(t("z_"+(b.zustand||"mittel")))}</dd>
+        <dt>${t("paket")}</dt><dd>${esc(t(k.produkt === "detailing" ? "prod_det" : "prod_uws"))} · ${esc(t("pk_"+(k.paket||"af")))}${k.abo && k.abo.angefragt ? `<br><span class="pill st-angebot">${t("abo_angefragt")}</span>` : ""}</dd>
+        <dt>${t("richtpreis")}</dt><dd class="num">${k.preis_netto_von ? eur(k.preis_netto_von)+" – "+eur(k.preis_netto_bis)+" "+t("netto") : "–"}</dd>
+        <dt>${t("wunschtermin")}</dt><dd>${dat(a.wunschtermin)}</dd>
+      </dl></div>
+      <div class="panel"><h3>${t("kontakt")}</h3><dl class="dl" style="margin-top:10px">
+        <dt>${t("name")}</dt><dd>${esc(a.eigner.name)}</dd><dt>${t("email")}</dt><dd>${esc(a.eigner.email)}</dd>
+        <dt>${t("telefon")}</dt><dd>${esc(a.eigner.telefon) || "–"}</dd><dt>${t("plz")}</dt><dd>${esc(a.eigner.plz)}</dd>
+        <dt>${t("sprache")}</dt><dd>${esc((I18N_P[a.eigner.sprache]||{}).sprachname || a.eigner.sprache)}</dd>
+        ${a.eigner.nachricht ? `<dt>${t("nachricht")}</dt><dd>${esc(a.eigner.nachricht)}</dd>` : ""}
+      </dl>
+      ${a.bestaetigungen && a.bestaetigungen.osmosefrei ? `<p class="hint" style="margin-top:8px">✓ ${t("osmose_bestaetigt")}</p>` : ""}</div>
+    </section>
+    <section class="panel stack"><h3>${t("verlauf")}</h3><ol class="tl">${(a.verlauf||[]).map(v=>`<li><time>${datZ(v.t)}</time><span>${t("ev_"+v.ereignis, {von:esc(v.von), an:esc(v.an||"")})}${v.grund ? " · " + esc(v.grund) : ""}</span></li>`).join("")}</ol></section>
+    <section class="panel stack"><h3>${t("eignerseite")}</h3><p class="small muted">${t("eignerseite_p")}</p><div class="row"><span class="code" style="flex:1;min-width:0">${esc(eignerLink)}</span><button class="btn ghost" type="button" id="cpE">${t("kopieren")}</button><a class="btn ghost" href="${esc(eignerLink)}" target="_blank" rel="noopener">${t("oeffnen")} ↗</a></div></section>`;
+  $("#drawer").hidden = false; document.body.style.overflow = "hidden";
+  $("#dzu").onclick = schliessen; $("#dzu").focus();
+  $("#cpE").onclick = e => copy(eignerLink, e.target);
+  document.querySelectorAll("[data-img]").forEach(x => x.onclick = () => lightbox(a.medien[+x.dataset.img].url));
+  const neu = async (pfad, body) => { try { await B.call("POST", "/api/anfragen/"+a.id+pfad, body); toast(t("gespeichert")); await zeige(S.view); await oeffne(a.id); } catch(x){ toast(x.message); } };
+  const fA = $("#fAngebot");
+  if (fA){
+    const calc = () => { const n = ausLokal(+$("#anNetto").value || 0), br = n*(1+satz);
+      $("#anCalc").innerHTML = t("angebot_calc", {brutto:eur(br), mwst:nf(satz*100,1), anz:eur(br*C.ANZAHLUNG), geb:eur(n*C.GEBUEHR)}); };
+    $("#anNetto").oninput = calc; calc();
+    fA.onsubmit = async e => { e.preventDefault(); await neu("/angebot", {festpreis_netto:Math.round(ausLokal(+$("#anNetto").value)*100)/100, termin:$("#anTermin").value, tage:+$("#anTage").value, notiz:$("#anNotiz").value}); };
+  }
+  if ($("#wgBtn")) $("#wgBtn").onclick = () => neu("/weitergeben", {an:$("#wgZiel").value});
+  if ($("#bsBtn")) $("#bsBtn").onclick = () => neu("/bestaetigen");
+  if ($("#abBtn")) $("#abBtn").onclick = () => neu("/abschliessen");
+  if ($("#ablBtn")) $("#ablBtn").onclick = () => neu("/ablehnen", {grund:$("#ablGrund").value});
+}
+addEventListener("hashchange", () => { const h = location.hash.slice(1); if (S.me && h && h !== S.view) zeige(h); });
+function schliessen(){ $("#drawer").hidden = true; document.body.style.overflow = ""; }
+$("#drawer").addEventListener("click", e => { if (e.target.id === "drawer") schliessen(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { const lb = document.querySelector(".lightbox"); lb ? lb.remove() : schliessen(); } });
+function lightbox(src){ const d = document.createElement("div"); d.className = "lightbox"; d.innerHTML = `<img src="${esc(src)}" alt="">`; d.onclick = () => d.remove(); document.body.appendChild(d); }
+
+/* ---------- Preise ---------- */
+const PREISGRUPPEN = [
+  ["gr_abtrag", [["ruest","¤"],["laser_h","¤/h"],["laser_m2h","m²/h"],["km","¤/km"]]],
+  ["gr_aufbau", [["schliff_h","¤/h"],["primer_l","¤/l"],["af_l","¤/l"],["lack_l","¤/l"]]],
+  ["gr_angebot", [["spanne","± %"]]]
+];
+async function vPreise(){
+  const p = await B.call("GET","/api/partner"); S.me = p;
+  const E = C.PREIS_EMPFEHLUNG;
+  const geldFeld = k => !["laser_m2h","spanne"].includes(k);   // diese Felder sind Geld und werden umgerechnet
+  const zeige_ = (k, v) => geldFeld(k) ? Math.round(inLokal(v) * (k==="km" ? 100 : 1)) / (k==="km" ? 100 : 1) : v;
+  const row = ([k,u0]) => { const u = u0.replace("¤", SYM()); return `<div class="price-row"><span class="lbl">${t("pr_"+k)}</span>
+    <span class="inp"><input type="number" id="pr_${k}" step="${k==="km"||k==="laser_m2h"?"0.1":"1"}" min="0" value="${zeige_(k, p.preise[k])}"><span class="u">${u}</span></span>
+    <span class="rec">${t("empfehlung")} ${nf(zeige_(k,E[k].von), k==="km"||k==="laser_m2h"?2:0)}–${nf(zeige_(k,E[k].bis), k==="km"||k==="laser_m2h"?2:0)} ${u}<button type="button" data-rs="${k}">${t("uebernehmen")} ${nf(zeige_(k,E[k].wert), k==="km"||k==="laser_m2h"?2:0)}</button></span></div>`; };
+  $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_preise")}</h1><p>${t("preise_p")}</p></div></div>
+    <div class="grid" style="grid-template-columns:minmax(0,1fr)"><div class="grid g2" style="align-items:start">
+      <div class="stack">
+        ${PREISGRUPPEN.map(([g,f])=>`<section class="panel"><h3>${t(g)}</h3>${f.map(row).join("")}</section>`).join("")}
+        <section class="panel stack"><h3>${t("leistungen")}</h3>
+          ${["af","full","strip"].map(k=>`<label class="toggle"><input type="checkbox" id="pk_${k}"${p.pakete[k]?" checked":""}>${t("pk_"+k)}</label>`).join("")}
+          <label class="toggle"><input type="checkbox" id="det_aktiv"${p.detailing.aktiv?" checked":""}>${t("detailing")}</label>
+          <div class="grid g2" id="detF"${p.detailing.aktiv?"":" hidden"}>
+            <label class="f">${t("pr_det_h")} (${SYM()}/h)<input type="number" id="pr_det_h" value="${zeige_("det_h", p.preise.det_h)}"></label>
+            <label class="f">${t("pr_det_min")} (${SYM()})<input type="number" id="pr_det_min" value="${zeige_("det_min", p.preise.det_min)}"></label></div>
+        </section>
+        <section class="panel stack"><h3>${t("kalender")}</h3>
+          <label class="f">${t("vorlauf")}<input type="number" id="kVor" min="1" max="120" value="${p.kalender.vorlauf_tage}"><span class="hint">${t("vorlauf_hint")}</span></label>
+          <label class="f">${t("gesperrt")}<input type="text" id="kGes" value="${esc((p.kalender.gesperrt||[]).join(", "))}" placeholder="2027-04-18, 2027-05-01"><span class="hint">${t("gesperrt_hint")}</span></label>
+        </section>
+      </div>
+      <div class="stack" style="position:sticky;top:90px">
+        <section class="panel stack"><div class="eye">${t("beispiel")}</div><h3>${t("beispiel_h")}</h3><div id="bsp"></div><p class="hint">${t("beispiel_hint")}</p></section>
+        <div class="row"><button class="btn acc" type="button" id="prSave">${t("speichern")}</button><a class="btn ghost" href="${B.url("kalkulator.html",{p:p.slug})}" target="_blank" rel="noopener">${t("rechner_oeffnen")} ↗</a></div>
+      </div>
+    </div></div>`;
+  const lese = () => { const pr = {}; for (const k of Object.keys(E)) { const el = $("#pr_"+k); if (el) pr[k] = geldFeld(k) ? Math.round(ausLokal(+el.value)*1000)/1000 : +el.value; } return pr; };
+  const bsp = () => { const pr = lese(), satz = C.MWST[p.land] ?? 0.19;
+    const zeilen = [["af",33],["af",20.6],["full",33],["strip",33]].filter(([pk])=>$("#pk_"+pk).checked);
+    $("#bsp").innerHTML = `<table class="t"><tr><th>${t("paket")}</th><th>${t("flaeche")}</th><th style="text-align:right">${t("netto")}</th><th style="text-align:right">${t("brutto")}</th></tr>
+      ${zeilen.map(([pk,fl])=>{ const r = C.richtpreis(pr, fl, pk); return `<tr><td>${t("pk_"+pk)}<br><span class="hint">${fl===33?t("motorboot")+" 10 m":t("kurzkieler")+" 9 m"}</span></td><td class="n">${nf(fl,1)} m²</td><td class="n">${eur(r.von)}–${zahl(r.bis)}</td><td class="n">${eur(r.von*(1+satz))}–${zahl(r.bis*(1+satz))}</td></tr>`; }).join("")}
+      ${$("#det_aktiv").checked ? ["pflege","restau","keramik"].map(pk=>{ const r = C.richtpreisDet(pr, 10.4, 3.6, "kurzkieler", pk, "mittel"); return `<tr><td>${t("prod_det")}: ${t("pk_"+pk)}<br><span class="hint">${t("kurzkieler")} 10 m</span></td><td class="n">${nf(r.flaeche,1)} m²</td><td class="n">${eur(r.von)}–${zahl(r.bis)}</td><td class="n">${eur(r.von*(1+satz))}–${zahl(r.bis*(1+satz))}</td></tr>`; }).join("") : ""}</table>`; };
+  document.querySelectorAll("#main input").forEach(i => i.addEventListener("input", bsp));
+  document.querySelectorAll("[data-rs]").forEach(b => b.onclick = () => { $("#pr_"+b.dataset.rs).value = zeige_(b.dataset.rs, E[b.dataset.rs].wert); bsp(); });
+  $("#det_aktiv").onchange = e => { $("#detF").hidden = !e.target.checked; bsp(); };
+  bsp();
+  $("#prSave").onclick = async () => {
+    const gesperrt = $("#kGes").value.split(/[,\s]+/).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x));
+    try { S.me = await B.call("PUT","/api/partner",{preise:lese(), pakete:{af:$("#pk_af").checked, full:$("#pk_full").checked, strip:$("#pk_strip").checked},
+      detailing:{aktiv:$("#det_aktiv").checked}, kalender:{vorlauf_tage:+$("#kVor").value||14, gesperrt}}); toast(t("gespeichert")); }
+    catch(x){ toast(x.message); } };
+}
+
+/* ---------- Auftritt & Teilen ---------- */
+async function vTeilen(){
+  B.call("POST","/api/schritt/teilen").catch(()=>{});
+  const p = await B.call("GET","/api/partner"); S.me = p;
+  /* Eigene Adresse (White-Label) hat Vorrang, sonst <slug>.boatsdoc.com im Livebetrieb, sonst der normale Link */
+  const haupt = /(^|\.)boatsdoc\.com$/.test(location.hostname);
+  const eigene = (p.domains && p.domains[0]) ? "https://" + p.domains[0] : (haupt && p.modus === "live" ? "https://" + p.slug + ".boatsdoc.com" : "");
+  const link = eigene || B.url("kalkulator.html",{p:p.slug});
+  const D = p.design || {}, I = p.impressum || {};
+  const SCHRIFTEN = ["Catamaran","Playfair Display","Source Sans 3","Open Sans","Lato","Montserrat","Roboto","Nunito Sans","Raleway","Work Sans"];
+  const embed = `<iframe src="${link}" title="${p.name} – Antifouling-Rechner" style="width:100%;height:1500px;border:0" loading="lazy"></iframe>`;
+  const fl = FLYER[p.sprache] || FLYER.de;
+  const mail = (MAILV[p.sprache] || MAILV.de).replace(/\{name\}/g, p.name).replace("{link}", link);
+  $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_teilen")}</h1><p>${t("teilen_p")}</p></div></div>
+    <div class="grid g2" style="align-items:start">
+      <section class="panel stack"><h3>${t("auftritt")}</h3>
+        <label class="f">${t("firmenname")}<input type="text" id="aName" value="${esc(p.name)}"></label>
+        <div class="row"><label class="f">${t("farbe")}<input type="color" id="aFarbe" value="${esc(p.farbe)}"></label>
+        <label class="f" style="flex:1">${t("sprache_rechner")}<select id="aSpr">${C.SPRACHEN.map(l=>`<option value="${l}"${l===p.sprache?" selected":""}>${I18N_P[l].sprachname}</option>`).join("")}</select></label></div>
+        <div class="grid g2"><label class="f">${t("telefon")}<input type="tel" id="aTel" value="${esc(p.kontakt.tel)}"></label><label class="f">${t("web")}<input type="text" id="aWeb" value="${esc(p.kontakt.web)}"></label></div>
+        <label class="f">${t("adresse")}<input type="text" id="aAdr" value="${esc(p.kontakt.adresse)}"></label>
+        <div class="row" style="align-items:flex-end"><div class="f" style="display:flex;flex-direction:column;gap:5px;font-size:.84rem;font-weight:600;color:var(--ink-2)">${t("logo")}
+          <div class="logo-prev" id="logoPrev" style="${p.logo ? `background-image:url('${esc(p.logo)}')` : ""}">${p.logo ? "" : t("logo_leer")}</div></div>
+          <label class="btn ghost" style="cursor:pointer">${t("logo_waehlen")}<input type="file" id="logoIn" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden></label>
+          ${p.logo ? `<button class="btn ghost" type="button" id="logoWeg">${t("logo_entf")}</button>` : ""}</div>
+        <span class="hint">${t("logo_hint")}</span>
+        <div class="row" style="gap:6px"><input type="url" id="logoUrl" placeholder="${t("logo_url")}" style="flex:1;min-width:0"><button class="btn ghost" type="button" id="logoUrlBtn">${t("logo_url_btn")}</button></div>
+        <h3 style="margin-top:10px">${t("design_h")}</h3><span class="hint">${t("design_p")}</span>
+        <div class="row"><label class="f">${t("bg")}<input type="color" id="dBg" value="${esc(D.bg || "#0e1816")}"></label>
+          <label class="f">${t("akzent2")}<input type="color" id="dAk2" value="${esc(D.akzent2 || "#5fb88a")}"></label>
+          <label class="f" style="flex:1">${t("schrift")}<select id="dSchrift"><option value="">${t("schrift_std")}</option>${SCHRIFTEN.map(f=>`<option${f===D.schrift?" selected":""}>${f}</option>`).join("")}</select></label></div>
+        <h3 style="margin-top:10px">${t("impressum_h")}</h3><span class="hint">${t("impressum_p")}</span>
+        <label class="f">${t("imp_firma")}<input type="text" id="iFirma" value="${esc(I.firma)}"></label>
+        <label class="f">${t("imp_adresse")}<input type="text" id="iAdr" value="${esc(I.adresse)}"></label>
+        <div class="grid g2"><label class="f">${t("imp_orgnr")}<input type="text" id="iOrg" value="${esc(I.orgnr)}"></label><label class="f">${t("imp_ust")}<input type="text" id="iUst" value="${esc(I.ust)}"></label></div>
+        <div class="grid g2"><label class="f">${t("imp_vertreten")}<input type="text" id="iVer" value="${esc(I.vertreten)}"></label><label class="f">${t("imp_telefon")}<input type="tel" id="iTel" value="${esc(I.telefon)}"></label></div>
+        <label class="f">${t("imp_email")}<input type="email" id="iMail" value="${esc(I.email)}"><span class="hint">${t("imp_email_hint")}</span></label>
+        <div><button class="btn acc" type="button" id="aSave">${t("speichern")}</button></div>
+      </section>
+      <section class="panel stack"><h3>${eigene ? t("eigene_adresse") : t("ihr_link")}</h3>${eigene ? `<span class="hint">${t("eigene_adresse_p")}</span>` : ""}
+        <div class="row"><span class="code" style="flex:1;min-width:0">${esc(link)}</span><button class="btn ghost" type="button" id="cpL">${t("kopieren")}</button></div>
+        <div class="row" style="align-items:flex-start;gap:16px"><div class="qr" id="qr" role="img" aria-label="QR-Code"></div>
+          <div class="stack small" style="flex:1;min-width:180px"><b>${t("qr_h")}</b><span class="muted">${t("qr_p")}</span></div></div>
+        <h3 style="margin-top:6px">${t("einbetten")}</h3><div class="row"><span class="code" style="flex:1;min-width:0">${esc(embed)}</span><button class="btn ghost" type="button" id="cpEm">${t("kopieren")}</button></div>
+      </section>
+    </div>
+    <section class="stack"><h2>${t("startpaket")}</h2><p class="muted" style="max-width:62ch">${t("startpaket_p")}</p>
+      <div class="grid g2" style="align-items:start">
+        <div class="stack"><div class="eye">${t("flyer")}</div>
+          <div class="flyer" id="flyer"><div class="bar" style="background:${esc(p.farbe)}"></div>
+            <div class="fn" style="color:${esc(p.farbe)};margin-top:6px">${esc(p.name)}</div>
+            <div class="fh">${fl.h}</div><div class="fs">${fl.s}</div>
+            <div class="fs">${fl.p.map(x=>"✓ "+x).join("<br>")}</div>
+            <div class="row" style="margin-top:auto;align-items:flex-end;gap:12px"><div class="fq" id="qr2"></div><div class="fs" style="font-size:.74rem">${fl.scan}<br><b>${esc(p.kontakt.tel||"")}</b></div></div>
+          </div>
+          ${B.modus === "server" ? `<button class="btn ghost" type="button" id="druck" style="align-self:flex-start">${t("drucken")}</button>` : `<p class="hint">${t("drucken_demo")}</p>`}
+        </div>
+        <div class="stack"><div class="eye">${t("mailvorlage")}</div><div class="code" id="mailV">${esc(mail)}</div><button class="btn ghost" type="button" id="cpM" style="align-self:flex-start">${t("kopieren")}</button>
+          <div class="eye" style="margin-top:8px">${t("momente")}</div>
+          <ul class="small" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">${t("momente_l").split("|").map(x=>`<li>${x}</li>`).join("")}</ul></div>
+      </div></section>
+    <section class="stack"><div class="eye">${t("vorschau")}</div><div class="preview"><iframe id="pv" src="${esc(B.url("kalkulator.html",{p:p.slug}))}&vorschau=1" title="${t("vorschau")}"></iframe></div></section>`;
+  qr("#qr", link); qr("#qr2", link);
+  $("#cpL").onclick = e => copy(link, e.target); $("#cpEm").onclick = e => copy(embed, e.target); $("#cpM").onclick = e => copy(mail, e.target);
+  if ($("#druck")) $("#druck").onclick = () => { const w = window.open(""); if (!w) return; w.document.write(`<title>Flyer</title><style>@page{size:A5;margin:0}body{margin:0;font-family:Archivo,Arial,sans-serif}.flyer{width:148mm;height:210mm;padding:14mm;box-sizing:border-box;display:flex;flex-direction:column;gap:5mm;position:relative}.bar{position:absolute;left:0;right:0;top:0;height:5mm}.fh{font-size:24pt;font-weight:800;line-height:1.1}.fs{font-size:11pt}.fn{font:10pt monospace;letter-spacing:.12em;text-transform:uppercase}.fq{width:45mm;height:45mm}.fq img,.fq svg{width:100%;height:100%}.row{display:flex;gap:5mm;align-items:flex-end;margin-top:auto}</style>${$("#flyer").outerHTML}`); w.document.close(); w.focus(); setTimeout(()=>w.print(), 400); };
+  $("#logoIn").onchange = async e => { const f = e.target.files[0]; if (!f) return;
+    try { const u = await B.upload(f); S.me = await B.call("PUT","/api/partner",{logo:u.url}); toast(t("gespeichert")); vTeilen(); } catch(x){ toast(x.message); } };
+  if ($("#logoWeg")) $("#logoWeg").onclick = async () => { S.me = await B.call("PUT","/api/partner",{logo:null}); vTeilen(); };
+  $("#logoUrlBtn").onclick = async () => { try { const r = await B.call("POST","/api/logo-von-url",{url:$("#logoUrl").value.trim()}); S.me = await B.call("PUT","/api/partner",{logo:r.url}); toast(t("gespeichert")); vTeilen(); } catch(x){ toast(x.message); } };
+  $("#aSave").onclick = async () => { try { S.me = await B.call("PUT","/api/partner",{name:$("#aName").value, farbe:$("#aFarbe").value, sprache:$("#aSpr").value,
+      kontakt:{tel:$("#aTel").value, web:$("#aWeb").value, adresse:$("#aAdr").value},
+      design:{bg:$("#dBg").value === "#0e1816" ? "" : $("#dBg").value, akzent2:$("#dAk2").value === "#5fb88a" ? "" : $("#dAk2").value, schrift:$("#dSchrift").value},
+      impressum:{firma:$("#iFirma").value, adresse:$("#iAdr").value, orgnr:$("#iOrg").value, ust:$("#iUst").value, vertreten:$("#iVer").value, telefon:$("#iTel").value, email:$("#iMail").value}}); toast(t("gespeichert")); vTeilen(); } catch(x){ toast(x.message); } };
+}
+function qr(sel, text){ const el = $(sel); if (!el) return; if (typeof qrcode !== "function") { el.textContent = "QR"; return; } const q = qrcode(0, "M"); q.addData(text); q.make(); el.innerHTML = q.createSvgTag({cellSize:4, margin:0, scalable:true}); }
+
+/* ---------- Finanzierung ---------- */
+async function vFinanzierung(){
+  const p = await B.call("GET","/api/partner"), f = p.finanzierung, K = C.FINANZIERER.klarna;
+  const bsp = 5000, fin = C.finanzierung(p, p.land, bsp);
+  $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_finanzierung")}</h1><p>${t("fin_p")}</p></div></div>
+    <div class="grid g2" style="align-items:start">
+      <section class="panel stack"><h3>${t("fin_eigner")}</h3>
+        <label class="toggle"><input type="radio" name="fa" value="klarna"${f.anbieter==="klarna"?" checked":""}>${t("fin_klarna")}</label>
+        <label class="toggle"><input type="radio" name="fa" value="keine"${f.anbieter!=="klarna"?" checked":""}>${t("fin_keine")}</label>
+        <div class="grid g2"><label class="f">${t("fin_zins")}<input type="number" id="fZins" step="0.1" min="0" value="${f.zins}"><span class="hint">${t("fin_zins_hint")}</span></label>
+        <label class="f">${t("fin_laufzeit")}<select id="fLz">${K.laufzeiten.map(m=>`<option value="${m}"${m===f.laufzeit?" selected":""}>${m} ${t("monate")}</option>`).join("")}</select></label></div>
+        <div class="note">${fin ? t("fin_bsp",{b:eur(bsp), r:eur(fin.monatsrate,2), m:fin.laufzeit}) : t("fin_bsp_keine")}</div>
+        <div><button class="btn acc" type="button" id="fSave">${t("speichern")}</button></div>
+      </section>
+      <section class="panel stack"><h3>${t("fin_laender")}</h3>
+        <div class="scroll"><table class="t"><tr><th>${t("land")}</th><th>${t("fin_rahmen")}</th><th>${t("fin_hinweis")}</th></tr>
+        ${["DE","SE","NO","DK","FI"].map(c=>{ const r = K.rahmen[c]; return `<tr><td>${landName(c)}</td><td class="n">${r ? eur(r[0])+" – "+eur(r[1]) : "–"}</td><td class="small">${t("fin_"+c)}</td></tr>`; }).join("")}</table></div>
+        <p class="hint">${t("fin_quelle")}</p>
+      </section>
+    </div>
+    <section class="panel stack"><h3>${t("fin_geraet")}</h3><p class="small muted">${t("fin_geraet_p")}</p>
+      <div class="kpis">${Object.values(C.GERAETE).map(g=>`<div class="kpi"><div class="eye">${g.name}</div><div class="v">${eur(g.preis*g.faktor60/100)}</div><div class="s">${t("grenke_s",{p:eur(g.preis)})}</div></div>`).join("")}</div></section>`;
+  $("#fSave").onclick = async () => { try { S.me = await B.call("PUT","/api/partner",{finanzierung:{anbieter:document.querySelector("[name=fa]:checked").value, zins:+$("#fZins").value, laufzeit:+$("#fLz").value}}); toast(t("gespeichert")); vFinanzierung(); } catch(x){ toast(x.message); } };
+}
+
+/* ---------- Abrechnung ---------- */
+async function vAbrechnung(){
+  const r = await B.call("GET","/api/abrechnung");
+  const saldo = r.gebuehren + r.provision_erhalten + r.provision_gezahlt;
+  $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_abrechnung")}</h1><p>${t("abr_p")}</p></div></div>
+    <div class="kpis">
+      <div class="kpi"><div class="eye">${t("abr_gebuehr")}</div><div class="v">${eur(r.gebuehren,2)}</div><div class="s">${t("abr_gebuehr_s")}</div></div>
+      <div class="kpi hi"><div class="eye">${t("abr_erhalten")}</div><div class="v">${eur(r.provision_erhalten,2)}</div><div class="s">${t("abr_erhalten_s")}</div></div>
+      <div class="kpi"><div class="eye">${t("abr_gezahlt")}</div><div class="v">${eur(r.provision_gezahlt,2)}</div><div class="s">${t("abr_gezahlt_s")}</div></div>
+      <div class="kpi"><div class="eye">${t("abr_saldo")}</div><div class="v">${eur(saldo,2)}</div><div class="s">${t("abr_saldo_s")}</div></div>
+    </div>
+    <section class="panel stack"><h3>${t("abr_posten")}</h3>
+      ${r.buchungen.length ? `<div class="scroll"><table class="t"><tr><th>${t("datum")}</th><th>${t("art")}</th><th style="text-align:right">${t("netto_auftrag")}</th><th style="text-align:right">${t("betrag")}</th></tr>
+        ${r.buchungen.map(b=>`<tr><td>${dat(b.datum)}</td><td>${t("bu_"+b.typ)}</td><td class="n">${eur(b.netto,2)}</td><td class="n">${eur(b.betrag,2)}</td></tr>`).join("")}</table></div>` : `<p class="muted small">${t("abr_leer")}</p>`}
+    </section>
+    <div class="note">${t("abr_modell")}</div>`;
+}
+
+/* ---------- Konto & Gebiet ---------- */
+async function vKonto(){
+  const p = await B.call("GET","/api/partner"); S.me = p;
+  $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_konto")}</h1><p>${t("konto_p")}</p></div></div>
+    <div class="grid g2" style="align-items:start">
+      <section class="panel stack"><h3>${t("rolle")}</h3>
+        <label class="toggle"><input type="radio" name="rl" value="vermittler"${p.rolle!=="ausfuehrend"?" checked":""}><span><b>${t("rolle_vermittler")}</b><br><span class="small muted">${t("rolle_vermittler_p")}</span></span></label>
+        <label class="toggle"><input type="radio" name="rl" value="ausfuehrend"${p.rolle==="ausfuehrend"?" checked":""}><span><b>${t("rolle_ausfuehrend")}</b><br><span class="small muted">${t("rolle_ausfuehrend_p")}</span></span></label>
+      </section>
+      <section class="panel stack"><h3>${t("gebiet")}</h3>
+        <label class="f">${t("gebiet_name")}<input type="text" id="gN" value="${esc(p.region.name)}"></label>
+        <label class="f">${t("plz_bereiche")}<input type="text" id="gP" value="${esc((p.region.plz||[]).join(", "))}" placeholder="24, 25"><span class="hint">${t("plz_hint")}</span></label>
+        <div class="note ${p.gebietsschutz_bis?"good":""}">${p.gebietsschutz_bis ? t("schutz_aktiv",{d:dat(p.gebietsschutz_bis)}) : t("schutz_info")}</div>
+      </section>
+      <section class="panel stack"><h3>${t("test_eye")}</h3>
+        <label class="f">${t("test_start")}<input type="date" id="tS" value="${esc(p.test.start)}"></label>
+        <label class="f">${t("liegeplaetze")}<input type="number" id="kLp" min="0" value="${p.liegeplaetze || ""}"><span class="hint">${t("liegeplaetze_hint")}</span></label>
+        <div class="note ${p.modus === "live" ? "good" : "warn"}">${p.modus === "live" ? t("live_seit",{d:dat(p.live_seit)}) : t("im_probemodus")}</div>
+      </section>
+      <section class="panel stack"><h3>${t("konto")}</h3><dl class="dl"><dt>${t("email")}</dt><dd>${esc(p.email)}</dd><dt>${t("land")}</dt><dd>${landName(p.land)}</dd><dt>${t("kennung")}</dt><dd class="num">${esc(p.slug)}</dd></dl>
+        ${B.modus === "demo" ? `<button class="btn bad" type="button" id="reset" style="align-self:flex-start">${t("demo_reset")}</button>` : ""}</section>
+    </div>
+    <div><button class="btn acc" type="button" id="kSave">${t("speichern")}</button></div>`;
+  $("#kSave").onclick = async () => { try { S.me = await B.call("PUT","/api/partner",{rolle:document.querySelector("[name=rl]:checked").value,
+      region:{name:$("#gN").value, plz:$("#gP").value.split(/[,\s]+/).map(x=>x.replace(/\D/g,"")).filter(Boolean)}, test:{start:$("#tS").value}, liegeplaetze:+$("#kLp").value || null}); toast(t("gespeichert")); zeige("konto"); } catch(x){ toast(x.message); } };
+  if ($("#reset")) $("#reset").onclick = () => { B.demoReset(); location.hash = ""; location.reload(); };
+}
+
+/* ---------- Boatsdoc: Sales-Cockpit ---------- */
+async function vAdmin(){
+  const liste = await B.call("GET","/api/admin/partner");
+  const F = {alle:()=>true, haengt:x=>x.haengt, probe:x=>x.stufe==="probe", konto:x=>x.stufe==="konto", live:x=>x.stufe==="live"};
+  if (!F[S.cpf]) S.cpf = "alle";
+  const n = k => liste.filter(F[k]).length;
+  const stufePill = x => `<span class="pill ${x.stufe==="live"?"st-bestaetigt":x.stufe==="konto"?"st-angebot":"st-neu"}">${t("cp_"+x.stufe)}</span>`;
+  const aktiv = x => x.tage_inaktiv < 1 ? t("cp_heute") : t("cp_tage",{n:x.tage_inaktiv});
+  $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_admin")}</h1><p>${t("cp_p")}</p></div></div>
+    <div class="kpis">${["probe","konto","live","haengt"].map(k=>`<div class="kpi${k==="haengt"&&n(k)?" hi":""}"><div class="eye">${t("cp_"+k)}</div><div class="v">${n(k)}</div><div class="s">${t("cp_"+k+"_s")}</div></div>`).join("")}</div>
+    <div class="chips">${Object.keys(F).map(k=>`<button class="chip" type="button" data-f="${k}" aria-pressed="${k===S.cpf}">${t(k==="alle"?"f_alle":"cp_"+k)} <span class="muted">${n(k)}</span></button>`).join("")}</div>
+    <section class="panel"><div class="scroll"><table class="t"><tr><th>${t("partner")}</th><th>${t("cp_stufe")}</th><th>${t("cp_fortschritt")}</th><th style="text-align:right">${t("liegeplaetze")}</th><th style="text-align:right">${t("anfragen")}</th><th>${t("cp_aktiv")}</th><th>${t("kontakt")}</th><th>${t("gebietsschutz")}</th><th>${t("cp_aktionen")}</th></tr>
+      ${liste.filter(F[S.cpf]).map(x=>`<tr class="${x.haengt?"haengt":""}"><td><b>${esc(x.name)}</b><br><span class="hint">${x.land} · ${x.rolle==="ausfuehrend"?t("rolle_ausfuehrend"):t("rolle_vermittler")}</span></td>
+        <td>${stufePill(x)}${x.haengt?`<br><span class="hint" style="color:var(--accent)">${t("cp_haengt")}</span>`:""}</td>
+        <td><span class="mini"><i style="width:${Math.round(x.fortschritt/x.schritte_gesamt*100)}%"></i></span><span class="num small">${x.fortschritt}/${x.schritte_gesamt}</span></td>
+        <td class="n">${x.liegeplaetze || "–"}</td><td class="n">${x.anfragen}<span class="hint"> / ${x.probe_anfragen} ${t("probe_pill")}</span></td>
+        <td class="small">${aktiv(x)}</td>
+        <td class="small">${x.email ? esc(x.email) : `<span class="muted">${t("cp_ohne_konto")}</span>`}${x.kontakt && x.kontakt.tel ? `<br>${esc(x.kontakt.tel)}` : ""}</td>
+        <td>${x.rolle==="ausfuehrend" ? `<button class="btn ghost" type="button" data-gs="${x.id}" data-on="${x.gebietsschutz_bis?0:1}">${x.gebietsschutz_bis ? t("schutz_entziehen") : t("schutz_vergeben")}</button>` : "–"}</td>
+        <td class="small" style="min-width:250px"><div class="row" style="gap:6px;flex-wrap:wrap">
+          <button class="btn ghost" type="button" data-oe="${x.id}">${t("cp_oeffnen")}</button>
+          ${x.email ? "" : `<button class="btn ghost" type="button" data-ei="${x.id}">${t("cp_einladen")}</button>`}</div>
+          ${x.einladung && x.einladung.token ? `<div class="code" style="margin-top:6px;font-size:.72rem">${esc(location.origin + location.pathname + "#einladung=" + x.einladung.token)}</div>` : ""}
+          <div class="row" style="gap:6px;margin-top:6px"><input type="text" data-dm="${x.id}" value="${esc((x.domains||[]).join(", "))}" placeholder="${t("cp_domain_ph")}" style="flex:1;min-width:120px"><button class="btn ghost" type="button" data-dms="${x.id}">${t("speichern")}</button></div></td></tr>`).join("") || `<tr><td colspan="9" class="muted">${t("cp_leer")}</td></tr>`}
+    </table></div></section>
+    <section class="panel stack" style="max-width:640px"><h3>${t("cp_neu_h")}</h3><span class="hint">${t("cp_neu_p")}</span>
+      <form id="neuP" class="row" style="gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <label class="f" style="flex:2;min-width:180px">${t("firmenname")}<input type="text" id="npName" required></label>
+        <label class="f">${t("land")}<select id="npLand">${["DE","SE","NO","DK","FI"].map(c=>`<option value="${c}">${landName(c)}</option>`).join("")}</select></label>
+        <label class="f">${t("rolle")}<select id="npRolle"><option value="vermittler">${t("rolle_vermittler")}</option><option value="ausfuehrend">${t("rolle_ausfuehrend")}</option></select></label>
+        <button class="btn acc" type="submit">${t("cp_neu_btn")}</button></form></section>`;
+  document.querySelectorAll("[data-oe]").forEach(b => b.onclick = async () => { S.me = await B.call("POST","/api/admin/partner/"+b.dataset.oe+"/oeffnen"); zeige("teilen"); });
+  document.querySelectorAll("[data-ei]").forEach(b => b.onclick = async () => { await B.call("PUT","/api/admin/partner/"+b.dataset.ei,{einladung:true}); toast(t("gespeichert")); vAdmin(); });
+  document.querySelectorAll("[data-dms]").forEach(b => b.onclick = async () => { const v = document.querySelector(`[data-dm="${b.dataset.dms}"]`).value;
+    try { await B.call("PUT","/api/admin/partner/"+b.dataset.dms,{domains: v.split(/[,\s]+/).filter(Boolean)}); toast(t("gespeichert")); vAdmin(); } catch(x){ toast(x.message); } });
+  $("#neuP").onsubmit = async e => { e.preventDefault(); try { await B.call("POST","/api/admin/partner",{name:$("#npName").value, land:$("#npLand").value, rolle:$("#npRolle").value}); toast(t("gespeichert")); vAdmin(); } catch(x){ toast(x.message); } };
+  document.querySelectorAll(".chip[data-f]").forEach(b => b.onclick = () => { S.cpf = b.dataset.f; vAdmin(); });
+  document.querySelectorAll("[data-gs]").forEach(b => b.onclick = async () => { await B.call("PUT","/api/admin/partner/"+b.dataset.gs,{gebietsschutz: b.dataset.on === "1"}); toast(t("gespeichert")); vAdmin(); });
+}
+
+start();
+</script>
+</body></html>

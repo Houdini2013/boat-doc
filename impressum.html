@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Impressum</title>
+<style>
+  :root{--bg:#0e1816;--txt:#e9eeeb;--mut:#8c9a95;--line:#2a3a36;--acc:#c4532f;--sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 var(--sans)}
+  main{max-width:720px;margin:0 auto;padding:40px 18px 60px}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+  .top img{max-height:44px;max-width:200px;background:#fff;padding:6px 10px;border-radius:6px}
+  .top b{font-size:1.15rem}
+  h1{font-size:1.6rem;margin:0 0 18px}
+  h2{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin:28px 0 8px;font-weight:600}
+  section{border-top:1px solid var(--line);padding-top:4px}
+  dl{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:6px 18px;margin:0}
+  dt{color:var(--mut)} dd{margin:0;overflow-wrap:anywhere}
+  a{color:inherit;text-decoration-color:var(--acc);text-underline-offset:3px}
+  .back{display:inline-block;margin-top:30px}
+  p{color:var(--mut)}
+</style></head>
+<body>
+<main>
+  <div class="top" id="kopf"></div>
+  <h1 id="h"></h1>
+  <section><h2 id="hBetreiber"></h2><dl id="betreiber"></dl></section>
+  <section><h2 id="hPlattform"></h2><p id="plattform"></p></section>
+  <a class="back" id="zurueck" href="/"></a>
+</main>
+<script src="core.js"></script>
+<script src="store.js"></script>
+<script>
+"use strict";
+const T = {
+  de:{h:"Impressum",b:"Anbieter dieses Rechners",p:"Plattform und Zahlungsabwicklung",firma:"Firma",adresse:"Anschrift",orgnr:"Registernummer",ust:"USt-IdNr.",vertreten:"Vertreten durch",telefon:"Telefon",email:"E-Mail",pt:"Technik, Anfrage- und Zahlungsabwicklung: Boatsdoc, betrieben von der ISC Industrie-Service-Czech GmbH.",mehr:"Impressum und Datenschutz der Plattform",z:"← Zurück zum Rechner"},
+  en:{h:"Legal notice",b:"Provider of this calculator",p:"Platform and payments",firma:"Company",adresse:"Address",orgnr:"Company number",ust:"VAT ID",vertreten:"Represented by",telefon:"Phone",email:"Email",pt:"Technology, request and payment handling: Boatsdoc, operated by ISC Industrie-Service-Czech GmbH.",mehr:"Platform legal notice and privacy",z:"← Back to the calculator"},
+  sv:{h:"Företagsuppgifter",b:"Kalkylatorn tillhandahålls av",p:"Plattform och betalningar",firma:"Företag",adresse:"Adress",orgnr:"Org.nr",ust:"Momsreg.nr",vertreten:"Företrädare",telefon:"Telefon",email:"E-post",pt:"Teknik, förfrågningar och betalningar: Boatsdoc, drivs av ISC Industrie-Service-Czech GmbH.",mehr:"Plattformens företagsuppgifter och integritet",z:"← Tillbaka till kalkylatorn"},
+  no:{h:"Firmaopplysninger",b:"Kalkulatoren tilbys av",p:"Plattform og betaling",firma:"Firma",adresse:"Adresse",orgnr:"Org.nr.",ust:"MVA-nr.",vertreten:"Representert ved",telefon:"Telefon",email:"E-post",pt:"Teknikk, forespørsler og betaling: Boatsdoc, drevet av ISC Industrie-Service-Czech GmbH.",mehr:"Plattformens firmaopplysninger og personvern",z:"← Tilbake til kalkulatoren"},
+  da:{h:"Virksomhedsoplysninger",b:"Beregneren udbydes af",p:"Platform og betaling",firma:"Virksomhed",adresse:"Adresse",orgnr:"CVR-nr.",ust:"Momsnr.",vertreten:"Repræsenteret ved",telefon:"Telefon",email:"E-mail",pt:"Teknik, forespørgsler og betaling: Boatsdoc, drevet af ISC Industrie-Service-Czech GmbH.",mehr:"Platformens virksomhedsoplysninger og privatliv",z:"← Tilbage til beregneren"},
+  fi:{h:"Yritystiedot",b:"Laskurin tarjoaa",p:"Alusta ja maksut",firma:"Yritys",adresse:"Osoite",orgnr:"Y-tunnus",ust:"ALV-numero",vertreten:"Edustaja",telefon:"Puhelin",email:"Sähköposti",pt:"Tekniikka, pyynnöt ja maksut: Boatsdoc, ylläpitäjä ISC Industrie-Service-Czech GmbH.",mehr:"Alustan yritystiedot ja tietosuoja",z:"← Takaisin laskuriin"}
+};
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+(async () => {
+  const q = new URLSearchParams(location.search), slug = q.get("p") || window.BD_PARTNER;
+  let P = null; try { P = await Boatsdoc.call("GET", "/api/public/" + encodeURIComponent(slug)); } catch (_) {}
+  let L = q.get("lang"); try { L = L || localStorage.getItem("bd_k_lang"); } catch (_) {}
+  L = T[L] ? L : (P && T[P.sprache] ? P.sprache : "de");
+  const t = T[L]; document.documentElement.lang = L;
+  document.title = t.h + (P ? " · " + P.name : "");
+  $("h").textContent = t.h; $("hBetreiber").textContent = t.b; $("hPlattform").textContent = t.p;
+  $("plattform").innerHTML = esc(t.pt) + ` <a href="https://boatsdoc.com/ueber-uns.html">${esc(t.mehr)}</a>`;
+  const h = location.hostname, haupt = /^(www\.|neu\.)?boatsdoc\.com$/.test(h) || h === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(h);
+  $("zurueck").textContent = t.z; $("zurueck").href = haupt ? "kalkulator.html?p=" + encodeURIComponent(slug || "") : "/";
+  if (!P || !P.impressum) { $("betreiber").innerHTML = "<dd>–</dd>"; return; }
+  const I = P.impressum, r = document.documentElement.style;
+  if (P.farbe) r.setProperty("--acc", P.farbe);
+  if (P.design && /^#[0-9a-f]{6}$/i.test(P.design.bg || "")) r.setProperty("--bg", P.design.bg);
+  $("kopf").innerHTML = (P.logo ? `<img src="${esc(P.logo)}" alt="">` : "") + `<b>${esc(P.name)}</b>`;
+  $("betreiber").innerHTML = ["firma","adresse","orgnr","ust","vertreten","telefon","email"].filter(k => I[k]).map(k =>
+    `<dt>${t[k]}</dt><dd>${k === "email" ? `<a href="mailto:${esc(I[k])}">${esc(I[k])}</a>` : k === "telefon" ? `<a href="tel:${esc(I[k].replace(/\s/g,""))}">${esc(I[k])}</a>` : esc(I[k]).replace(/\n/g,"<br>")}</dd>`).join("");
+})();
+function $(id){ return document.getElementById(id); }
+</script>
+</body></html>

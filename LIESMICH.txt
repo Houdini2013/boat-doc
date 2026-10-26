@@ -1,21 +1,17 @@
-BOATSDOC PARTNERPROTOTYP
-========================
+BOATSDOC
+========
 
-Öffnen: index.html per Doppelklick im Browser.
+Startseite:   index.html
+Rechner:      kalkulator.html?p=beispiel-marina
+Backend:      partner.html   (Demo: demo@marina-schleibucht.de / demo1234)
 
-Die vier Mediendateien müssen im selben Ordner liegen wie index.html,
-sonst laufen die beiden Videos nicht.
+Ohne Server (Doppelklick im Browser oder GitHub Pages) läuft alles als Demo,
+die Daten bleiben dann nur im eigenen Browser.
 
-  index.html        die Seite
-  laser-test.mp4    Video 1 — GFK-Teil, vier Schichten Antifouling
-  laser-poster.jpg  Standbild dazu
-  lack-test.mp4     Video 2 — weißer Lackstreifen auf rotem Gelcoat
-  lack-poster.jpg   Standbild dazu
+Mit Server (echter Betrieb unter boatsdoc.com):
+  node server/server.cjs
+Einrichtung auf dem IONOS VPS: siehe deploy/ANLEITUNG.md
 
 Sprachen: Deutsch, English, Svenska, Norsk, Dansk, Suomi
-(Auswahl oben rechts; die Seite erkennt beim Öffnen die Browsersprache)
 
-Die Schriften werden von Google Fonts geladen. Ohne Internetverbindung
-läuft alles weiter, nur in Systemschrift statt Archivo und IBM Plex Mono.
-
-Zum Weitergeben: den kompletten Ordner verschicken, nicht nur index.html.
+Zum Weitergeben den kompletten Ordner verschicken, nicht nur index.html.

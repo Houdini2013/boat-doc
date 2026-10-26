@@ -1,0 +1,9 @@
+[Unit]
+Description=Boatsdoc: alle 2 Minuten auf neuen Stand prüfen
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=2min
+
+[Install]
+WantedBy=timers.target

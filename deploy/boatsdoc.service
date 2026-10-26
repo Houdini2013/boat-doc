@@ -1,0 +1,22 @@
+[Unit]
+Description=Boatsdoc (Website, Rechner, Backend)
+After=network.target
+
+[Service]
+Type=simple
+User=boatsdoc
+Group=boatsdoc
+EnvironmentFile=/etc/boatsdoc.env
+WorkingDirectory=/srv/boatsdoc/app
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning server/server.cjs
+Restart=always
+RestartSec=3
+# Schutz: der Dienst darf nur in seinen Datenordner schreiben
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/boatsdoc/data
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

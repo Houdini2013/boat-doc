@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOATSDOC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1816; --bg2:#121f1c; --panel:#172522; --panel2:#1c2b27; --line:#2a3a36; --line2:#344642;
+    --txt:#e9eeeb; --mut:#8c9a95; --dim:#5f6e69;
+    --acc:#c4532f; --acc2:#d9643d; --accsoft:#ff9d6e; --ok:#5fb88a;
+    --sans:"Hanken Grotesk","Inter Tight","Helvetica Neue",Arial,sans-serif;
+    --mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:var(--sans);background:var(--bg);color:var(--txt);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:var(--mono)}
+  .eyebrow,label.l,.kpi-l{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+
+  /* Kopf */
+  .top{position:sticky;top:0;z-index:10;background:rgba(14,24,22,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .top-in{max-width:1040px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.25rem;letter-spacing:-.01em;text-transform:uppercase}
+  .logo i{width:16px;height:16px;background:var(--acc);transform:rotate(45deg);border-radius:3px;flex:none}
+  .spacer{flex:1}
+  .sel-wrap{position:relative}
+  .sel-wrap select{font-family:var(--mono);font-size:.85rem;color:var(--txt);background:var(--bg2);border:1px solid var(--line2);
+        border-radius:6px;padding:8px 32px 8px 12px;-webkit-appearance:none;appearance:none;cursor:pointer;width:auto}
+  .sel-wrap::after{content:"";position:absolute;right:12px;top:50%;width:6px;height:6px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);
+        transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .strap{border-bottom:1px solid var(--line);background:var(--bg)}
+  .strap div{max-width:1040px;margin:0 auto;padding:11px 16px}
+
+  main{max-width:1040px;margin:0 auto;padding:22px 16px 70px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+
+  /* Rechner */
+  .calc-h{display:flex;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .badge{width:46px;height:46px;border-radius:50%;background:var(--acc);display:grid;place-items:center;font-weight:800;font-size:1rem;flex:none}
+  .calc-h h2{font-size:1.28rem;font-weight:800;letter-spacing:-.015em;line-height:1.2}
+  .calc-h p{color:var(--mut);font-size:.95rem}
+  .calc-b{padding:6px 20px 22px}
+  .grp{margin-top:22px}
+  .grp>label.l{display:block;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:1fr;gap:0 36px}
+  @media(min-width:760px){.grid2{grid-template-columns:1fr 1fr}}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font:inherit;font-size:.95rem;color:var(--txt);background:var(--bg2);border:1px solid var(--line2);border-radius:4px;
+        padding:10px 16px;cursor:pointer;text-align:left;transition:background .12s,border-color .12s}
+  .chip:hover{border-color:var(--mut)}
+  .chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+  .chip:focus-visible,.slider:focus-visible,select:focus-visible,input:focus-visible,.drop:focus-visible{outline:2px solid var(--accsoft);outline-offset:2px}
+  .hint{color:var(--mut);font-size:.88rem;margin-top:10px}
+
+  .sl-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+  .sl-h .v{font-family:var(--mono);font-size:1.05rem;color:var(--txt)}
+  .slider{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:99px;outline:none;cursor:pointer;
+        background:linear-gradient(90deg,var(--accsoft) var(--p,50%),#363a39 var(--p,50%))}
+  .slider::-webkit-slider-thumb{-webkit-appearance:none;width:42px;height:26px;border-radius:99px;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  .slider::-moz-range-thumb{width:42px;height:26px;border-radius:99px;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  .slider::-moz-range-track{background:transparent}
+
+  .tools{display:grid;grid-template-columns:1fr;gap:14px;margin-top:22px}
+  @media(min-width:760px){.tools{grid-template-columns:1fr 1fr}}
+  select.plain{width:100%;font:inherit;color:var(--txt);background:var(--bg2);border:1px solid var(--line2);border-radius:4px;padding:11px 36px 11px 12px;
+        -webkit-appearance:none;appearance:none;
+        background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+        background-position:calc(100% - 19px) 52%,calc(100% - 14px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+  .drop{border:1px dashed var(--line2);border-radius:4px;padding:13px 14px;text-align:center;color:var(--mut);cursor:pointer;background:var(--bg2);font-size:.92rem}
+  .drop strong{color:var(--txt);font-weight:600}
+  .drop img{max-width:100%;max-height:150px;margin-top:10px;border-radius:4px;display:block;margin-left:auto;margin-right:auto}
+  .note{border-left:2px solid var(--acc);background:var(--bg2);padding:9px 12px;font-size:.85rem;color:var(--mut);margin-top:10px}
+
+  /* Ergebnis */
+  .result{margin-top:24px;border:1px solid var(--line2);border-radius:6px;background:var(--bg);padding:22px 20px}
+  .price{font-family:var(--mono);font-weight:700;font-size:clamp(1.7rem,6.4vw,3rem);letter-spacing:-.03em;line-height:1.1;margin:8px 0 4px;color:#fff;word-break:break-word}
+  .vat{font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accsoft)}
+  .net{font-family:var(--mono);font-size:.82rem;color:var(--mut);margin-top:6px;min-height:1.2em}
+  .meta{display:grid;grid-template-columns:1fr;gap:16px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+  @media(min-width:640px){.meta{grid-template-columns:auto 1fr;gap:40px}}
+  .meta b{display:block;font-family:var(--mono);font-size:1.5rem;font-weight:700;margin-top:4px}
+  .meta b small{font-size:.8rem;font-weight:400;color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
+  .region{margin-top:18px}
+  .region label.l{display:block;margin-bottom:8px}
+  .inkl{list-style:none;margin-top:18px;border-top:1px solid var(--line)}
+  .inkl li{padding:9px 0;border-bottom:1px solid var(--line);font-size:.95rem;display:flex;gap:10px}
+  .inkl li::before{content:"";width:8px;height:8px;background:var(--acc);transform:rotate(45deg);margin-top:.5em;flex:none;border-radius:1px}
+  .eco{margin-top:16px;color:var(--mut);font-size:.9rem}
+  .legal{margin-top:12px;color:var(--dim);font-size:.82rem}
+
+  /* Ablauf */
+  .sec-t{margin:34px 0 14px}
+  .steps{list-style:none;display:grid;grid-template-columns:1fr;border:1px solid var(--line);border-radius:8px;background:var(--panel);overflow:hidden}
+  @media(min-width:700px){.steps{grid-template-columns:repeat(3,1fr)}}
+  .steps li{padding:18px 18px 20px;border-bottom:1px solid var(--line)}
+  @media(min-width:700px){.steps li{border-right:1px solid var(--line)}.steps li:nth-child(3n){border-right:0}.steps li:nth-last-child(-n+3){border-bottom:0}}
+  .steps li:last-child{border-bottom:0}
+  .steps .n{font-family:var(--mono);font-size:.85rem;color:var(--acc2)}
+  .steps strong{display:block;font-size:1.1rem;font-weight:700;letter-spacing:-.01em;margin:6px 0 4px}
+  .steps small{color:var(--mut);font-size:.92rem;display:block}
+
+  /* Formular */
+  .form{padding:20px}
+  .form .fgrid{display:grid;grid-template-columns:1fr;gap:0 24px}
+  @media(min-width:700px){.form .fgrid{grid-template-columns:1fr 1fr}}
+  .form label.l{display:block;margin:16px 0 6px}
+  .form input{width:100%;font:inherit;color:var(--txt);background:var(--bg2);border:1px solid var(--line2);border-radius:4px;padding:12px;-webkit-appearance:none;appearance:none}
+  .form input::placeholder{color:var(--dim)}
+  button.cta{font:inherit;font-weight:700;width:100%;margin-top:22px;padding:15px;background:var(--acc);color:#fff;border:0;border-radius:4px;cursor:pointer;
+        font-family:var(--mono);font-size:.85rem;letter-spacing:.12em;text-transform:uppercase}
+  button.cta:hover{background:var(--acc2)}
+  .err{display:none;margin-top:12px;color:#ffb59b;font-size:.9rem;border-left:2px solid var(--acc);padding-left:10px}
+  .ok{padding:22px;border:1px solid var(--ok);border-radius:6px;color:var(--ok);font-weight:600}
+  footer{text-align:center;color:var(--dim);margin-top:40px}
+
+  .hero{font-weight:800;letter-spacing:-.03em;line-height:1.08;font-size:clamp(1.9rem,6.4vw,3.3rem);margin:4px 0 22px}
+  .hero span{display:inline-block;margin-right:.32em;white-space:nowrap}
+  .hero i{font-style:normal;color:var(--acc2)}
+  .tin{width:100%;font:inherit;color:var(--txt);background:var(--bg2);border:1px solid var(--line2);border-radius:4px;padding:11px 12px;-webkit-appearance:none;appearance:none}
+  .tin::placeholder{color:var(--dim)}
+  .payrow{margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:4px;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:baseline;font-size:.92rem}
+  .payrow .kpi-l{color:var(--accsoft)}
+  .blk{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:12px}
+  .th{position:relative;aspect-ratio:1;border-radius:4px;overflow:hidden;background:var(--bg2);border:1px solid var(--line2);display:grid;place-items:center;
+      font-family:var(--mono);font-size:.68rem;color:var(--mut);text-align:center;padding:6px;word-break:break-all}
+  .th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .th button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.75);color:#fff;cursor:pointer;font-size:15px;line-height:1}
+  .mstat{font-family:var(--mono);font-size:.82rem;color:var(--mut);margin-top:10px}
+  .mstat.good{color:var(--ok)} .mstat.bad{color:#ffb59b}
+  .cal{max-width:390px;border:1px solid var(--line2);border-radius:6px;background:var(--bg);padding:12px;margin-top:12px}
+  .cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-weight:700;text-transform:capitalize}
+  .cal-h button{font:inherit;width:36px;height:36px;border:1px solid var(--line2);background:var(--bg2);color:var(--txt);border-radius:4px;cursor:pointer}
+  .cal-h button:disabled{opacity:.3;cursor:default}
+  .cal-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+  .cal-w{font-family:var(--mono);font-size:.68rem;color:var(--dim);text-align:center;padding:4px 0;text-transform:uppercase}
+  .cal-d{aspect-ratio:1;min-width:0;padding:0;font-family:var(--mono);font-size:.88rem;border:1px solid transparent;border-radius:4px;background:transparent;color:var(--dim);cursor:default}
+  .cal-d.ok{color:var(--txt);background:var(--bg2);border-color:var(--line2);cursor:pointer}
+  .cal-d.ok:hover{border-color:var(--accsoft)}
+  .cal-d.in{background:rgba(196,83,47,.28);color:#fff;border-color:transparent}
+  .cal-d.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .cal-d:focus-visible{outline:2px solid var(--accsoft);outline-offset:1px}
+  .abo{margin-top:18px;border:1px dashed var(--accsoft);border-radius:6px;padding:14px 16px;background:rgba(255,157,110,.05)}
+  .aboHead{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-weight:700}
+  .aboHead input{width:18px;height:18px;margin-top:3px;accent-color:var(--acc);flex:none}
+  .aboD{color:var(--mut);font-size:.9rem;margin:8px 0 0 28px}
+  .aboP{margin:12px 0 0 28px;display:flex;gap:6px 12px;flex-wrap:wrap;align-items:baseline}
+  .aboP b{font-family:var(--mono);font-size:1.2rem;color:#fff}
+  .aboP small{font-family:var(--mono);font-size:.74rem;color:var(--accsoft);letter-spacing:.08em;text-transform:uppercase}
+  .abo .inkl{margin:12px 0 0 28px}
+  .abo .legal{margin-left:28px}
+  .checks{margin-top:6px;display:grid;gap:12px}
+  .chk{display:flex;gap:10px;align-items:flex-start;font-size:.9rem;color:var(--mut);cursor:pointer}
+  .form .chk input{width:18px;height:18px;padding:0;margin-top:3px;flex:none;accent-color:var(--acc);-webkit-appearance:auto;appearance:auto}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo"><i></i>BOATSDOC</div>
+    <div class="spacer"></div>
+    <div class="sel-wrap"><select id="langSel" aria-label="Language"></select></div>
+  </div>
+</header>
+<div class="strap"><div class="eyebrow" data-i18n="claim"></div></div>
+
+<main>
+  <h1 class="hero" id="hero"></h1>
+
+  <section class="panel" id="calc">
+    <div class="calc-h">
+      <div class="badge">BD</div>
+      <div><h2 data-i18n="s2"></h2><p data-i18n="calcSub"></p></div>
+    </div>
+    <div class="calc-b">
+
+      <div class="grp" style="margin-top:18px">
+        <label class="l" data-i18n="lProd"></label>
+        <div class="chips" id="prodChips"></div>
+      </div>
+
+      <div class="grp">
+        <label class="l" data-i18n="s1"></label>
+        <div class="chips" id="pkgChips"></div>
+        <p class="hint" id="pkgDesc"></p>
+      </div>
+
+      <div class="grp">
+        <label class="l" data-i18n="lMat"></label>
+        <div class="chips" id="matChips"></div>
+        <input type="hidden" id="material" value="gfk">
+        <p class="hint" id="matHint" style="display:none"></p>
+      </div>
+
+      <div class="tools">
+        <div>
+          <label class="l eyebrow" for="bootSelect" data-i18n="lBoat" style="display:block;margin-bottom:8px"></label>
+          <select class="plain" id="bootSelect"></select>
+        </div>
+        <div id="otherBox" style="display:none">
+          <label class="l eyebrow" for="lOther" data-i18n="lOther" style="display:block;margin-bottom:8px"></label>
+          <input class="tin" id="lOther" maxlength="300">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="grp">
+          <div class="sl-h"><label class="l" for="lwl" data-i18n="lLwl" id="lblLwl"></label><span class="v" id="vLwl"></span></div>
+          <input type="range" class="slider" id="lwl" min="4" max="18" step="0.1" value="8.6">
+        </div>
+        <div class="grp">
+          <div class="sl-h"><label class="l" for="breite" data-i18n="lBeam"></label><span class="v" id="vBreite"></span></div>
+          <input type="range" class="slider" id="breite" min="1.5" max="6" step="0.1" value="3.1">
+        </div>
+        <div class="grp" id="grpTief">
+          <div class="sl-h"><label class="l" for="tiefgang" data-i18n="lDraft"></label><span class="v" id="vTief"></span></div>
+          <input type="range" class="slider" id="tiefgang" min="0.2" max="3" step="0.1" value="1.7">
+        </div>
+        <div class="grp">
+          <label class="l" data-i18n="lHull"></label>
+          <div class="chips" id="hullChips"></div>
+          <input type="hidden" id="bootstyp" value="kurzkieler">
+        </div>
+      </div>
+
+      <div class="grp">
+        <label class="l" data-i18n="lCond"></label>
+        <div class="chips" id="condChips"></div>
+        <input type="hidden" id="zustand" value="mittel">
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="kpi-l" data-i18n="kPrice"></div>
+        <div class="price" id="preisSpanne"></div>
+        <div class="vat" id="vatLbl"></div>
+        <div class="net" id="netLine"></div>
+        <div class="region" id="regionBox" style="display:none">
+          <label class="l" for="regionSel" data-i18n="region"></label>
+          <select class="plain" id="regionSel"></select>
+        </div>
+        <div class="meta">
+          <div><span class="kpi-l" data-i18n="kTime"></span><b><span id="dauer"></span> <small data-i18n="kDays"></small></b></div>
+          <div class="eco" data-i18n="eco" style="margin:0"></div>
+        </div>
+        <div class="payrow"><span class="kpi-l" data-i18n="payT"></span><span data-i18n="payLine"></span></div>
+        <ul class="inkl" id="inklListe"></ul>
+        <div class="abo" id="aboBox" style="display:none">
+          <label class="aboHead"><input type="checkbox" id="aboChk"><span id="aboT"></span></label>
+          <p class="aboD" id="aboD"></p>
+          <div class="aboP"><span class="kpi-l" data-i18n="aboKpi"></span><b id="aboPreis"></b><small id="aboPer"></small></div>
+          <ul class="inkl" id="aboList"></ul>
+          <p class="legal" data-i18n="aboLegal"></p>
+        </div>
+        <p class="legal"><span id="travelTxt"></span><br><span data-i18n="binding"></span><span id="fxNote" style="display:block;margin-top:4px"></span></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="eyebrow sec-t" id="procT"></div>
+  <ul class="steps" id="procList"></ul>
+
+  <div class="eyebrow sec-t" data-i18n="s4"></div>
+  <section class="panel form">
+    <div id="leadForm">
+
+      <div class="blk">
+        <div class="eyebrow" data-i18n="mediaT"></div>
+        <p class="hint" data-i18n="mediaHint"></p>
+        <div class="drop" id="drop" tabindex="0" role="button" style="margin-top:12px"><div id="dropText"></div></div>
+        <input type="file" id="fileInput" accept="image/*,video/*,.heic,.heif" multiple style="display:none">
+        <div class="thumbs" id="thumbs"></div>
+        <div class="mstat" id="mStat"></div>
+      </div>
+
+      <div class="blk">
+        <div class="eyebrow" data-i18n="calT"></div>
+        <p class="hint" data-i18n="calHint"></p>
+        <div class="cal" id="cal"></div>
+        <div class="mstat" id="calSel"></div>
+      </div>
+
+      <div class="fgrid">
+        <div><label class="l" for="lName"><span data-i18n="fName"></span> *</label><input id="lName" autocomplete="name"></div>
+        <div><label class="l" for="lEmail"><span data-i18n="fMail"></span> *</label><input id="lEmail" type="email" autocomplete="email"></div>
+        <div><label class="l" for="lPlz"><span data-i18n="fZip"></span> *</label><input id="lPlz" maxlength="8" autocomplete="postal-code"></div>
+        <div><label class="l" for="lTel" data-i18n="fTel"></label><input id="lTel" type="tel" autocomplete="tel"></div>
+        <div style="grid-column:1/-1"><label class="l" for="lMsg" data-i18n="fMsg"></label><input id="lMsg"></div>
+      </div>
+
+      <div class="checks" id="checks" style="margin-top:20px"></div>
+      <button class="cta" id="leadBtn" data-i18n="fSend"></button>
+      <div class="err" id="leadErr"></div>
+    </div>
+    <div class="ok" id="leadOk" style="display:none" data-i18n="fThanks"></div>
+  </section>
+
+  <footer class="eyebrow" data-i18n="footer"></footer>
+</main>
+
+<script>
+"use strict";
+
+/* ================= I18N ================= */
+const I18N = {
+ de:{locale:"de-DE",claim:"Bootsrumpf abschleifen & neu beschichten — schnell, sauber, planbar",
+  s1:"Was brauchen Sie?",s2:"Ihr Boot",s3:"Ihr Ergebnis",s4:"Termin & Angebot sichern",
+  tabPhoto:"Foto hochladen",tabList:"Aus Liste wählen",
+  drop:"<strong>Foto Ihres Bootes</strong> hierher ziehen oder tippen.",
+  dropDone:"<strong>Foto gespeichert.</strong> Anderes Foto? Tippen.",
+  mockNote:"Das Foto wird Ihrer Anfrage beigefügt. Bitte prüfen Sie die Maße unten oder wählen Sie Ihr Boot aus der Liste.",
+  lBoat:"Bootstyp / Größe",lLwl:"Wasserlinie (m)",lBeam:"Breite (m)",lDraft:"Tiefgang (m)",lHull:"Rumpfform",lCond:"Zustand der Beschichtung",
+  cta:"Preis & Dauer anzeigen",kPrice:"Ihr Preis",vatIncl:"inkl. {r} MwSt.",vatExcl:"zzgl. MwSt.",net:"Netto",region:"Preise für",regionOther:"Anderes Land (netto)",kTime:"Fertig in",kDays:"Werktagen",
+  eco:"Wir arbeiten zu 100 % chemiefrei und umweltschonend — das optimale Verfahren für Ihren Rumpf wählen unsere Profis. Im Preis enthalten.",
+  travel:"Anfahrt wird separat mit {km} berechnet.",binding:"Unverbindlicher Richtpreis — verbindliches Angebot nach Besichtigung.",
+  fName:"Name",fMail:"E-Mail",fZip:"Postleitzahl (Liegeplatz)",fWhen:"Wunschtermin",fTel:"Telefon",fMsg:"Liegeplatz / Nachricht",
+  fSend:"Verbindliches Angebot anfordern",fThanks:"Vielen Dank! Wir melden uns kurzfristig mit Termin und verbindlichem Angebot.",
+  errReq:"Bitte Name und E-Mail angeben.",errZip:"Bitte gültige Postleitzahl angeben.",errPkg:"Bitte wählen Sie zuerst, was Sie brauchen.",
+  footer:"Umweltschonende Rumpf-Aufbereitung · Materialien von NautiCare",
+  hull:{motorboot:"Motorboot / Gleiter",kurzkieler:"Segelboot (Kurzkieler)",langkieler:"Segelboot (Langkieler)"},
+  cond:{leicht:"Gut (dünne Schichten)",mittel:"Normal",stark:"Stark verwittert / dicke Schichten"},
+  boat:{motor:"Motorboot",sailFin:"Segelboot (Kurzkieler)",sailLong:"Klassiker / Langkieler"},
+  pkgs:{
+   af:{t:"Antifouling erneuern",d:"Altes Antifouling runter, Grundierung, neues Antifouling drauf. Startklar für die Saison.",
+       inc:["Altes Antifouling komplett entfernen","Grundierung (2 Schichten)","Neues Antifouling (2 Schichten, Spritzauftrag)"]},
+   full:{t:"Komplett neu: Rumpf entlacken + Neuaufbau",d:"Alles runter bis auf den Untergrund (Gelcoat, Metall oder Holz), dann kompletter Neuaufbau: Grundierung, Farbe, Antifouling.",
+       inc:["Komplette Entschichtung bis auf den Untergrund","Feinschliff von Hand","Grundierung (2 Schichten)","Neue Farbe / 2K-Lack (2 Schichten, Spritzauftrag)","Neues Antifouling (2 Schichten)"]},
+   strip:{t:"Nur entfernen (beschichtungsfertig)",d:"Wir entfernen alle Altschichten — Sie übernehmen den Neuaufbau selbst.",
+       inc:["Alle Altschichten entfernen","Oberfläche beschichtungsfertig übergeben"]},
+  }},
+ en:{locale:"en-GB",claim:"Hull stripping & recoating — fast, clean, on schedule",
+  s1:"What do you need?",s2:"Your boat",s3:"Your result",s4:"Secure your slot & quote",
+  tabPhoto:"Upload photo",tabList:"Choose from list",
+  drop:"<strong>Drop or tap</strong> to add a photo of your boat.",
+  dropDone:"<strong>Photo saved.</strong> Tap for another.",
+  mockNote:"Your photo will be attached to the request. Please check the dimensions below or pick your boat from the list.",
+  lBoat:"Boat type / size",lLwl:"Waterline (m)",lBeam:"Beam (m)",lDraft:"Draft (m)",lHull:"Hull type",lCond:"Coating condition",
+  cta:"Show price & time",kPrice:"Your price",vatIncl:"incl. {r} VAT",vatExcl:"excl. VAT",net:"Net",region:"Prices for",regionOther:"Other country (excl. VAT)",kTime:"Done in",kDays:"working days",
+  eco:"We work 100% chemical-free and eco-friendly — our pros pick the best treatment for your hull. Included in the price.",
+  travel:"Travel is charged separately at {km}.",binding:"Non-binding estimate — firm quote after inspection.",
+  fName:"Name",fMail:"E-mail",fZip:"Postcode (berth location)",fWhen:"Preferred date",fTel:"Phone",fMsg:"Marina / message",
+  fSend:"Request firm quote",fThanks:"Thank you! We'll get back to you shortly with a date and a firm quote.",
+  errReq:"Please enter name and e-mail.",errZip:"Please enter a valid postcode.",errPkg:"Please choose what you need first.",
+  footer:"Eco-friendly hull refit · Materials by NautiCare",
+  hull:{motorboot:"Motorboat / planing",kurzkieler:"Sailboat (fin keel)",langkieler:"Sailboat (long keel)"},
+  cond:{leicht:"Good (thin layers)",mittel:"Average",stark:"Heavily weathered / thick layers"},
+  boat:{motor:"Motorboat",sailFin:"Sailboat (fin keel)",sailLong:"Classic / long keel"},
+  pkgs:{
+   af:{t:"Renew antifouling",d:"Old antifouling off, primer on, fresh antifouling applied. Ready for the season.",
+       inc:["Complete removal of old antifouling","Primer (2 coats)","New antifouling (2 coats, spray-applied)"]},
+   full:{t:"Full refit: strip + recoat",d:"Everything off down to the substrate (gelcoat, metal or wood), then a full rebuild: primer, paint, antifouling.",
+       inc:["Full stripping down to the substrate","Fine hand sanding","Primer (2 coats)","New paint / 2-pack coating (2 coats, spray-applied)","New antifouling (2 coats)"]},
+   strip:{t:"Strip only (ready to coat)",d:"We remove all old coatings — you handle the recoating yourself.",
+       inc:["Removal of all old coatings","Surface handed over ready to coat"]},
+  }},
+ da:{locale:"da-DK",claim:"Slibning & ny bundbehandling — hurtigt, rent, til tiden",
+  s1:"Hvad har du brug for?",s2:"Din båd",s3:"Dit resultat",s4:"Book tid & tilbud",
+  tabPhoto:"Upload foto",tabList:"Vælg fra liste",
+  drop:"<strong>Træk eller tryk</strong> for at tilføje et foto af din båd.",
+  dropDone:"<strong>Foto gemt.</strong> Tryk for et andet.",
+  mockNote:"Dit foto vedhæftes forespørgslen. Tjek målene nedenfor, eller vælg din båd fra listen.",
+  lBoat:"Bådtype / størrelse",lLwl:"Vandlinje (m)",lBeam:"Bredde (m)",lDraft:"Dybgang (m)",lHull:"Skrogtype",lCond:"Belægningens stand",
+  cta:"Vis pris & tid",kPrice:"Din pris",vatIncl:"inkl. {r} moms",vatExcl:"ekskl. moms",net:"Ekskl. moms",region:"Priser for",regionOther:"Andet land (ekskl. moms)",kTime:"Færdig på",kDays:"arbejdsdage",
+  eco:"Vi arbejder 100 % kemikaliefrit og miljøvenligt — vores folk vælger den bedste metode til dit skrog. Inkluderet i prisen.",
+  travel:"Kørsel afregnes separat med {km}.",binding:"Uforpligtende overslag — fast tilbud efter besigtigelse.",
+  fName:"Navn",fMail:"E-mail",fZip:"Postnummer (bådplads)",fWhen:"Ønsket tidspunkt",fTel:"Telefon",fMsg:"Havn / besked",
+  fSend:"Anmod om fast tilbud",fThanks:"Tak! Vi vender hurtigt tilbage med dato og fast tilbud.",
+  errReq:"Udfyld venligst navn og e-mail.",errZip:"Indtast venligst et gyldigt postnummer.",errPkg:"Vælg først, hvad du har brug for.",
+  footer:"Miljøvenlig skrogrenovering · Materialer fra NautiCare",
+  hull:{motorboot:"Motorbåd / planende",kurzkieler:"Sejlbåd (finnekøl)",langkieler:"Sejlbåd (langkøl)"},
+  cond:{leicht:"God (tynde lag)",mittel:"Normal",stark:"Kraftigt forvitret / tykke lag"},
+  boat:{motor:"Motorbåd",sailFin:"Sejlbåd (finnekøl)",sailLong:"Klassiker / langkøl"},
+  pkgs:{
+   af:{t:"Ny bundmaling",d:"Gammel bundmaling af, primer på, ny bundmaling påført. Klar til sæsonen.",
+       inc:["Komplet fjernelse af gammel bundmaling","Primer (2 lag)","Ny bundmaling (2 lag, sprøjtepåført)"]},
+   full:{t:"Totalrenovering: afrensning + ny opbygning",d:"Alt af ned til underlaget (gelcoat, metal eller træ), derefter fuld opbygning: primer, maling, bundmaling.",
+       inc:["Fuld afrensning ned til underlaget","Finslibning i hånden","Primer (2 lag)","Ny maling / 2-komponent lak (2 lag, sprøjtepåført)","Ny bundmaling (2 lag)"]},
+   strip:{t:"Kun afrensning (klar til maling)",d:"Vi fjerner alle gamle lag — du står selv for den nye behandling.",
+       inc:["Fjernelse af alle gamle lag","Overflade afleveres klar til maling"]},
+  }},
+ no:{locale:"nb-NO",claim:"Skrogsliping & nytt bunnstoff — raskt, rent, som avtalt",
+  s1:"Hva trenger du?",s2:"Båten din",s3:"Ditt resultat",s4:"Sikre deg time & tilbud",
+  tabPhoto:"Last opp foto",tabList:"Velg fra liste",
+  drop:"<strong>Dra eller trykk</strong> for å legge til et bilde av båten din.",
+  dropDone:"<strong>Foto lagret.</strong> Trykk for et annet.",
+  mockNote:"Bildet legges ved forespørselen. Sjekk målene nedenfor, eller velg båten din fra listen.",
+  lBoat:"Båttype / størrelse",lLwl:"Vannlinje (m)",lBeam:"Bredde (m)",lDraft:"Dypgang (m)",lHull:"Skrogtype",lCond:"Beleggets tilstand",
+  cta:"Vis pris & tid",kPrice:"Din pris",vatIncl:"inkl. {r} mva.",vatExcl:"ekskl. mva.",net:"Ekskl. mva.",region:"Priser for",regionOther:"Annet land (ekskl. mva.)",kTime:"Ferdig på",kDays:"arbeidsdager",
+  eco:"Vi jobber 100 % kjemikaliefritt og miljøvennlig — fagfolkene våre velger beste metode for skroget ditt. Inkludert i prisen.",
+  travel:"Kjøring faktureres separat med {km}.",binding:"Uforpliktende prisantydning — fast tilbud etter befaring.",
+  fName:"Navn",fMail:"E-post",fZip:"Postnummer (båtplass)",fWhen:"Ønsket tidspunkt",fTel:"Telefon",fMsg:"Havn / melding",
+  fSend:"Be om fast tilbud",fThanks:"Takk! Vi kommer raskt tilbake med dato og fast tilbud.",
+  errReq:"Fyll inn navn og e-post.",errZip:"Oppgi et gyldig postnummer.",errPkg:"Velg først hva du trenger.",
+  footer:"Miljøvennlig skrogrenovering · Materialer fra NautiCare",
+  hull:{motorboot:"Motorbåt / planende",kurzkieler:"Seilbåt (finnekjøl)",langkieler:"Seilbåt (langkjøl)"},
+  cond:{leicht:"God (tynne lag)",mittel:"Normal",stark:"Sterkt værslitt / tykke lag"},
+  boat:{motor:"Motorbåt",sailFin:"Seilbåt (finnekjøl)",sailLong:"Klassiker / langkjøl"},
+  pkgs:{
+   af:{t:"Nytt bunnstoff",d:"Gammelt bunnstoff av, primer på, nytt bunnstoff påført. Klar for sesongen.",
+       inc:["Komplett fjerning av gammelt bunnstoff","Primer (2 strøk)","Nytt bunnstoff (2 strøk, sprøytepåført)"]},
+   full:{t:"Totalrenovering: fjerning + ny oppbygging",d:"Alt av ned til underlaget (gelcoat, metall eller tre), deretter full oppbygging: primer, maling, bunnstoff.",
+       inc:["Full fjerning ned til underlaget","Finsliping for hånd","Primer (2 strøk)","Ny maling / 2-komponent lakk (2 strøk, sprøytepåført)","Nytt bunnstoff (2 strøk)"]},
+   strip:{t:"Kun fjerning (klar til maling)",d:"Vi fjerner alle gamle lag — du tar selv den nye behandlingen.",
+       inc:["Fjerning av alle gamle lag","Overflaten leveres klar til maling"]},
+  }},
+ sv:{locale:"sv-SE",claim:"Skrovslipning & ny bottenfärg — snabbt, rent, i tid",
+  s1:"Vad behöver du?",s2:"Din båt",s3:"Ditt resultat",s4:"Boka tid & offert",
+  tabPhoto:"Ladda upp foto",tabList:"Välj från lista",
+  drop:"<strong>Dra eller tryck</strong> för att lägga till en bild på din båt.",
+  dropDone:"<strong>Foto sparat.</strong> Tryck för ett annat.",
+  mockNote:"Bilden bifogas din förfrågan. Kontrollera måtten nedan eller välj din båt från listan.",
+  lBoat:"Båttyp / storlek",lLwl:"Vattenlinje (m)",lBeam:"Bredd (m)",lDraft:"Djupgående (m)",lHull:"Skrovtyp",lCond:"Beläggningens skick",
+  cta:"Visa pris & tid",kPrice:"Ditt pris",vatIncl:"inkl. {r} moms",vatExcl:"exkl. moms",net:"Exkl. moms",region:"Priser för",regionOther:"Annat land (exkl. moms)",kTime:"Klart på",kDays:"arbetsdagar",
+  eco:"Vi arbetar 100 % kemikaliefritt och miljövänligt — våra proffs väljer bästa metod för ditt skrov. Ingår i priset.",
+  travel:"Resa debiteras separat med {km}.",binding:"Preliminärt pris — fast offert efter besiktning.",
+  fName:"Namn",fMail:"E-post",fZip:"Postnummer (båtplats)",fWhen:"Önskad tidpunkt",fTel:"Telefon",fMsg:"Hamn / meddelande",
+  fSend:"Begär fast offert",fThanks:"Tack! Vi återkommer inom kort med datum och fast offert.",
+  errReq:"Fyll i namn och e-post.",errZip:"Ange ett giltigt postnummer.",errPkg:"Välj först vad du behöver.",
+  footer:"Miljövänlig skrovrenovering · Material från NautiCare",
+  hull:{motorboot:"Motorbåt / planande",kurzkieler:"Segelbåt (fenköl)",langkieler:"Segelbåt (långköl)"},
+  cond:{leicht:"Bra (tunna lager)",mittel:"Normal",stark:"Kraftigt vittrad / tjocka lager"},
+  boat:{motor:"Motorbåt",sailFin:"Segelbåt (fenköl)",sailLong:"Klassiker / långköl"},
+  pkgs:{
+   af:{t:"Ny bottenfärg",d:"Gammal bottenfärg bort, primer på, ny bottenfärg applicerad. Redo för säsongen.",
+       inc:["Komplett borttagning av gammal bottenfärg","Primer (2 skikt)","Ny bottenfärg (2 skikt, sprutapplicerad)"]},
+   full:{t:"Totalrenovering: borttagning + ny uppbyggnad",d:"Allt bort ner till underlaget (gelcoat, metall eller trä), sedan full uppbyggnad: primer, färg, bottenfärg.",
+       inc:["Full borttagning ner till underlaget","Finslipning för hand","Primer (2 skikt)","Ny färg / 2-komponentlack (2 skikt, sprutapplicerad)","Ny bottenfärg (2 skikt)"]},
+   strip:{t:"Endast borttagning (klar att måla)",d:"Vi tar bort alla gamla lager — du sköter den nya behandlingen själv.",
+       inc:["Borttagning av alla gamla lager","Ytan lämnas klar att måla"]},
+  }}
+};
+
+
+/* ===== Erweiterungen: Material, Freitext, Medien, Kalender, Zahlung, Ablauf ===== */
+const EXTRA = {
+ de:{hero:["Fixer Termin","Fixe Kosten"],
+  lMat:"Rumpfmaterial",mats:{gfk:"GFK",stahl:"Stahl",alu:"Alu",holz:"Holz"},
+  boatOther:"Andere Größe / Sonderfall",lOther:"Ihre Maße & Besonderheiten",
+  mediaT:"Zustand prüfen: Fotos oder Video",
+  mediaHint:"Mindestens 3 Fotos (Unterwasserschiff, beide Seiten, Detail der Beschichtung) oder 1 Video. Eine Vor-Ort-Prüfung findet nicht statt — wir beurteilen den Zustand anhand Ihrer Medien.",
+  mediaDrop:"<strong>Fotos oder Video</strong> hierher ziehen oder tippen.",
+  mediaCount:"Fotos: {p} · Videos: {v}",mediaOk:"Ausreichend für die Prüfung.",
+  errMedia:"Bitte mindestens 3 Fotos oder 1 Video hochladen.",errSize:"Datei zu groß (Foto max. 15 MB, Video max. 150 MB) oder nicht unterstützt.",errMax:"Maximal 12 Dateien.",
+  calT:"Wunschtermin (Arbeitsbeginn)",calHint:"Wählen Sie einen Werktag. Ihr voraussichtliches Zeitfenster wird markiert; der Termin wird mit dem Festpreisangebot fixiert.",
+  calSel:"Start {s} · fertig ca. {e}",calNone:"Noch kein Termin gewählt.",errDate:"Bitte wählen Sie einen Wunschtermin.",
+  cOsmose:"Ich versichere, dass der Rumpf osmosefrei ist. Wird bei den Arbeiten Osmose festgestellt, wird der Mehraufwand nachberechnet.",
+  cMarina:"Kranen, Aufbocken und Abdeckung stimme ich selbst mit meiner Marina ab (falls noch nicht geschehen).",
+  cPay:"Ich nehme zur Kenntnis: 50 % Anzahlung binnen 5 Werktagen nach beidseitiger Bestätigung des Angebots.",
+  errConfirm:"Bitte bestätigen Sie alle Hinweise.",errOther:"Bitte Maße / Besonderheiten angeben.",errSend:"Senden fehlgeschlagen — bitte erneut versuchen.",
+  payT:"Zahlung",payLine:"50 % Anzahlung binnen 5 Werktagen nach beidseitiger Bestätigung des Angebots.",
+  binding:"Richtpreis — verbindliches Festpreisangebot nach Prüfung Ihrer Fotos/Videos. Gilt für einen osmosefreien Rumpf; wird Osmose festgestellt, wird nachberechnet.",
+  fThanks:"Vielen Dank! Wir prüfen Ihre Medien und melden uns kurzfristig mit Festpreisangebot und Termin."},
+ en:{hero:["Fixed date","Fixed price"],
+  lMat:"Hull material",mats:{gfk:"GRP",stahl:"Steel",alu:"Alu",holz:"Wood"},
+  boatOther:"Other size / special case",lOther:"Your dimensions & details",
+  mediaT:"Condition check: photos or video",
+  mediaHint:"At least 3 photos (underwater hull, both sides, coating detail) or 1 video. No on-site inspection takes place — we assess the condition from your media.",
+  mediaDrop:"<strong>Drop or tap</strong> to add photos or a video.",
+  mediaCount:"Photos: {p} · Videos: {v}",mediaOk:"Enough for the check.",
+  errMedia:"Please upload at least 3 photos or 1 video.",errSize:"File too large (photo max. 15 MB, video max. 150 MB) or not supported.",errMax:"Maximum 12 files.",
+  calT:"Preferred date (work start)",calHint:"Pick a working day. Your expected time window is highlighted; the date is fixed with the fixed-price quote.",
+  calSel:"Start {s} · done approx. {e}",calNone:"No date selected yet.",errDate:"Please choose a preferred date.",
+  cOsmose:"I confirm that the hull is free of osmosis. If osmosis is found during the work, the additional effort will be charged afterwards.",
+  cMarina:"I will arrange crane-out, blocking and covering with my marina myself (if not already done).",
+  cPay:"I acknowledge: 50% deposit within 5 working days after both sides have confirmed the quote.",
+  errConfirm:"Please confirm all notes.",errOther:"Please enter dimensions / details.",errSend:"Sending failed — please try again.",
+  payT:"Payment",payLine:"50% deposit within 5 working days after both sides have confirmed the quote.",
+  binding:"Estimate — firm fixed-price quote after we review your photos/video. Applies to an osmosis-free hull; if osmosis is found, the extra work is charged additionally.",
+  fThanks:"Thank you! We'll review your media and get back to you shortly with a fixed-price quote and date."},
+ da:{hero:["Fast dato","Fast pris"],
+  lMat:"Skrogmateriale",mats:{gfk:"Glasfiber",stahl:"Stål",alu:"Alu",holz:"Træ"},
+  boatOther:"Anden størrelse / særtilfælde",lOther:"Dine mål & bemærkninger",
+  mediaT:"Tilstandstjek: fotos eller video",
+  mediaHint:"Mindst 3 fotos (undervandsskrog, begge sider, detalje af belægning) eller 1 video. Der sker ingen besigtigelse på stedet — vi vurderer tilstanden ud fra dine medier.",
+  mediaDrop:"<strong>Træk eller tryk</strong> for at tilføje fotos eller video.",
+  mediaCount:"Fotos: {p} · Videoer: {v}",mediaOk:"Tilstrækkeligt til tjekket.",
+  errMedia:"Upload mindst 3 fotos eller 1 video.",errSize:"Filen er for stor (foto maks. 15 MB, video maks. 150 MB) eller understøttes ikke.",errMax:"Maks. 12 filer.",
+  calT:"Ønsket dato (arbejdsstart)",calHint:"Vælg en hverdag. Dit forventede tidsrum markeres; datoen fastlægges med det faste tilbud.",
+  calSel:"Start {s} · færdig ca. {e}",calNone:"Ingen dato valgt endnu.",errDate:"Vælg venligst en ønsket dato.",
+  cOsmose:"Jeg bekræfter, at skroget er osmosefrit. Konstateres osmose under arbejdet, efterberegnes merarbejdet.",
+  cMarina:"Jeg aftaler selv kranløft, opklodsning og afdækning med min havn (hvis det ikke allerede er gjort).",
+  cPay:"Jeg tager til efterretning: 50 % depositum inden for 5 hverdage efter begge parters bekræftelse af tilbuddet.",
+  errConfirm:"Bekræft venligst alle punkter.",errOther:"Angiv venligst mål / bemærkninger.",errSend:"Afsendelse mislykkedes — prøv igen.",
+  payT:"Betaling",payLine:"50 % depositum inden for 5 hverdage efter begge parters bekræftelse af tilbuddet.",
+  binding:"Overslag — fast tilbud efter gennemgang af dine fotos/video. Gælder for et osmosefrit skrog; findes der osmose, efterberegnes det.",
+  fThanks:"Tak! Vi gennemgår dine medier og vender hurtigt tilbage med fast tilbud og dato."},
+ no:{hero:["Fast dato","Fast pris"],
+  lMat:"Skrogmateriale",mats:{gfk:"Glassfiber",stahl:"Stål",alu:"Alu",holz:"Tre"},
+  boatOther:"Annen størrelse / spesialtilfelle",lOther:"Dine mål & merknader",
+  mediaT:"Tilstandssjekk: bilder eller video",
+  mediaHint:"Minst 3 bilder (undervannsskrog, begge sider, detalj av belegg) eller 1 video. Det gjennomføres ingen befaring på stedet — vi vurderer tilstanden ut fra mediene dine.",
+  mediaDrop:"<strong>Dra eller trykk</strong> for å legge til bilder eller video.",
+  mediaCount:"Bilder: {p} · Videoer: {v}",mediaOk:"Tilstrekkelig for vurderingen.",
+  errMedia:"Last opp minst 3 bilder eller 1 video.",errSize:"Filen er for stor (bilde maks. 15 MB, video maks. 150 MB) eller støttes ikke.",errMax:"Maks. 12 filer.",
+  calT:"Ønsket dato (arbeidsstart)",calHint:"Velg en virkedag. Forventet tidsrom markeres; datoen fastsettes med det faste tilbudet.",
+  calSel:"Start {s} · ferdig ca. {e}",calNone:"Ingen dato valgt ennå.",errDate:"Velg en ønsket dato.",
+  cOsmose:"Jeg bekrefter at skroget er osmosefritt. Oppdages osmose under arbeidet, etterberegnes merarbeidet.",
+  cMarina:"Jeg avtaler selv kranløft, oppstøtting og tildekking med havnen min (hvis det ikke allerede er gjort).",
+  cPay:"Jeg tar til etterretning: 50 % forskudd innen 5 virkedager etter at begge parter har bekreftet tilbudet.",
+  errConfirm:"Bekreft alle punkter.",errOther:"Oppgi mål / merknader.",errSend:"Sending feilet — prøv igjen.",
+  payT:"Betaling",payLine:"50 % forskudd innen 5 virkedager etter at begge parter har bekreftet tilbudet.",
+  binding:"Prisantydning — fast tilbud etter gjennomgang av bilder/video. Gjelder for et osmosefritt skrog; oppdages osmose, etterberegnes det.",
+  fThanks:"Takk! Vi går gjennom mediene dine og kommer raskt tilbake med fast tilbud og dato."},
+ sv:{hero:["Fast datum","Fast pris"],
+  lMat:"Skrovmaterial",mats:{gfk:"Glasfiber",stahl:"Stål",alu:"Alu",holz:"Trä"},
+  boatOther:"Annan storlek / specialfall",lOther:"Dina mått & anmärkningar",
+  mediaT:"Skickkontroll: bilder eller video",
+  mediaHint:"Minst 3 bilder (undervattensskrov, båda sidor, detalj av beläggning) eller 1 video. Ingen besiktning på plats genomförs — vi bedömer skicket utifrån dina bilder.",
+  mediaDrop:"<strong>Dra eller tryck</strong> för att lägga till bilder eller video.",
+  mediaCount:"Bilder: {p} · Videor: {v}",mediaOk:"Tillräckligt för bedömningen.",
+  errMedia:"Ladda upp minst 3 bilder eller 1 video.",errSize:"Filen är för stor (bild max 15 MB, video max 150 MB) eller stöds inte.",errMax:"Max 12 filer.",
+  calT:"Önskat datum (arbetsstart)",calHint:"Välj en arbetsdag. Ditt beräknade tidsfönster markeras; datumet fastställs med den fasta offerten.",
+  calSel:"Start {s} · klart ca. {e}",calNone:"Inget datum valt än.",errDate:"Välj ett önskat datum.",
+  cOsmose:"Jag bekräftar att skrovet är osmosfritt. Upptäcks osmos under arbetet efterdebiteras merarbetet.",
+  cMarina:"Jag ordnar själv kranlyft, uppallning och täckning med min hamn (om det inte redan är gjort).",
+  cPay:"Jag noterar: 50 % handpenning inom 5 arbetsdagar efter att båda parter bekräftat offerten.",
+  errConfirm:"Bekräfta alla punkter.",errOther:"Ange mått / anmärkningar.",errSend:"Sändningen misslyckades — försök igen.",
+  payT:"Betalning",payLine:"50 % handpenning inom 5 arbetsdagar efter att båda parter bekräftat offerten.",
+  binding:"Prisuppskattning — fast offert efter genomgång av dina bilder/video. Gäller för ett osmosfritt skrov; upptäcks osmos efterdebiteras det.",
+  fThanks:"Tack! Vi går igenom dina bilder/video och återkommer snart med fast offert och datum."}
+};
+for (const l in EXTRA) Object.assign(I18N[l], EXTRA[l]);
+
+/* ================= Abwicklung / Prozess ================= */
+const PROC = {
+ de:{t:"So läuft es ab",steps:[
+  ["Anfrage senden","Maße, Material, 3 Fotos oder 1 Video und Wunschtermin. Sie versichern einen osmosefreien Rumpf."],
+  ["Prüfung per Foto/Video","Wir beurteilen den Zustand anhand Ihrer Medien. Eine Vor-Ort-Besichtigung findet nicht statt."],
+  ["Festpreis & Termin","Verbindliches Angebot mit Fixtermin. Nach Bestätigung durch beide Seiten: 50 % Anzahlung binnen 5 Werktagen."],
+  ["Vorbereitung","Kranen, Aufbocken und Abdeckung klären Sie selbst mit Ihrer Marina — falls noch nicht geschehen."],
+  ["Durchführung","Entschichtung und Neuaufbau — sauber, schnell, umweltschonend."],
+  ["Abnahme & Zahlung","Gemeinsame Abnahme; der Restbetrag wird nach Ihrer Freigabe fällig."]]},
+ en:{t:"How it works",steps:[
+  ["Send request","Dimensions, material, 3 photos or 1 video and your preferred date. You confirm the hull is osmosis-free."],
+  ["Check by photo/video","We assess the condition from your media. No on-site inspection takes place."],
+  ["Fixed price & date","Binding quote with a fixed date. Once both sides confirm: 50% deposit within 5 working days."],
+  ["Preparation","You arrange crane-out, blocking and covering with your marina yourself — if not already done."],
+  ["Execution","Stripping and recoating — clean, fast, eco-friendly."],
+  ["Handover & payment","Joint handover; the remaining balance is due after your approval."]]},
+ da:{t:"Sådan foregår det",steps:[
+  ["Send forespørgsel","Mål, materiale, 3 fotos eller 1 video og ønsket dato. Du bekræfter, at skroget er osmosefrit."],
+  ["Tjek via foto/video","Vi vurderer tilstanden ud fra dine medier. Der sker ingen besigtigelse på stedet."],
+  ["Fast pris & dato","Bindende tilbud med fast dato. Når begge parter har bekræftet: 50 % depositum inden for 5 hverdage."],
+  ["Forberedelse","Du aftaler selv kranløft, opklodsning og afdækning med din havn — hvis det ikke allerede er gjort."],
+  ["Udførelse","Afrensning og ny behandling — rent, hurtigt, miljøvenligt."],
+  ["Aflevering & betaling","Fælles gennemgang; restbeløbet forfalder efter din godkendelse."]]},
+ no:{t:"Slik foregår det",steps:[
+  ["Send forespørsel","Mål, materiale, 3 bilder eller 1 video og ønsket dato. Du bekrefter at skroget er osmosefritt."],
+  ["Vurdering via foto/video","Vi vurderer tilstanden ut fra mediene dine. Det gjennomføres ingen befaring på stedet."],
+  ["Fast pris & dato","Bindende tilbud med fast dato. Når begge parter har bekreftet: 50 % forskudd innen 5 virkedager."],
+  ["Forberedelse","Du avtaler selv kranløft, oppstøtting og tildekking med havnen din — hvis det ikke allerede er gjort."],
+  ["Utførelse","Fjerning og ny behandling — rent, raskt, miljøvennlig."],
+  ["Overlevering & betaling","Felles gjennomgang; restbeløpet forfaller etter din godkjenning."]]},
+ sv:{t:"Så går det till",steps:[
+  ["Skicka förfrågan","Mått, material, 3 bilder eller 1 video och önskat datum. Du bekräftar att skrovet är osmosfritt."],
+  ["Bedömning via foto/video","Vi bedömer skicket utifrån dina bilder. Ingen besiktning på plats genomförs."],
+  ["Fast pris & datum","Bindande offert med fast datum. När båda parter bekräftat: 50 % handpenning inom 5 arbetsdagar."],
+  ["Förberedelse","Du ordnar själv kranlyft, uppallning och täckning med din hamn — om det inte redan är gjort."],
+  ["Utförande","Borttagning och ny behandling — rent, snabbt, miljövänligt."],
+  ["Överlämning & betalning","Gemensam genomgång; restbeloppet förfaller efter ditt godkännande."]]}
+};
+
+
+/* ===== Produkt 2: Detailing & Versiegelung (Texte) ===== */
+const EXTRA_D = {
+ de:{lProd:"Produkt",prods:{uws:"Unterwasserschiff",det:"Detailing & Versiegelung"},lLenD:"Bootslänge (m)",
+  pkgsD:{
+   pflege:{t:"Aufbereitung & Versiegelung",d:"Reinigen, einstufig polieren, versiegeln — für gepflegte Oberflächen, die wieder strahlen sollen.",
+     inc:["Gründliche Reinigung & Dekontamination","Einstufige Politur","Versiegelung (Wachs/Sealant)","Foto-Dokumentation vorher/nachher"]},
+   restau:{t:"Restauration: Nassschliff & Politur",d:"Politur hat nichts gebracht? Dann ist die Oberfläche ausgekreidet oder stumpf — das braucht Nassschliff, keine Politur.",
+     inc:["Reinigung & Dekontamination","Nassschliff (500er bis 1500er)","Politur auf Hochglanz","Versiegelung","Foto-Dokumentation vorher/nachher"]},
+   keramik:{t:"Keramik-Komplettpaket",d:"Restauration plus Keramikversiegelung — der dauerhafte Schutz, damit das Ergebnis bleibt.",
+     inc:["Reinigung & Dekontamination","Nassschliff (500er bis 1500er)","Zweistufige Politur (Korrektur + Finish)","Keramikversiegelung (2 Schichten)","Foto-Dokumentation vorher/nachher"]}},
+  condD:{leicht:"Neuwertig / gepflegt",mittel:"Matt, leichte Oxidation",stark:"Ausgekreidet / stumpf"},
+  hintChalk:"Ausgekreidet? Dann reicht Politur nicht — wählen Sie die Restauration mit Nassschliff.",
+  ecoD:"Wir wählen Politur, Schliff und Versiegelung nach dem Zustand Ihrer Oberfläche — Sie zahlen das Ergebnis, nicht das Verfahren. Foto-Dokumentation vorher/nachher inklusive.",
+  bindingD:"Richtpreis — verbindliches Festpreisangebot nach Prüfung Ihrer Fotos/Videos.",
+  mediaHintD:"Mindestens 3 Fotos (beide Rumpfseiten, Aufbau/Deck, Detail der Oberfläche) oder 1 Video. Eine Vor-Ort-Prüfung findet nicht statt — wir beurteilen den Zustand anhand Ihrer Medien.",
+  cMarinaD:"Den Zugang zum Boot und zum Liegeplatz stimme ich selbst mit meiner Marina ab (falls noch nicht geschehen)."},
+ en:{lProd:"Service",prods:{uws:"Underwater hull",det:"Detailing & sealing"},lLenD:"Boat length (m)",
+  pkgsD:{
+   pflege:{t:"Refresh & seal",d:"Clean, single-stage polish, seal — for well-kept surfaces that should shine again.",
+     inc:["Thorough cleaning & decontamination","Single-stage polish","Sealant (wax/sealant)","Before/after photo documentation"]},
+   restau:{t:"Restoration: wet-sanding & polish",d:"Polishing didn't help? Then the surface is chalked or dull — it needs wet-sanding, not polish.",
+     inc:["Cleaning & decontamination","Wet-sanding (500 to 1500 grit)","Polish to a high gloss","Sealant","Before/after photo documentation"]},
+   keramik:{t:"Complete ceramic package",d:"Restoration plus ceramic coating — lasting protection so the result stays.",
+     inc:["Cleaning & decontamination","Wet-sanding (500 to 1500 grit)","Two-stage polish (correction + finish)","Ceramic coating (2 layers)","Before/after photo documentation"]}},
+  condD:{leicht:"Like new / well kept",mittel:"Dull, light oxidation",stark:"Chalked / very dull"},
+  hintChalk:"Chalked? Then polish alone won't do — choose the restoration with wet-sanding.",
+  ecoD:"We choose polish, sanding and sealing based on the condition of your surface — you pay for the result, not the process. Before/after photo documentation included.",
+  bindingD:"Estimate — firm fixed-price quote after we review your photos/video.",
+  mediaHintD:"At least 3 photos (both hull sides, superstructure/deck, surface detail) or 1 video. No on-site inspection takes place — we assess the condition from your media.",
+  cMarinaD:"I will arrange access to the boat and berth with my marina myself (if not already done)."},
+ da:{lProd:"Ydelse",prods:{uws:"Undervandsskrog",det:"Detailing & forsegling"},lLenD:"Bådlængde (m)",
+  pkgsD:{
+   pflege:{t:"Opfriskning & forsegling",d:"Rens, énstrinspolering, forsegling — til velholdte overflader, der skal skinne igen.",
+     inc:["Grundig rengøring & dekontaminering","Énstrinspolering","Forsegling (voks/sealant)","Foto-dokumentation før/efter"]},
+   restau:{t:"Restaurering: vådslibning & polering",d:"Hjalp polering ikke? Så er overfladen kridtet eller mat — det kræver vådslibning, ikke polering.",
+     inc:["Rengøring & dekontaminering","Vådslibning (korn 500 til 1500)","Polering til højglans","Forsegling","Foto-dokumentation før/efter"]},
+   keramik:{t:"Komplet keramikpakke",d:"Restaurering plus keramisk forsegling — varig beskyttelse, så resultatet holder.",
+     inc:["Rengøring & dekontaminering","Vådslibning (korn 500 til 1500)","Totrinspolering (korrektion + finish)","Keramisk forsegling (2 lag)","Foto-dokumentation før/efter"]}},
+  condD:{leicht:"Som ny / velholdt",mittel:"Mat, let oxidation",stark:"Kridtet / meget mat"},
+  hintChalk:"Kridtet? Så rækker polering ikke — vælg restaureringen med vådslibning.",
+  ecoD:"Vi vælger polering, slibning og forsegling efter overfladens stand — du betaler for resultatet, ikke metoden. Foto-dokumentation før/efter inkluderet.",
+  bindingD:"Overslag — fast tilbud efter gennemgang af dine fotos/video.",
+  mediaHintD:"Mindst 3 fotos (begge skrogsider, overbygning/dæk, detalje af overfladen) eller 1 video. Der sker ingen besigtigelse på stedet — vi vurderer tilstanden ud fra dine medier.",
+  cMarinaD:"Jeg aftaler selv adgang til båden og bådpladsen med min havn (hvis det ikke allerede er gjort)."},
+ no:{lProd:"Tjeneste",prods:{uws:"Undervannsskrog",det:"Detailing & forsegling"},lLenD:"Båtlengde (m)",
+  pkgsD:{
+   pflege:{t:"Opfriskning & forsegling",d:"Rengjøring, énstegs polering, forsegling — for velholdte overflater som skal skinne igjen.",
+     inc:["Grundig rengjøring & dekontaminering","Énstegs polering","Forsegling (voks/sealant)","Fotodokumentasjon før/etter"]},
+   restau:{t:"Restaurering: våtsliping & polering",d:"Hjalp ikke polering? Da er overflaten kritet eller matt — det krever våtsliping, ikke polering.",
+     inc:["Rengjøring & dekontaminering","Våtsliping (korn 500 til 1500)","Polering til høyglans","Forsegling","Fotodokumentasjon før/etter"]},
+   keramik:{t:"Komplett keramikkpakke",d:"Restaurering pluss keramisk forsegling — varig beskyttelse, slik at resultatet holder.",
+     inc:["Rengjøring & dekontaminering","Våtsliping (korn 500 til 1500)","Totrinns polering (korreksjon + finish)","Keramisk forsegling (2 lag)","Fotodokumentasjon før/etter"]}},
+  condD:{leicht:"Som ny / velholdt",mittel:"Matt, lett oksidasjon",stark:"Kritet / veldig matt"},
+  hintChalk:"Kritet? Da holder ikke polering — velg restaureringen med våtsliping.",
+  ecoD:"Vi velger polering, sliping og forsegling etter overflatens tilstand — du betaler for resultatet, ikke metoden. Fotodokumentasjon før/etter inkludert.",
+  bindingD:"Prisantydning — fast tilbud etter gjennomgang av bilder/video.",
+  mediaHintD:"Minst 3 bilder (begge skrogsider, overbygg/dekk, detalj av overflaten) eller 1 video. Det gjennomføres ingen befaring på stedet — vi vurderer tilstanden ut fra mediene dine.",
+  cMarinaD:"Jeg avtaler selv tilgang til båten og båtplassen med havnen min (hvis det ikke allerede er gjort)."},
+ sv:{lProd:"Tjänst",prods:{uws:"Undervattensskrov",det:"Detailing & försegling"},lLenD:"Båtlängd (m)",
+  pkgsD:{
+   pflege:{t:"Uppfräschning & försegling",d:"Rengöring, enstegspolering, försegling — för välvårdade ytor som ska glänsa igen.",
+     inc:["Grundlig rengöring & dekontaminering","Enstegspolering","Försegling (vax/sealant)","Fotodokumentation före/efter"]},
+   restau:{t:"Restaurering: våtslipning & polering",d:"Hjälpte inte polering? Då är ytan kritad eller matt — det kräver våtslipning, inte polering.",
+     inc:["Rengöring & dekontaminering","Våtslipning (korn 500 till 1500)","Polering till högglans","Försegling","Fotodokumentation före/efter"]},
+   keramik:{t:"Komplett keramikpaket",d:"Restaurering plus keramisk försegling — varaktigt skydd så att resultatet håller.",
+     inc:["Rengöring & dekontaminering","Våtslipning (korn 500 till 1500)","Tvåstegspolering (korrektion + finish)","Keramisk försegling (2 lager)","Fotodokumentation före/efter"]}},
+  condD:{leicht:"Som ny / välvårdad",mittel:"Matt, lätt oxidation",stark:"Kritad / mycket matt"},
+  hintChalk:"Kritad? Då räcker inte polering — välj restaureringen med våtslipning.",
+  ecoD:"Vi väljer polering, slipning och försegling efter ytans skick — du betalar för resultatet, inte metoden. Fotodokumentation före/efter ingår.",
+  bindingD:"Prisuppskattning — fast offert efter genomgång av dina bilder/video.",
+  mediaHintD:"Minst 3 bilder (båda skrovsidorna, överbyggnad/däck, detalj av ytan) eller 1 video. Ingen besiktning på plats genomförs — vi bedömer skicket utifrån dina bilder.",
+  cMarinaD:"Jag ordnar själv tillträde till båten och båtplatsen med min hamn (om det inte redan är gjort)."}
+};
+for (const l in EXTRA_D) Object.assign(I18N[l], EXTRA_D[l]);
+const EXTRA_D2 = {
+ de:{lCondD:"Zustand der Oberfläche",claimD:"Bootsaufbereitung & Versiegelung — schnell, sauber, planbar"},
+ en:{lCondD:"Surface condition",claimD:"Boat detailing & sealing — fast, clean, on schedule"},
+ da:{lCondD:"Overfladens stand",claimD:"Bådpleje & forsegling — hurtigt, rent, til tiden"},
+ no:{lCondD:"Overflatens tilstand",claimD:"Båtpleie & forsegling — raskt, rent, som avtalt"},
+ sv:{lCondD:"Ytans skick",claimD:"Båtvård & försegling — snabbt, rent, i tid"}
+};
+for (const l in EXTRA_D2) Object.assign(I18N[l], EXTRA_D2[l]);
+
+/* Ablauf Detailing: gleiche Schritte, Texte ohne Osmose/Kranen */
+const PROCD_PATCH = {
+ de:{1:"Maße, Material, 3 Fotos oder 1 Video und Wunschtermin.",4:"Zugang zum Boot und zum Liegeplatz klären Sie mit Ihrer Marina — falls noch nicht geschehen.",5:"Reinigung, Schliff, Politur und Versiegelung — sauber, schnell, planbar."},
+ en:{1:"Dimensions, material, 3 photos or 1 video and your preferred date.",4:"You arrange access to the boat and berth with your marina — if not already done.",5:"Cleaning, sanding, polishing and sealing — clean, fast, on schedule."},
+ da:{1:"Mål, materiale, 3 fotos eller 1 video og ønsket dato.",4:"Du aftaler adgang til båden og bådpladsen med din havn — hvis det ikke allerede er gjort.",5:"Rengøring, slibning, polering og forsegling — rent, hurtigt, til tiden."},
+ no:{1:"Mål, materiale, 3 bilder eller 1 video og ønsket dato.",4:"Du avtaler tilgang til båten og båtplassen med havnen din — hvis det ikke allerede er gjort.",5:"Rengjøring, sliping, polering og forsegling — rent, raskt, som avtalt."},
+ sv:{1:"Mått, material, 3 bilder eller 1 video och önskat datum.",4:"Du ordnar tillträde till båten och båtplatsen med din hamn — om det inte redan är gjort.",5:"Rengöring, slipning, polering och försegling — rent, snabbt, i tid."}
+};
+/* ===== Zusatztexte: Materialhinweis, Abo, Währung — alle 9 Sprachen ===== */
+const EXTRA_N = {
+ de:{matNote:"Bei Stahl, Alu und Holz legen wir Verfahren und Beschichtungsaufbau anhand Ihrer Fotos/Videos fest.",
+  matNoteD:"Gilt für lackierte oder beschichtete Oberflächen. Blankes Metall oder geöltes Holz (z. B. Teak) beurteilen wir individuell anhand Ihrer Medien.",
+  aboT:"Saison-Abo mit anfragen (optional)",aboTD:"Pflege-Abo mit anfragen (optional)",
+  aboD:"Jedes Frühjahr ein fester Servicetermin am Liegeplatz — Ihr Boot ist zum Ansegeln fertig, garantiert. Die Termingarantie gibt es nur im Abo.",
+  aboDD:"Ein fester Pflegetermin pro Saison hält das Ergebnis frisch — Ihr Boot glänzt zum Ansegeln, termingarantiert. Die Termingarantie gibt es nur im Abo.",
+  aboInc:["Fester Frühjahrstermin mit Termingarantie","Reinigung des Unterwasserschiffs am Liegeplatz","Schichtdickenmessung & Zustandsprotokoll mit Fotos","Antifouling-Ausbesserung an abgeriebenen Stellen"],
+  aboIncD:["Fester Frühjahrstermin mit Termingarantie","Reinigung & Dekontamination","Auffrischung der Versiegelung (Sealant bzw. Keramik-Topper)","Zustandskontrolle mit Foto-Dokumentation"],
+  aboKpi:"Abo-Preis",aboPer:"pro Jahr",
+  aboLegal:"Mit Ihrer Anfrage unverbindlich vorgemerkt. Preis, Laufzeit und Kündigungsfrist erhalten Sie mit dem Festpreisangebot.",
+  fxNote:"Anzeige in {w}, umgerechnet aus EUR (Kurs {k}). Maßgeblich ist das Festpreisangebot."},
+ en:{matNote:"For steel, aluminium and wood we set the process and coating build-up based on your photos/video.",
+  matNoteD:"Applies to painted or coated surfaces. Bare metal or oiled wood (e.g. teak) is assessed individually from your media.",
+  aboT:"Also request a seasonal subscription (optional)",aboTD:"Also request a care subscription (optional)",
+  aboD:"Every spring a fixed service appointment at your berth — your boat is ready to sail, guaranteed. The date guarantee is only available with the subscription.",
+  aboDD:"One fixed care appointment per season keeps the result fresh — your boat shines for the first sail, date guaranteed. The date guarantee is only available with the subscription.",
+  aboInc:["Fixed spring appointment with date guarantee","Underwater hull cleaning at your berth","Coating thickness measurement & condition report with photos","Antifouling touch-up on worn areas"],
+  aboIncD:["Fixed spring appointment with date guarantee","Cleaning & decontamination","Refresh of the sealant (sealant or ceramic topper)","Condition check with photo documentation"],
+  aboKpi:"Subscription price",aboPer:"per year",
+  aboLegal:"Noted without obligation with your request. Price, term and notice period come with the fixed-price quote.",
+  fxNote:"Shown in {w}, converted from EUR (rate {k}). The fixed-price quote is binding."},
+ da:{matNote:"Ved stål, alu og træ fastlægger vi metode og lagopbygning ud fra dine fotos/video.",
+  matNoteD:"Gælder lakerede eller belagte overflader. Blank metal eller oliebehandlet træ (fx teak) vurderer vi individuelt ud fra dine medier.",
+  aboT:"Anmod også om sæsonabonnement (valgfrit)",aboTD:"Anmod også om plejeabonnement (valgfrit)",
+  aboD:"Hvert forår en fast servicetid ved din bådplads — din båd er klar til sæsonen, garanteret. Tidsgarantien findes kun med abonnement.",
+  aboDD:"Én fast plejetid pr. sæson holder resultatet friskt — din båd skinner til første sejlads, med tidsgaranti. Tidsgarantien findes kun med abonnement.",
+  aboInc:["Fast forårstid med tidsgaranti","Rengøring af undervandsskroget ved bådpladsen","Lagtykkelsesmåling & tilstandsrapport med fotos","Udbedring af bundmaling på slidte steder"],
+  aboIncD:["Fast forårstid med tidsgaranti","Rengøring & dekontaminering","Opfriskning af forseglingen (sealant eller keramisk topper)","Tilstandskontrol med fotodokumentation"],
+  aboKpi:"Abonnementspris",aboPer:"pr. år",
+  aboLegal:"Noteret uforpligtende sammen med din forespørgsel. Pris, løbetid og opsigelsesfrist får du med det faste tilbud.",
+  fxNote:"Vist i {w}, omregnet fra EUR (kurs {k}). Det faste tilbud er gældende."},
+ no:{matNote:"For stål, alu og tre fastsetter vi metode og lagoppbygging ut fra bildene/videoen din.",
+  matNoteD:"Gjelder lakkerte eller belagte overflater. Blankt metall eller oljet tre (f.eks. teak) vurderer vi individuelt ut fra mediene dine.",
+  aboT:"Be også om sesongabonnement (valgfritt)",aboTD:"Be også om pleieabonnement (valgfritt)",
+  aboD:"Hver vår en fast servicetime ved båtplassen — båten din er klar for sesongen, garantert. Tidsgarantien finnes bare med abonnement.",
+  aboDD:"Én fast pleietime per sesong holder resultatet friskt — båten din skinner til første tur, med tidsgaranti. Tidsgarantien finnes bare med abonnement.",
+  aboInc:["Fast vårtime med tidsgaranti","Rengjøring av undervannsskroget ved båtplassen","Lagtykkelsesmåling & tilstandsrapport med bilder","Utbedring av bunnstoff på slitte steder"],
+  aboIncD:["Fast vårtime med tidsgaranti","Rengjøring & dekontaminering","Oppfriskning av forseglingen (sealant eller keramisk topper)","Tilstandskontroll med fotodokumentasjon"],
+  aboKpi:"Abonnementspris",aboPer:"per år",
+  aboLegal:"Notert uforpliktende sammen med forespørselen din. Pris, løpetid og oppsigelsesfrist får du med det faste tilbudet.",
+  fxNote:"Vist i {w}, omregnet fra EUR (kurs {k}). Det faste tilbudet er gjeldende."},
+ sv:{matNote:"För stål, alu och trä fastställer vi metod och skiktuppbyggnad utifrån dina bilder/video.",
+  matNoteD:"Gäller lackerade eller belagda ytor. Blank metall eller oljat trä (t.ex. teak) bedömer vi individuellt utifrån dina bilder.",
+  aboT:"Begär även säsongsabonnemang (valfritt)",aboTD:"Begär även skötselabonnemang (valfritt)",
+  aboD:"Varje vår en fast servicetid vid din båtplats — din båt är klar för säsongen, garanterat. Tidsgarantin finns bara med abonnemang.",
+  aboDD:"En fast skötseltid per säsong håller resultatet fräscht — din båt glänser vid första turen, med tidsgaranti. Tidsgarantin finns bara med abonnemang.",
+  aboInc:["Fast vårtid med tidsgaranti","Rengöring av undervattensskrovet vid båtplatsen","Mätning av skikttjocklek & tillståndsrapport med bilder","Lagning av bottenfärg på slitna ställen"],
+  aboIncD:["Fast vårtid med tidsgaranti","Rengöring & dekontaminering","Uppfräschning av försegling (sealant eller keramisk topper)","Skickkontroll med fotodokumentation"],
+  aboKpi:"Abonnemangspris",aboPer:"per år",
+  aboLegal:"Noterat utan förpliktelse tillsammans med din förfrågan. Pris, löptid och uppsägningstid får du med den fasta offerten.",
+  fxNote:"Visas i {w}, omräknat från EUR (kurs {k}). Den fasta offerten är gällande."},
+ fi:{matNote:"Teräs-, alumiini- ja puurunkojen menetelmän ja pinnoiterakenteen määritämme kuviesi/videosi perusteella.",
+  matNoteD:"Koskee maalattuja tai pinnoitettuja pintoja. Paljaan metallin tai öljytyn puun (esim. tiikki) arvioimme yksilöllisesti aineistosi perusteella.",
+  aboT:"Pyydä myös kausisopimusta (valinnainen)",aboTD:"Pyydä myös huoltosopimusta (valinnainen)",
+  aboD:"Joka kevät kiinteä huoltoaika venepaikallasi — veneesi on valmis kauteen, taatusti. Aikatakuu kuuluu vain sopimukseen.",
+  aboDD:"Yksi kiinteä huoltoaika kaudessa pitää lopputuloksen tuoreena — veneesi kiiltää ensipurjehdukselle, aikatakuulla. Aikatakuu kuuluu vain sopimukseen.",
+  aboInc:["Kiinteä kevätaika aikatakuulla","Vedenalaisen rungon puhdistus venepaikalla","Kalvonpaksuuden mittaus & kuntoraportti kuvineen","Kasvuestemaalin paikkaus kuluneista kohdista"],
+  aboIncD:["Kiinteä kevätaika aikatakuulla","Pesu & saastepoisto","Suojauksen uusinta (sealant tai keraaminen topper)","Kuntotarkastus valokuvadokumentaatiolla"],
+  aboKpi:"Sopimuksen hinta",aboPer:"vuodessa",
+  aboLegal:"Merkitty sitoumuksetta pyyntösi yhteyteen. Hinnan, sopimuskauden ja irtisanomisajan saat kiinteähintaisen tarjouksen mukana.",
+  fxNote:"Näytetään valuutassa {w}, muunnettu EUR:sta (kurssi {k}). Sitova on kiinteähintainen tarjous."},
+ nl:{matNote:"Bij staal, aluminium en hout bepalen wij werkwijze en laagopbouw aan de hand van uw foto's/video.",
+  matNoteD:"Geldt voor gelakte of gecoate oppervlakken. Blank metaal of geoliede houtsoorten (bijv. teak) beoordelen wij individueel aan de hand van uw beeldmateriaal.",
+  aboT:"Vraag ook een seizoensabonnement aan (optioneel)",aboTD:"Vraag ook een onderhoudsabonnement aan (optioneel)",
+  aboD:"Elk voorjaar een vaste servicebeurt op uw ligplaats — uw boot is klaar voor het seizoen, gegarandeerd. De datumgarantie geldt alleen met het abonnement.",
+  aboDD:"Eén vaste onderhoudsbeurt per seizoen houdt het resultaat fris — uw boot glanst bij de eerste tocht, met datumgarantie. De datumgarantie geldt alleen met het abonnement.",
+  aboInc:["Vaste voorjaarsafspraak met datumgarantie","Reiniging van het onderwaterschip op uw ligplaats","Laagdiktemeting & conditierapport met foto's","Bijwerken van antifouling op afgesleten plekken"],
+  aboIncD:["Vaste voorjaarsafspraak met datumgarantie","Reiniging & decontaminatie","Opfrissen van de verzegeling (sealant of keramische topper)","Conditiecontrole met fotodocumentatie"],
+  aboKpi:"Abonnementsprijs",aboPer:"per jaar",
+  aboLegal:"Vrijblijvend genoteerd bij uw aanvraag. Prijs, looptijd en opzegtermijn ontvangt u met de vaste offerte.",
+  fxNote:"Weergegeven in {w}, omgerekend uit EUR (koers {k}). De vaste offerte is bindend."},
+ fr:{matNote:"Pour l'acier, l'aluminium et le bois, nous définissons la méthode et la structure du revêtement à partir de vos photos/vidéo.",
+  matNoteD:"Valable pour les surfaces peintes ou revêtues. Le métal nu ou le bois huilé (p. ex. teck) est évalué au cas par cas à partir de vos médias.",
+  aboT:"Demander aussi un abonnement saisonnier (facultatif)",aboTD:"Demander aussi un abonnement d'entretien (facultatif)",
+  aboD:"Chaque printemps, un rendez-vous de service fixe à votre emplacement — votre bateau est prêt pour la saison, garanti. La garantie de date n'existe qu'avec l'abonnement.",
+  aboDD:"Un rendez-vous d'entretien fixe par saison garde le résultat éclatant — votre bateau brille pour la première sortie, date garantie. La garantie de date n'existe qu'avec l'abonnement.",
+  aboInc:["Rendez-vous fixe au printemps avec garantie de date","Nettoyage des œuvres vives à votre emplacement","Mesure d'épaisseur & rapport d'état avec photos","Retouche de l'antifouling aux endroits usés"],
+  aboIncD:["Rendez-vous fixe au printemps avec garantie de date","Nettoyage & décontamination","Rafraîchissement de la protection (sealant ou topper céramique)","Contrôle de l'état avec documentation photo"],
+  aboKpi:"Prix de l'abonnement",aboPer:"par an",
+  aboLegal:"Noté sans engagement avec votre demande. Prix, durée et préavis vous sont communiqués avec le devis ferme.",
+  fxNote:"Affiché en {w}, converti depuis l'EUR (taux {k}). Le devis ferme fait foi."},
+ pl:{matNote:"W przypadku stali, aluminium i drewna dobieramy metodę i układ powłok na podstawie Twoich zdjęć/filmu.",
+  matNoteD:"Dotyczy powierzchni lakierowanych lub powlekanych. Goły metal lub olejowane drewno (np. teak) oceniamy indywidualnie na podstawie Twoich materiałów.",
+  aboT:"Poproś także o abonament sezonowy (opcjonalnie)",aboTD:"Poproś także o abonament pielęgnacyjny (opcjonalnie)",
+  aboD:"Co wiosnę stały termin serwisu przy Twoim miejscu postoju — jednostka gotowa na start sezonu, gwarantowanie. Gwarancja terminu przysługuje tylko w abonamencie.",
+  aboDD:"Jeden stały termin pielęgnacji w sezonie utrzymuje efekt — jednostka lśni na pierwszy rejs, z gwarancją terminu. Gwarancja terminu przysługuje tylko w abonamencie.",
+  aboInc:["Stały termin wiosenny z gwarancją terminu","Czyszczenie podwodnej części kadłuba przy miejscu postoju","Pomiar grubości powłoki & raport stanu ze zdjęciami","Poprawki antyfoulingu w wytartych miejscach"],
+  aboIncD:["Stały termin wiosenny z gwarancją terminu","Mycie & dekontaminacja","Odświeżenie zabezpieczenia (sealant lub topper ceramiczny)","Kontrola stanu z dokumentacją zdjęciową"],
+  aboKpi:"Cena abonamentu",aboPer:"rocznie",
+  aboLegal:"Zapisane bez zobowiązań wraz z Twoim zapytaniem. Cenę, okres i termin wypowiedzenia otrzymasz z ofertą ze stałą ceną.",
+  fxNote:"Wyświetlono w {w}, przeliczono z EUR (kurs {k}). Wiążąca jest oferta ze stałą ceną."}
+};
+
+/* ===== Weitere Sprachen: fi · nl · fr · pl (vollständige Textsätze) ===== */
+const NEWL = {
+ fi:{i:{locale:"fi-FI",claim:"Rungon hionta & uusi pinnoitus — nopeasti, siististi, aikataulussa",
+  s1:"Mitä tarvitset?",s2:"Veneesi",s3:"Tuloksesi",s4:"Varaa aika & tarjous",
+  lBoat:"Venetyyppi / koko",lLwl:"Vesilinja (m)",lBeam:"Leveys (m)",lDraft:"Syväys (m)",lHull:"Runkotyyppi",lCond:"Pinnoitteen kunto",
+  kPrice:"Hintasi",vatIncl:"sis. {r} alv",vatExcl:"alv 0 %",net:"Alv 0 %",region:"Hinnat maalle",regionOther:"Muu maa (alv 0 %)",kTime:"Valmis",kDays:"arkipäivässä",
+  eco:"Työskentelemme 100 % kemikaalivapaasti ja ympäristöystävällisesti — ammattilaisemme valitsevat runkoosi parhaan menetelmän. Sisältyy hintaan.",
+  travel:"Matkakulut laskutetaan erikseen hintaan {km}.",
+  binding:"Suuntaa antava hinta — sitova kiinteähintainen tarjous kuvien/videon tarkistuksen jälkeen. Koskee osmoosivapaata runkoa; osmoosin ilmetessä lisätyöstä laskutetaan erikseen.",
+  fName:"Nimi",fMail:"Sähköposti",fZip:"Postinumero (venepaikka)",fTel:"Puhelin",fMsg:"Satama / viesti",
+  fSend:"Pyydä kiinteähintainen tarjous",fThanks:"Kiitos! Tarkistamme aineistosi ja palaamme pian kiinteähintaisella tarjouksella ja ajankohdalla.",
+  errReq:"Anna nimi ja sähköpostiosoite.",errZip:"Anna kelvollinen postinumero.",
+  footer:"Ympäristöystävällinen rungon kunnostus · Materiaalit NautiCarelta",
+  hull:{motorboot:"Moottorivene / liitävä",kurzkieler:"Purjevene (eväköli)",langkieler:"Purjevene (pitkäköli)"},
+  cond:{leicht:"Hyvä (ohuet kerrokset)",mittel:"Normaali",stark:"Pahoin rapautunut / paksut kerrokset"},
+  boat:{motor:"Moottorivene",sailFin:"Purjevene (eväköli)",sailLong:"Klassikko / pitkäköli"},
+  pkgs:{
+   af:{t:"Uusi kasvuestemaali",d:"Vanha kasvuestemaali pois, pohjuste ja uusi kasvuestemaali. Valmis kaudelle.",
+       inc:["Vanhan kasvuestemaalin täydellinen poisto","Pohjuste (2 kerrosta)","Uusi kasvuestemaali (2 kerrosta, ruiskutettu)"]},
+   full:{t:"Täysi uusinta: poisto + uusi pinnoite",d:"Kaikki pois alustaan asti (geelikuori, metalli tai puu), sitten täysi uusi pinnoitus: pohjuste, maali, kasvuestemaali.",
+       inc:["Täydellinen pinnoitteen poisto alustaan asti","Hienohionta käsin","Pohjuste (2 kerrosta)","Uusi maali / 2K-lakka (2 kerrosta, ruiskutettu)","Uusi kasvuestemaali (2 kerrosta)"]},
+   strip:{t:"Vain poisto (valmis pinnoitettavaksi)",d:"Poistamme kaikki vanhat kerrokset — hoidat uuden pinnoituksen itse.",
+       inc:["Kaikkien vanhojen kerrosten poisto","Pinta luovutetaan pinnoitusvalmiina"]}},
+  hero:["Kiinteä aikataulu","Kiinteä hinta"],
+  lMat:"Rungon materiaali",mats:{gfk:"Lasikuitu",stahl:"Teräs",alu:"Alumiini",holz:"Puu"},
+  boatOther:"Muu koko / erikoistapaus",lOther:"Mittasi & lisätiedot",
+  mediaT:"Kuntotarkistus: kuvat tai video",
+  mediaHint:"Vähintään 3 kuvaa (vedenalainen runko, molemmat sivut, pinnoitteen yksityiskohta) tai 1 video. Paikan päällä ei tehdä tarkastusta — arvioimme kunnon aineistosi perusteella.",
+  mediaDrop:"<strong>Raahaa tai napauta</strong> lisätäksesi kuvia tai videon.",
+  mediaCount:"Kuvia: {p} · Videoita: {v}",mediaOk:"Riittää tarkistukseen.",
+  errMedia:"Lataa vähintään 3 kuvaa tai 1 video.",errSize:"Tiedosto on liian suuri (kuva enintään 15 Mt, video enintään 150 Mt) tai sitä ei tueta.",errMax:"Enintään 12 tiedostoa.",
+  calT:"Toivottu päivä (työn aloitus)",calHint:"Valitse arkipäivä. Arvioitu aikaikkuna korostetaan; päivä lukitaan kiinteähintaisessa tarjouksessa.",
+  calSel:"Alku {s} · valmis noin {e}",calNone:"Päivää ei ole vielä valittu.",errDate:"Valitse toivottu päivä.",
+  cOsmose:"Vakuutan, että runko on osmoosivapaa. Jos työn aikana havaitaan osmoosia, lisätyö laskutetaan erikseen.",
+  cMarina:"Sovin nostot, tuennan ja suojauksen itse satamani kanssa (jos ei ole jo tehty).",
+  cPay:"Otan huomioon: 50 % ennakkomaksu 5 arkipäivän kuluessa siitä, kun molemmat osapuolet ovat vahvistaneet tarjouksen.",
+  errConfirm:"Vahvista kaikki ohjeet.",errOther:"Anna mitat / lisätiedot.",errSend:"Lähetys epäonnistui — yritä uudelleen.",
+  payT:"Maksu",payLine:"50 % ennakkomaksu 5 arkipäivän kuluessa siitä, kun molemmat osapuolet ovat vahvistaneet tarjouksen.",
+  lProd:"Palvelu",prods:{uws:"Vedenalainen runko",det:"Detailing & suojaus"},lLenD:"Veneen pituus (m)",
+  pkgsD:{
+   pflege:{t:"Kunnostus & suojaus",d:"Pesu, yksivaiheinen kiillotus, suojaus — hoidetuille pinnoille, joiden kuuluu loistaa taas.",
+     inc:["Perusteellinen pesu & saastepoisto","Yksivaiheinen kiillotus","Suojaus (vaha/sealant)","Valokuvadokumentaatio ennen/jälkeen"]},
+   restau:{t:"Entisöinti: märkähionta & kiillotus",d:"Kiillotus ei auttanut? Silloin pinta on liitumainen tai himmeä — se vaatii märkähiontaa, ei kiillotusta.",
+     inc:["Pesu & saastepoisto","Märkähionta (karkeus 500–1500)","Kiillotus korkeakiillolle","Suojaus","Valokuvadokumentaatio ennen/jälkeen"]},
+   keramik:{t:"Keraaminen kokonaispaketti",d:"Entisöinti ja keraaminen pinnoite — pysyvä suoja, jotta tulos säilyy.",
+     inc:["Pesu & saastepoisto","Märkähionta (karkeus 500–1500)","Kaksivaiheinen kiillotus (korjaus + viimeistely)","Keraaminen pinnoite (2 kerrosta)","Valokuvadokumentaatio ennen/jälkeen"]}},
+  condD:{leicht:"Kuin uusi / hoidettu",mittel:"Himmeä, lievää hapettumista",stark:"Liituuntunut / hyvin himmeä"},
+  hintChalk:"Liituuntunut? Silloin pelkkä kiillotus ei riitä — valitse entisöinti märkähionnalla.",
+  ecoD:"Valitsemme kiillotuksen, hionnan ja suojauksen pintasi kunnon mukaan — maksat tuloksesta, et menetelmästä. Valokuvadokumentaatio ennen/jälkeen sisältyy.",
+  bindingD:"Suuntaa antava hinta — sitova kiinteähintainen tarjous kuvien/videon tarkistuksen jälkeen.",
+  mediaHintD:"Vähintään 3 kuvaa (rungon molemmat sivut, ylärakenne/kansi, pinnan yksityiskohta) tai 1 video. Paikan päällä ei tehdä tarkastusta — arvioimme kunnon aineistosi perusteella.",
+  cMarinaD:"Sovin pääsyn veneelle ja venepaikalle itse satamani kanssa (jos ei ole jo tehty).",
+  lCondD:"Pinnan kunto",claimD:"Veneen detailing & suojaus — nopeasti, siististi, aikataulussa"},
+  proc:{t:"Näin se etenee",steps:[
+   ["Lähetä pyyntö","Mitat, materiaali, 3 kuvaa tai 1 video ja toivottu päivä. Vakuutat rungon olevan osmoosivapaa."],
+   ["Tarkistus kuvien/videon perusteella","Arvioimme kunnon aineistosi perusteella. Paikan päällä ei tehdä tarkastusta."],
+   ["Kiinteä hinta & päivä","Sitova tarjous kiinteällä päivällä. Kun molemmat osapuolet ovat vahvistaneet: 50 % ennakkomaksu 5 arkipäivän kuluessa."],
+   ["Valmistelu","Sovit nostot, tuennan ja suojauksen itse satamasi kanssa — jos ei ole jo tehty."],
+   ["Toteutus","Pinnoitteen poisto ja uusinta — siististi, nopeasti, ympäristöystävällisesti."],
+   ["Luovutus & maksu","Yhteinen luovutustarkastus; loppusumma erääntyy hyväksyntäsi jälkeen."]]},
+  procd:{1:"Mitat, materiaali, 3 kuvaa tai 1 video ja toivottu päivä.",4:"Sovit pääsyn veneelle ja venepaikalle satamasi kanssa — jos ei ole jo tehty.",5:"Pesu, hionta, kiillotus ja suojaus — siististi, nopeasti, aikataulussa."}},
+ nl:{i:{locale:"nl-NL",claim:"Romp schuren & opnieuw coaten — snel, schoon, op afspraak",
+  s1:"Wat heeft u nodig?",s2:"Uw boot",s3:"Uw resultaat",s4:"Plan uw afspraak & offerte",
+  lBoat:"Boottype / grootte",lLwl:"Waterlijn (m)",lBeam:"Breedte (m)",lDraft:"Diepgang (m)",lHull:"Rompvorm",lCond:"Staat van de coating",
+  kPrice:"Uw prijs",vatIncl:"incl. {r} btw",vatExcl:"excl. btw",net:"Excl. btw",region:"Prijzen voor",regionOther:"Ander land (excl. btw)",kTime:"Klaar in",kDays:"werkdagen",
+  eco:"Wij werken 100% chemievrij en milieuvriendelijk — onze vakmensen kiezen de beste methode voor uw romp. Inbegrepen in de prijs.",
+  travel:"Voorrijkosten worden apart berekend tegen {km}.",
+  binding:"Richtprijs — vaste offerte na beoordeling van uw foto's/video. Geldt voor een osmosevrije romp; bij osmose wordt het meerwerk nagerekend.",
+  fName:"Naam",fMail:"E-mail",fZip:"Postcode (ligplaats)",fTel:"Telefoon",fMsg:"Haven / bericht",
+  fSend:"Vaste offerte aanvragen",fThanks:"Bedankt! Wij beoordelen uw materiaal en komen snel bij u terug met een vaste offerte en datum.",
+  errReq:"Vul naam en e-mail in.",errZip:"Vul een geldige postcode in.",
+  footer:"Milieuvriendelijke rompreparatie · Materialen van NautiCare",
+  hull:{motorboot:"Motorboot / planerend",kurzkieler:"Zeilboot (vinkiel)",langkieler:"Zeilboot (langkiel)"},
+  cond:{leicht:"Goed (dunne lagen)",mittel:"Normaal",stark:"Zwaar verweerd / dikke lagen"},
+  boat:{motor:"Motorboot",sailFin:"Zeilboot (vinkiel)",sailLong:"Klassieker / langkiel"},
+  pkgs:{
+   af:{t:"Antifouling vernieuwen",d:"Oude antifouling eraf, primer erop, verse antifouling aangebracht. Klaar voor het seizoen.",
+       inc:["Volledige verwijdering van oude antifouling","Primer (2 lagen)","Nieuwe antifouling (2 lagen, gespoten)"]},
+   full:{t:"Volledig vernieuwen: strippen + opbouwen",d:"Alles eraf tot op de ondergrond (gelcoat, metaal of hout), daarna volledige opbouw: primer, verf, antifouling.",
+       inc:["Volledig strippen tot op de ondergrond","Fijnschuren met de hand","Primer (2 lagen)","Nieuwe verf / 2-componentenlak (2 lagen, gespoten)","Nieuwe antifouling (2 lagen)"]},
+   strip:{t:"Alleen strippen (klaar om te coaten)",d:"Wij verwijderen alle oude lagen — u verzorgt zelf de nieuwe coating.",
+       inc:["Verwijdering van alle oude lagen","Ondergrond opgeleverd, klaar om te coaten"]}},
+  hero:["Vaste datum","Vaste prijs"],
+  lMat:"Rompmateriaal",mats:{gfk:"Polyester",stahl:"Staal",alu:"Alu",holz:"Hout"},
+  boatOther:"Andere maat / bijzonder geval",lOther:"Uw afmetingen & bijzonderheden",
+  mediaT:"Conditiecheck: foto's of video",
+  mediaHint:"Minimaal 3 foto's (onderwaterschip, beide zijden, detail van de coating) of 1 video. Er vindt geen inspectie ter plaatse plaats — wij beoordelen de staat aan de hand van uw beeldmateriaal.",
+  mediaDrop:"<strong>Sleep of tik</strong> om foto's of een video toe te voegen.",
+  mediaCount:"Foto's: {p} · Video's: {v}",mediaOk:"Voldoende voor de beoordeling.",
+  errMedia:"Upload minimaal 3 foto's of 1 video.",errSize:"Bestand te groot (foto max. 15 MB, video max. 150 MB) of niet ondersteund.",errMax:"Maximaal 12 bestanden.",
+  calT:"Gewenste datum (start werkzaamheden)",calHint:"Kies een werkdag. Uw verwachte tijdvak wordt gemarkeerd; de datum wordt vastgelegd met de vaste offerte.",
+  calSel:"Start {s} · klaar ca. {e}",calNone:"Nog geen datum gekozen.",errDate:"Kies een gewenste datum.",
+  cOsmose:"Ik verklaar dat de romp osmosevrij is. Wordt tijdens de werkzaamheden osmose geconstateerd, dan wordt het meerwerk nagerekend.",
+  cMarina:"Het kranen, opbokken en afdekken regel ik zelf met mijn haven (indien nog niet gedaan).",
+  cPay:"Ik neem kennis van: 50% aanbetaling binnen 5 werkdagen nadat beide partijen de offerte hebben bevestigd.",
+  errConfirm:"Bevestig alle punten.",errOther:"Geef afmetingen / bijzonderheden op.",errSend:"Verzenden mislukt — probeer het opnieuw.",
+  payT:"Betaling",payLine:"50% aanbetaling binnen 5 werkdagen nadat beide partijen de offerte hebben bevestigd.",
+  lProd:"Dienst",prods:{uws:"Onderwaterschip",det:"Detailing & verzegeling"},lLenD:"Bootlengte (m)",
+  pkgsD:{
+   pflege:{t:"Opfrissen & verzegelen",d:"Reinigen, eenstaps polijsten, verzegelen — voor verzorgde oppervlakken die weer moeten glanzen.",
+     inc:["Grondige reiniging & decontaminatie","Eenstaps polijsten","Verzegeling (wax/sealant)","Fotodocumentatie voor/na"]},
+   restau:{t:"Restauratie: nat schuren & polijsten",d:"Hielp polijsten niet? Dan is het oppervlak dof of krijtend — dat vraagt om nat schuren, niet om polijsten.",
+     inc:["Reiniging & decontaminatie","Nat schuren (korrel 500 tot 1500)","Polijsten tot hoogglans","Verzegeling","Fotodocumentatie voor/na"]},
+   keramik:{t:"Compleet keramisch pakket",d:"Restauratie plus keramische coating — blijvende bescherming zodat het resultaat blijft.",
+     inc:["Reiniging & decontaminatie","Nat schuren (korrel 500 tot 1500)","Tweestaps polijsten (correctie + finish)","Keramische coating (2 lagen)","Fotodocumentatie voor/na"]}},
+  condD:{leicht:"Als nieuw / verzorgd",mittel:"Mat, lichte oxidatie",stark:"Krijtend / erg dof"},
+  hintChalk:"Krijtend? Dan is polijsten alleen niet genoeg — kies de restauratie met nat schuren.",
+  ecoD:"Wij kiezen polijsten, schuren en verzegelen op basis van de staat van uw oppervlak — u betaalt voor het resultaat, niet voor de methode. Fotodocumentatie voor/na inbegrepen.",
+  bindingD:"Richtprijs — vaste offerte na beoordeling van uw foto's/video.",
+  mediaHintD:"Minimaal 3 foto's (beide rompzijden, opbouw/dek, detail van het oppervlak) of 1 video. Er vindt geen inspectie ter plaatse plaats — wij beoordelen de staat aan de hand van uw beeldmateriaal.",
+  cMarinaD:"De toegang tot de boot en de ligplaats regel ik zelf met mijn haven (indien nog niet gedaan).",
+  lCondD:"Staat van het oppervlak",claimD:"Boot detailing & verzegeling — snel, schoon, op afspraak"},
+  proc:{t:"Zo werkt het",steps:[
+   ["Aanvraag versturen","Afmetingen, materiaal, 3 foto's of 1 video en gewenste datum. U bevestigt dat de romp osmosevrij is."],
+   ["Check via foto/video","Wij beoordelen de staat aan de hand van uw beeldmateriaal. Er vindt geen inspectie ter plaatse plaats."],
+   ["Vaste prijs & datum","Bindende offerte met vaste datum. Zodra beide partijen bevestigen: 50% aanbetaling binnen 5 werkdagen."],
+   ["Voorbereiding","U regelt het kranen, opbokken en afdekken zelf met uw haven — indien nog niet gedaan."],
+   ["Uitvoering","Strippen en opnieuw coaten — schoon, snel, milieuvriendelijk."],
+   ["Oplevering & betaling","Gezamenlijke oplevering; het restbedrag is verschuldigd na uw goedkeuring."]]},
+  procd:{1:"Afmetingen, materiaal, 3 foto's of 1 video en gewenste datum.",4:"U regelt de toegang tot de boot en de ligplaats met uw haven — indien nog niet gedaan.",5:"Reinigen, schuren, polijsten en verzegelen — schoon, snel, op afspraak."}},
+ fr:{i:{locale:"fr-FR",claim:"Ponçage & nouvelle protection de coque — rapide, propre, à date fixe",
+  s1:"De quoi avez-vous besoin ?",s2:"Votre bateau",s3:"Votre résultat",s4:"Réservez votre créneau & devis",
+  lBoat:"Type / taille du bateau",lLwl:"Ligne de flottaison (m)",lBeam:"Largeur (m)",lDraft:"Tirant d'eau (m)",lHull:"Type de coque",lCond:"État du revêtement",
+  kPrice:"Votre prix",vatIncl:"TVA {r} incluse",vatExcl:"hors TVA",net:"HT",region:"Prix pour",regionOther:"Autre pays (HT)",kTime:"Terminé en",kDays:"jours ouvrés",
+  eco:"Nous travaillons 100 % sans produits chimiques, dans le respect de l'environnement — nos professionnels choisissent la meilleure méthode pour votre coque. Inclus dans le prix.",
+  travel:"Les frais de déplacement sont facturés en sus à {km}.",
+  binding:"Prix indicatif — devis ferme après examen de vos photos/vidéo. Valable pour une coque sans osmose ; si de l'osmose est constatée, le surcoût sera facturé.",
+  fName:"Nom",fMail:"E-mail",fZip:"Code postal (emplacement)",fTel:"Téléphone",fMsg:"Port / message",
+  fSend:"Demander un devis ferme",fThanks:"Merci ! Nous examinons vos médias et revenons très vite vers vous avec un devis ferme et une date.",
+  errReq:"Veuillez indiquer votre nom et votre e-mail.",errZip:"Veuillez saisir un code postal valide.",
+  footer:"Remise en état écologique de coque · Matériaux NautiCare",
+  hull:{motorboot:"Bateau à moteur / planant",kurzkieler:"Voilier (quille à ailerons)",langkieler:"Voilier (quille longue)"},
+  cond:{leicht:"Bon (couches fines)",mittel:"Normal",stark:"Très dégradé / couches épaisses"},
+  boat:{motor:"Bateau à moteur",sailFin:"Voilier (quille à ailerons)",sailLong:"Classique / quille longue"},
+  pkgs:{
+   af:{t:"Renouveler l'antifouling",d:"Ancien antifouling retiré, primaire, antifouling neuf appliqué. Prêt pour la saison.",
+       inc:["Retrait complet de l'ancien antifouling","Primaire (2 couches)","Nouvel antifouling (2 couches, projeté)"]},
+   full:{t:"Remise à neuf complète : décapage + nouvelle application",d:"Tout est retiré jusqu'au support (gelcoat, métal ou bois), puis reconstruction complète : primaire, peinture, antifouling.",
+       inc:["Décapage complet jusqu'au support","Ponçage fin à la main","Primaire (2 couches)","Nouvelle peinture / vernis 2K (2 couches, projeté)","Nouvel antifouling (2 couches)"]},
+   strip:{t:"Décapage seul (prêt à revêtir)",d:"Nous retirons toutes les anciennes couches — vous réalisez vous-même la nouvelle application.",
+       inc:["Retrait de toutes les anciennes couches","Surface remise prête à revêtir"]}},
+  hero:["Date fixe","Prix fixe"],
+  lMat:"Matériau de la coque",mats:{gfk:"Polyester",stahl:"Acier",alu:"Alu",holz:"Bois"},
+  boatOther:"Autre taille / cas particulier",lOther:"Vos dimensions & particularités",
+  mediaT:"Contrôle de l'état : photos ou vidéo",
+  mediaHint:"Au moins 3 photos (œuvres vives, les deux côtés, détail du revêtement) ou 1 vidéo. Aucune inspection sur place n'a lieu — nous évaluons l'état à partir de vos médias.",
+  mediaDrop:"<strong>Glissez ou touchez</strong> pour ajouter des photos ou une vidéo.",
+  mediaCount:"Photos : {p} · Vidéos : {v}",mediaOk:"Suffisant pour l'examen.",
+  errMedia:"Veuillez téléverser au moins 3 photos ou 1 vidéo.",errSize:"Fichier trop volumineux (photo max. 15 Mo, vidéo max. 150 Mo) ou non pris en charge.",errMax:"12 fichiers maximum.",
+  calT:"Date souhaitée (début des travaux)",calHint:"Choisissez un jour ouvré. Votre créneau prévisible est surligné ; la date est fixée avec le devis ferme.",
+  calSel:"Début {s} · fin env. {e}",calNone:"Aucune date choisie.",errDate:"Veuillez choisir une date souhaitée.",
+  cOsmose:"Je confirme que la coque est exempte d'osmose. Si de l'osmose est constatée pendant les travaux, le surcoût sera facturé.",
+  cMarina:"Je m'occupe moi-même du grutage, du calage et de la bâche avec mon port (si ce n'est pas déjà fait).",
+  cPay:"Je prends note : acompte de 50 % sous 5 jours ouvrés après confirmation du devis par les deux parties.",
+  errConfirm:"Veuillez confirmer toutes les remarques.",errOther:"Veuillez indiquer dimensions / particularités.",errSend:"Échec de l'envoi — veuillez réessayer.",
+  payT:"Paiement",payLine:"Acompte de 50 % sous 5 jours ouvrés après confirmation du devis par les deux parties.",
+  lProd:"Prestation",prods:{uws:"Œuvres vives",det:"Detailing & protection"},lLenD:"Longueur du bateau (m)",
+  pkgsD:{
+   pflege:{t:"Remise en forme & protection",d:"Nettoyage, polissage en une passe, protection — pour des surfaces entretenues qui doivent briller à nouveau.",
+     inc:["Nettoyage minutieux & décontamination","Polissage en une passe","Protection (cire/sealant)","Documentation photo avant/après"]},
+   restau:{t:"Restauration : ponçage à l'eau & polissage",d:"Le polissage n'a rien donné ? La surface est alors farinée ou terne — il faut un ponçage à l'eau, pas un polissage.",
+     inc:["Nettoyage & décontamination","Ponçage à l'eau (grain 500 à 1500)","Polissage haute brillance","Protection","Documentation photo avant/après"]},
+   keramik:{t:"Pack céramique complet",d:"Restauration plus revêtement céramique — une protection durable pour que le résultat dure.",
+     inc:["Nettoyage & décontamination","Ponçage à l'eau (grain 500 à 1500)","Polissage en deux passes (correction + finition)","Revêtement céramique (2 couches)","Documentation photo avant/après"]}},
+  condD:{leicht:"Comme neuf / entretenu",mittel:"Terne, légère oxydation",stark:"Farinée / très terne"},
+  hintChalk:"Surface farinée ? Alors le polissage seul ne suffit pas — choisissez la restauration avec ponçage à l'eau.",
+  ecoD:"Nous choisissons polissage, ponçage et protection selon l'état de votre surface — vous payez le résultat, pas la méthode. Documentation photo avant/après incluse.",
+  bindingD:"Prix indicatif — devis ferme après examen de vos photos/vidéo.",
+  mediaHintD:"Au moins 3 photos (les deux flancs, superstructure/pont, détail de la surface) ou 1 vidéo. Aucune inspection sur place n'a lieu — nous évaluons l'état à partir de vos médias.",
+  cMarinaD:"Je m'occupe moi-même de l'accès au bateau et à l'emplacement avec mon port (si ce n'est pas déjà fait).",
+  lCondD:"État de la surface",claimD:"Detailing & protection de bateau — rapide, propre, à date fixe"},
+  proc:{t:"Le déroulement",steps:[
+   ["Envoyer la demande","Dimensions, matériau, 3 photos ou 1 vidéo et date souhaitée. Vous confirmez que la coque est exempte d'osmose."],
+   ["Examen sur photo/vidéo","Nous évaluons l'état à partir de vos médias. Aucune inspection sur place n'a lieu."],
+   ["Prix fixe & date","Devis ferme avec date fixe. Après confirmation par les deux parties : acompte de 50 % sous 5 jours ouvrés."],
+   ["Préparation","Vous organisez vous-même grutage, calage et bâche avec votre port — si ce n'est pas déjà fait."],
+   ["Exécution","Décapage et nouvelle application — propre, rapide, respectueux de l'environnement."],
+   ["Réception & paiement","Réception conjointe ; le solde est dû après votre validation."]]},
+  procd:{1:"Dimensions, matériau, 3 photos ou 1 vidéo et date souhaitée.",4:"Vous organisez l'accès au bateau et à l'emplacement avec votre port — si ce n'est pas déjà fait.",5:"Nettoyage, ponçage, polissage et protection — propre, rapide, à date fixe."}},
+ pl:{i:{locale:"pl-PL",claim:"Szlifowanie kadłuba & nowa powłoka — szybko, czysto, w terminie",
+  s1:"Czego potrzebujesz?",s2:"Twoja jednostka",s3:"Twój wynik",s4:"Zarezerwuj termin & ofertę",
+  lBoat:"Typ / rozmiar jednostki",lLwl:"Linia wodna (m)",lBeam:"Szerokość (m)",lDraft:"Zanurzenie (m)",lHull:"Typ kadłuba",lCond:"Stan powłoki",
+  kPrice:"Twoja cena",vatIncl:"z {r} VAT",vatExcl:"bez VAT",net:"Netto",region:"Ceny dla",regionOther:"Inny kraj (netto)",kTime:"Gotowe w",kDays:"dni roboczych",
+  eco:"Pracujemy w 100 % bez chemii i przyjaźnie dla środowiska — nasi specjaliści dobierają najlepszą metodę dla Twojego kadłuba. W cenie.",
+  travel:"Dojazd rozliczany osobno w cenie {km}.",
+  binding:"Cena orientacyjna — wiążąca oferta po sprawdzeniu zdjęć/filmu. Dotyczy kadłuba wolnego od osmozy; w razie stwierdzenia osmozy dodatkowa praca zostanie doliczona.",
+  fName:"Imię i nazwisko",fMail:"E-mail",fZip:"Kod pocztowy (miejsce postoju)",fTel:"Telefon",fMsg:"Marina / wiadomość",
+  fSend:"Poproś o ofertę ze stałą ceną",fThanks:"Dziękujemy! Sprawdzimy Twoje materiały i wkrótce odezwiemy się z ofertą ze stałą ceną i terminem.",
+  errReq:"Podaj imię i e-mail.",errZip:"Podaj prawidłowy kod pocztowy.",
+  footer:"Ekologiczna renowacja kadłuba · Materiały NautiCare",
+  hull:{motorboot:"Motorówka / ślizgowa",kurzkieler:"Jacht żaglowy (kil płetwowy)",langkieler:"Jacht żaglowy (kil długi)"},
+  cond:{leicht:"Dobry (cienkie warstwy)",mittel:"Normalny",stark:"Mocno zwietrzały / grube warstwy"},
+  boat:{motor:"Motorówka",sailFin:"Jacht żaglowy (kil płetwowy)",sailLong:"Klasyk / kil długi"},
+  pkgs:{
+   af:{t:"Odnowienie antyfoulingu",d:"Stary antyfouling usunięty, grunt, świeży antyfouling nałożony. Gotowe na sezon.",
+       inc:["Pełne usunięcie starego antyfoulingu","Grunt (2 warstwy)","Nowy antyfouling (2 warstwy, natrysk)"]},
+   full:{t:"Pełna renowacja: usunięcie + nowa powłoka",d:"Wszystko zdjęte do podłoża (żelkot, metal lub drewno), potem pełna nowa powłoka: grunt, farba, antyfouling.",
+       inc:["Pełne usunięcie powłok do podłoża","Szlifowanie wykańczające ręczne","Grunt (2 warstwy)","Nowa farba / lakier 2K (2 warstwy, natrysk)","Nowy antyfouling (2 warstwy)"]},
+   strip:{t:"Tylko usunięcie (gotowe do malowania)",d:"Usuwamy wszystkie stare powłoki — nową powłokę wykonujesz sam.",
+       inc:["Usunięcie wszystkich starych powłok","Powierzchnia przekazana gotowa do malowania"]}},
+  hero:["Stały termin","Stała cena"],
+  lMat:"Materiał kadłuba",mats:{gfk:"Laminat",stahl:"Stal",alu:"Alu",holz:"Drewno"},
+  boatOther:"Inny rozmiar / przypadek szczególny",lOther:"Twoje wymiary & uwagi",
+  mediaT:"Kontrola stanu: zdjęcia lub film",
+  mediaHint:"Co najmniej 3 zdjęcia (podwodna część kadłuba, obie burty, szczegół powłoki) lub 1 film. Nie odbywają się oględziny na miejscu — oceniamy stan na podstawie Twoich materiałów.",
+  mediaDrop:"<strong>Przeciągnij lub dotknij</strong>, aby dodać zdjęcia lub film.",
+  mediaCount:"Zdjęcia: {p} · Filmy: {v}",mediaOk:"Wystarczy do oceny.",
+  errMedia:"Prześlij co najmniej 3 zdjęcia lub 1 film.",errSize:"Plik za duży (zdjęcie maks. 15 MB, film maks. 150 MB) lub nieobsługiwany.",errMax:"Maksymalnie 12 plików.",
+  calT:"Preferowany termin (start prac)",calHint:"Wybierz dzień roboczy. Przewidywany przedział jest zaznaczony; termin zostaje ustalony w ofercie ze stałą ceną.",
+  calSel:"Start {s} · koniec ok. {e}",calNone:"Nie wybrano jeszcze terminu.",errDate:"Wybierz preferowany termin.",
+  cOsmose:"Potwierdzam, że kadłub jest wolny od osmozy. Jeśli podczas prac zostanie stwierdzona osmoza, dodatkowa praca zostanie doliczona.",
+  cMarina:"Dźwig, podstawienie i osłonę uzgadniam samodzielnie z moją mariną (jeśli jeszcze nie zrobiono).",
+  cPay:"Przyjmuję do wiadomości: 50 % zaliczki w ciągu 5 dni roboczych od potwierdzenia oferty przez obie strony.",
+  errConfirm:"Potwierdź wszystkie informacje.",errOther:"Podaj wymiary / uwagi.",errSend:"Wysyłanie nie powiodło się — spróbuj ponownie.",
+  payT:"Płatność",payLine:"50 % zaliczki w ciągu 5 dni roboczych od potwierdzenia oferty przez obie strony.",
+  lProd:"Usługa",prods:{uws:"Podwodna część kadłuba",det:"Detailing & zabezpieczenie"},lLenD:"Długość jednostki (m)",
+  pkgsD:{
+   pflege:{t:"Odświeżenie & zabezpieczenie",d:"Mycie, polerowanie jednoetapowe, zabezpieczenie — dla zadbanych powierzchni, które mają znów lśnić.",
+     inc:["Dokładne mycie & dekontaminacja","Polerowanie jednoetapowe","Zabezpieczenie (wosk/sealant)","Dokumentacja zdjęciowa przed/po"]},
+   restau:{t:"Renowacja: szlifowanie na mokro & polerowanie",d:"Polerowanie nie pomogło? Wtedy powierzchnia jest zmatowiała lub kredowa — potrzebne jest szlifowanie na mokro, nie polerowanie.",
+     inc:["Mycie & dekontaminacja","Szlifowanie na mokro (gradacja 500–1500)","Polerowanie na wysoki połysk","Zabezpieczenie","Dokumentacja zdjęciowa przed/po"]},
+   keramik:{t:"Pełny pakiet ceramiczny",d:"Renowacja plus powłoka ceramiczna — trwała ochrona, by efekt został.",
+     inc:["Mycie & dekontaminacja","Szlifowanie na mokro (gradacja 500–1500)","Polerowanie dwuetapowe (korekta + finisz)","Powłoka ceramiczna (2 warstwy)","Dokumentacja zdjęciowa przed/po"]}},
+  condD:{leicht:"Jak nowa / zadbana",mittel:"Matowa, lekkie utlenienie",stark:"Kredowa / bardzo matowa"},
+  hintChalk:"Kredowa powierzchnia? Samo polerowanie nie wystarczy — wybierz renowację ze szlifowaniem na mokro.",
+  ecoD:"Polerowanie, szlifowanie i zabezpieczenie dobieramy do stanu Twojej powierzchni — płacisz za efekt, nie za metodę. Dokumentacja zdjęciowa przed/po w cenie.",
+  bindingD:"Cena orientacyjna — wiążąca oferta ze stałą ceną po sprawdzeniu zdjęć/filmu.",
+  mediaHintD:"Co najmniej 3 zdjęcia (obie burty, nadbudówka/pokład, szczegół powierzchni) lub 1 film. Nie odbywają się oględziny na miejscu — oceniamy stan na podstawie Twoich materiałów.",
+  cMarinaD:"Dostęp do jednostki i miejsca postoju uzgadniam samodzielnie z moją mariną (jeśli jeszcze nie zrobiono).",
+  lCondD:"Stan powierzchni",claimD:"Detailing & zabezpieczenie jednostek — szybko, czysto, w terminie"},
+  proc:{t:"Jak to wygląda",steps:[
+   ["Wyślij zapytanie","Wymiary, materiał, 3 zdjęcia lub 1 film i preferowany termin. Potwierdzasz, że kadłub jest wolny od osmozy."],
+   ["Ocena na podstawie zdjęć/filmu","Oceniamy stan na podstawie Twoich materiałów. Nie odbywają się oględziny na miejscu."],
+   ["Stała cena & termin","Wiążąca oferta ze stałym terminem. Po potwierdzeniu przez obie strony: 50 % zaliczki w ciągu 5 dni roboczych."],
+   ["Przygotowanie","Dźwig, podstawienie i osłonę uzgadniasz samodzielnie ze swoją mariną — jeśli jeszcze nie zrobiono."],
+   ["Wykonanie","Usunięcie i nowa powłoka — czysto, szybko, ekologicznie."],
+   ["Odbiór & płatność","Wspólny odbiór; pozostała kwota płatna po Twojej akceptacji."]]},
+  procd:{1:"Wymiary, materiał, 3 zdjęcia lub 1 film i preferowany termin.",4:"Dostęp do jednostki i miejsca postoju uzgadniasz ze swoją mariną — jeśli jeszcze nie zrobiono.",5:"Mycie, szlifowanie, polerowanie i zabezpieczenie — czysto, szybko, w terminie."}}
+};
+for (const l in NEWL){ I18N[l] = NEWL[l].i; PROC[l] = NEWL[l].proc; PROCD_PATCH[l] = NEWL[l].procd; }
+for (const l in EXTRA_N) Object.assign(I18N[l], EXTRA_N[l]);
+
+const PROCD = {};
+for (const l in PROC) PROCD[l] = {t:PROC[l].t, steps:PROC[l].steps.map((st,i)=> PROCD_PATCH[l][i+1] ? [st[0], PROCD_PATCH[l][i+1]] : st)};
+
+/* ============ Interne Preis-/Zeitbasis (Kunde sieht nur Ergebnis) ============ */
+const CFG = {
+  ruestpauschale_eur:150, marge_faktor:1.0, spanne:0.12, arbeitsstunden_pro_tag:6,
+  entfernung:{
+    laser:{eur_h:170, m2_h:2.0, mat_m2:0},   /* Laserabtrag — Werte aus pricing.json (Annahme, am Testboot kalibrieren) */
+    handschliff:{eur_h:68, m2_h:2.0, mat_m2:1.5}
+  },
+  aufbau:{
+    primer:{l_m2:0.12, eur_l:28, m2_h:18, eur_h:68},
+    antifouling:{l_m2:0.10, eur_l:42, m2_h:18, eur_h:68},
+    lack_2k:{l_m2:0.11, eur_l:48, m2_h:12, eur_h:68}
+  },
+  zustand:{leicht:0.85, mittel:1.0, stark:1.35},
+  formeln:{motorboot:1.0, kurzkieler:0.5, langkieler:0.75},
+  /* Pakete = Kundensicht. Verfahren & Schichten = interne Zuordnung. */
+  pakete:{
+    af:   {entfernung:["laser"], aufbau:{primer:2, antifouling:2}, trocknungstage:1},
+    full: {entfernung:["laser","handschliff"], aufbau:{primer:2, lack_2k:2, antifouling:2}, trocknungstage:3},
+    strip:{entfernung:["laser"], aufbau:{}, trocknungstage:0}
+  },
+  anfahrt_eur_pro_km:0.70,
+  /* MwSt.-Normalsätze (Stand 10/2026). Leistungsort Arbeiten am Boot = Ort der Ausführung. */
+  mwst:{DE:0.19, SE:0.25, NO:0.25, DK:0.25, FI:0.255, GB:0.20, NL:0.21, BE:0.21, LU:0.17, FR:0.20,
+        AT:0.20, CH:0.081, LI:0.081, PL:0.23, EE:0.24, LV:0.21, LT:0.21, IE:0.23, ES:0.21, PT:0.23,
+        IT:0.22, HR:0.25, SI:0.22, CZ:0.21, SK:0.23, HU:0.27, GR:0.24, CY:0.19, MT:0.18, RO:0.21,
+        BG:0.20, IS:0.24},
+  /* Sprache → Land. EN = Land des Nutzers wird erkannt. */
+  sprache_land:{de:"DE", sv:"SE", no:"NO", da:"DK", fi:"FI", pl:"PL", en:null, nl:null, fr:null},   /* nl/fr: Land nicht eindeutig (NL/BE, FR/BE/CH/LU) → wie EN erkannt */
+  /* Produkt 2: Detailing & Versiegelung — gleiche Engine (Fläche ÷ m²/h × €/h + Material), kalibriert auf Zielpreise
+     10-m-Segelboot: Aufbereitung ~1.400–1.800 · Restauration ~2.200–2.800 · Keramik komplett ~5.000–7.500 (alle Werte Annahmen) */
+  detailing:{
+    arbeitsstunden_pro_tag:6, mindestauftrag_eur:900,
+    zustand:{leicht:0.7, mittel:1.0, stark:1.6},                    /* Faktor auf Korrekturschritte (z:true) */
+    formeln:{motorboot:1.6, kurzkieler:1.2, langkieler:1.4},        /* Außenfläche (Rumpfseiten + Deck/Aufbau) = Faktor × Länge × Breite */
+    schritte:{
+      wash:   {eur_h:100, m2_h:20,  mat_m2:0.3, z:false},
+      schliff:{eur_h:100, m2_h:5,   mat_m2:1.5, z:true},
+      polish1:{eur_h:100, m2_h:6,   mat_m2:1.5, z:true},
+      polish2:{eur_h:100, m2_h:10,  mat_m2:1.0, z:true},
+      sealant:{eur_h:100, m2_h:15,  mat_m2:2.5, z:false},
+      keramik:{eur_h:140, m2_h:4.5, mat_m2:35,  z:false},
+      topper: {eur_h:100, m2_h:15,  mat_m2:6,   z:false}      /* nur Abo: Keramik-Auffrischung */
+    },
+    pakete:{
+      pflege: {schritte:["wash","polish1","sealant"], trocknungstage:0},
+      restau: {schritte:["wash","schliff","polish1","sealant"], trocknungstage:0},
+      keramik:{schritte:["wash","schliff","polish1","polish2","keramik"], trocknungstage:2}
+    }
+  },
+  /* Abo (optional zum Erstauftrag): ein fester Frühjahrs-Servicetermin mit Termingarantie — kein Rabatt, Termingarantie nur im Abo.
+     Preis = Engine-Schritte × Fläche (+ Rüstpauschale), Spanne wie Erstauftrag. Alle Werte Annahmen. */
+  abo:{
+    uws:{ohne:["strip"], reinigung:{eur_h:68, m2_h:10, mat_m2:0.2}, pruefung_h:0.5, pruefung_eur_h:68, ausbesserung_anteil:0.15, min_netto:350},
+    det:{schritte:{pflege:["wash","sealant"], restau:["wash","sealant"], keramik:["wash","topper"]}}   /* Mindestauftrag wie Erstauftrag */
+  },
+  /* Anzeige-Währung je Land (Abrechnung/Rechnung: siehe Hinweis im Angebot). Kurse = Annahme, live über /api/fx (EZB), sonst diese Werte. */
+  land_waehrung:{SE:"SEK", NO:"NOK", DK:"DKK", GB:"GBP", CH:"CHF", LI:"CHF", PL:"PLN", CZ:"CZK", HU:"HUF", RO:"RON", IS:"ISK"},
+  fx:{
+    quelle:"config",
+    kurse:{EUR:1, SEK:11.17, NOK:10.67, DKK:7.475, GBP:0.845, CHF:0.931, PLN:4.377, CZK:24.37, HUF:364.3, RON:5.336, ISK:136.2},
+    runden:{EUR:10, GBP:10, CHF:10, PLN:10, DKK:50, SEK:100, NOK:100, CZK:500, RON:50, HUF:5000, ISK:1000}
+  },
+  /* Materialfaktor auf die Verfahrenskosten — 1.0 = Platzhalter, bitte prüfen */
+  material:{gfk:1.0, stahl:1.0, alu:1.0, holz:1.0},
+  /* Buchungskalender: frühester Start = heute + Vorlauf; Mo–Fr; gesperrt = ISO-Tage (YYYY-MM-DD) */
+  kalender:{vorlauf_tage:14, max_monate:12, gesperrt:[]},
+  boote:[
+    {key:"motor", rng:"≤ 6 m", typ:"motorboot", lwl:5.2, b:2.2, t:0.5},
+    {key:"motor", rng:"6–8 m", typ:"motorboot", lwl:6.8, b:2.5, t:0.7},
+    {key:"motor", rng:"8–10 m", typ:"motorboot", lwl:8.5, b:3.0, t:0.9},
+    {key:"motor", rng:"10–13 m", typ:"motorboot", lwl:11.0, b:3.8, t:1.1},
+    {key:"motor", rng:"13–16 m", typ:"motorboot", lwl:14.0, b:4.3, t:1.3},
+    {key:"sailFin", rng:"≤ 8 m", typ:"kurzkieler", lwl:6.8, b:2.5, t:1.4},
+    {key:"sailFin", rng:"8–10 m", typ:"kurzkieler", lwl:8.6, b:3.1, t:1.7},
+    {key:"sailFin", rng:"10–12 m", typ:"kurzkieler", lwl:10.4, b:3.6, t:1.9},
+    {key:"sailFin", rng:"12–15 m", typ:"kurzkieler", lwl:12.8, b:4.2, t:2.2},
+    {key:"sailLong", rng:"≤ 10 m", typ:"langkieler", lwl:8.5, b:2.9, t:1.5},
+    {key:"sailLong", rng:"10–14 m", typ:"langkieler", lwl:11.5, b:3.5, t:1.8}
+  ]
+};
+
+
+let LANG = "de", PROD = "uws", letzteKalkulation = null;
+const $ = id => document.getElementById(id);
+const T = () => I18N[LANG];
+const fmt = n => n.toLocaleString(T().locale, {maximumFractionDigits:0});
+const pct = r => r.toLocaleString(T().locale, {style:"percent", maximumFractionDigits:1});
+const ABO = {chk:false};
+/* Währung: Anzeige in der Landeswährung (Berechnung bleibt in EUR) */
+function waehrung(){ const l = aktivesLand(); return (l && CFG.land_waehrung[l]) || "EUR"; }
+const kurs = () => CFG.fx.kurse[waehrung()] || 1;
+function conv(x){ const w = waehrung(); if (w === "EUR") return x; const s = CFG.fx.runden[w] || 10; return Math.round(x * kurs() / s) * s; }
+const spanneTxt = (a, b) => a === b ? money(a) : `${money(a)} – ${money(b)}`;
+const money = (n, dec) => n.toLocaleString(T().locale, {style:"currency", currency:waehrung(), minimumFractionDigits:dec||0, maximumFractionDigits:dec||0});
+
+/* ============ Region / MwSt. ============ */
+/* Zeitzone → Land (zuverlässigster Browser-Hinweis auf den Standort, ohne Fremddienst) */
+const TZ_LAND = {
+  "Europe/Berlin":"DE","Europe/Busingen":"DE","Europe/Stockholm":"SE","Europe/Oslo":"NO","Europe/Copenhagen":"DK",
+  "Europe/Helsinki":"FI","Europe/London":"GB","Europe/Belfast":"GB","Europe/Amsterdam":"NL","Europe/Brussels":"BE",
+  "Europe/Luxembourg":"LU","Europe/Paris":"FR","Europe/Vienna":"AT","Europe/Zurich":"CH","Europe/Vaduz":"LI",
+  "Europe/Warsaw":"PL","Europe/Tallinn":"EE","Europe/Riga":"LV","Europe/Vilnius":"LT","Europe/Dublin":"IE",
+  "Europe/Madrid":"ES","Atlantic/Canary":"ES","Europe/Lisbon":"PT","Atlantic/Madeira":"PT","Atlantic/Azores":"PT",
+  "Europe/Rome":"IT","Europe/Zagreb":"HR","Europe/Ljubljana":"SI","Europe/Prague":"CZ","Europe/Bratislava":"SK",
+  "Europe/Budapest":"HU","Europe/Athens":"GR","Asia/Nicosia":"CY","Europe/Nicosia":"CY","Europe/Malta":"MT",
+  "Europe/Bucharest":"RO","Europe/Sofia":"BG","Atlantic/Reykjavik":"IS"
+};
+let REGION = {land:null, quelle:"unbekannt"};   /* erkanntes Land für EN */
+let REGION_MANUELL = false;
+
+function landAusBrowser(){
+  try{
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (TZ_LAND[tz]) return {land:TZ_LAND[tz], quelle:"zeitzone"};
+  }catch(_){}
+  for (const l of (navigator.languages || [navigator.language||""])){
+    const m = /^[a-z]{2,3}-([A-Z]{2})$/i.exec(l);
+    if (m && CFG.mwst[m[1].toUpperCase()] !== undefined) return {land:m[1].toUpperCase(), quelle:"browsersprache"};
+  }
+  return {land:null, quelle:"unbekannt"};
+}
+async function regionErkennen(){
+  REGION = landAusBrowser();
+  /* Backend kann das Land aus der IP liefern (CDN-Header) — hat Vorrang, wenn vorhanden */
+  try{
+    const r = await fetch("/api/region", {signal:AbortSignal.timeout(2000)});
+    if (r.ok){ const j = await r.json(); if (j.land && CFG.mwst[j.land] !== undefined) REGION = {land:j.land, quelle:"ip"}; }
+  }catch(_){ /* Mockup ohne Backend */ }
+}
+async function fxLaden(){
+  try{
+    const r = await fetch("/api/fx", {signal:AbortSignal.timeout(2500)});
+    if (r.ok){ const j = await r.json(); Object.assign(CFG.fx.kurse, j.kurse || {}); CFG.fx.quelle = j.quelle || "config"; }
+  }catch(_){ /* Mockup ohne Backend: Konfig-Kurse */ }
+}
+/* Land, dessen MwSt. gilt: Sprache fest, bei EN erkannt/gewählt */
+function aktivesLand(){
+  const fest = CFG.sprache_land[LANG];
+  if (fest) return fest;
+  return REGION.land;
+}
+function mwstSatz(){ const l = aktivesLand(); return l ? CFG.mwst[l] : null; }
+function landName(code){
+  try{ return new Intl.DisplayNames([T().locale], {type:"region"}).of(code); }catch(_){ return code; }
+}
+function renderRegion(){
+  const t = T(), r = mwstSatz();
+  $("vatLbl").textContent = r === null ? t.vatExcl : t.vatIncl.replace("{r}", pct(r));
+  $("travelTxt").textContent = t.travel.replace("{km}", money(CFG.anfahrt_eur_pro_km * (1 + (r||0)) * kurs(), 2) + "/km");
+  const w = waehrung();
+  $("fxNote").textContent = w === "EUR" ? "" : t.fxNote.replace("{w}", w).replace("{k}", kurs().toLocaleString(T().locale, {maximumFractionDigits:4}));
+  const istEN = CFG.sprache_land[LANG] === null;
+  $("regionBox").style.display = istEN ? "" : "none";
+  if (istEN){
+    const laender = Object.keys(CFG.mwst).sort((a,b)=>landName(a).localeCompare(landName(b), T().locale));
+    $("regionSel").innerHTML = laender.map(c=>`<option value="${c}">${landName(c)} · ${pct(CFG.mwst[c])}</option>`).join("")
+      + `<option value="">${t.regionOther}</option>`;
+    $("regionSel").value = REGION.land || "";
+  }
+}
+
+/* ============ Kalkulation ============ */
+function flaeche(){
+  const L = +$("lwl").value, B = +$("breite").value, f = $("bootstyp").value;
+  if (PROD === "det") return Math.round(CFG.detailing.formeln[f] * L * B * 10) / 10;
+  return Math.round(CFG.formeln[f] * L * (B + (+$("tiefgang").value)) * 10) / 10;
+}
+/* gemeinsame Ausgabe: Netto-Spanne → Brutto mit Satz des Landes */
+function packe(netto, a, tage, minNetto){
+  const r = mwstSatz(), f = 1 + (r || 0);
+  const r10 = x => Math.round(x/10)*10;
+  const nv = Math.max(minNetto, netto*(1-CFG.spanne)), nb = Math.max(minNetto, netto*(1+CFG.spanne));
+  return {
+    flaeche:a, land:aktivesLand(), mwst_satz:r,
+    netto_von:r10(nv), netto_bis:r10(nb),
+    von:r10(nv*f), bis:r10(nb*f),   /* angezeigt = brutto */
+    tageVon:tage, tageBis:tage+1
+  };
+}
+function kalkuliere(pkgKey){
+  if (PROD === "det") return kalkuliereDet(pkgKey);
+  const p = CFG.pakete[pkgKey], a = flaeche(), z = CFG.zustand[$("zustand").value];
+  let kosten = 0, stunden = 0;
+  for (const k of p.entfernung){
+    const m = CFG.entfernung[k], h = a / m.m2_h * z;
+    stunden += h; kosten += h * m.eur_h + a * m.mat_m2;
+  }
+  for (const [k, s] of Object.entries(p.aufbau)){
+    const c = CFG.aufbau[k], h = a / c.m2_h * s;
+    stunden += h; kosten += h * c.eur_h + a * c.l_m2 * s * c.eur_l;
+  }
+  const mf = CFG.material[$("material").value] ?? 1;
+  const netto = (kosten * mf + CFG.ruestpauschale_eur) * CFG.marge_faktor;
+  const tage = Math.max(1, Math.ceil(stunden / CFG.arbeitsstunden_pro_tag)) + p.trocknungstage;
+  return packe(netto, a, tage, 0);
+}
+function kalkuliereDet(pkgKey){
+  const D = CFG.detailing, p = D.pakete[pkgKey], a = flaeche(), z = D.zustand[$("zustand").value];
+  let kosten = 0, stunden = 0;
+  for (const k of p.schritte){
+    const m = D.schritte[k], h = a / m.m2_h * (m.z ? z : 1);
+    stunden += h; kosten += h * m.eur_h + a * m.mat_m2;
+  }
+  const mf = CFG.material[$("material").value] ?? 1;
+  const netto = (kosten * mf + CFG.ruestpauschale_eur) * CFG.marge_faktor;
+  const tage = Math.max(1, Math.ceil(stunden / D.arbeitsstunden_pro_tag)) + p.trocknungstage;
+  return packe(netto, a, tage, D.mindestauftrag_eur);   /* Mindestauftragswert je Anfahrt */
+}
+
+/* Abo: Netto vor Spanne oder null (kein Abo möglich) */
+function aboNetto(pkgKey){
+  const a = flaeche(), mf = CFG.material[$("material").value] ?? 1;
+  if (PROD === "det"){
+    const D = CFG.detailing; let k = 0;
+    for (const s of CFG.abo.det.schritte[pkgKey]){ const m = D.schritte[s]; k += a / m.m2_h * m.eur_h + a * m.mat_m2; }
+    return {netto:(k * mf + CFG.ruestpauschale_eur) * CFG.marge_faktor, min:D.mindestauftrag_eur};
+  }
+  const A = CFG.abo.uws; if (A.ohne.includes(pkgKey)) return null;
+  const r = A.reinigung, c = CFG.aufbau.antifouling, fl = a * A.ausbesserung_anteil;
+  let k = a / r.m2_h * r.eur_h + a * r.mat_m2 + A.pruefung_h * A.pruefung_eur_h;
+  k += fl / c.m2_h * c.eur_h + fl * c.l_m2 * c.eur_l;
+  return {netto:(k * mf + CFG.ruestpauschale_eur) * CFG.marge_faktor, min:A.min_netto};
+}
+function kalkuliereAbo(pkgKey){
+  const x = aboNetto(pkgKey); if (!x) return null;
+  const r = mwstSatz(), f = 1 + (r || 0), r10 = v => Math.round(v/10)*10;
+  const nv = Math.max(x.min, x.netto*(1-CFG.spanne)), nb = Math.max(x.min, x.netto*(1+CFG.spanne));
+  return {netto_von:r10(nv), netto_bis:r10(nb), von:r10(nv*f), bis:r10(nb*f)};
+}
+
+/* ============ UI ============ */
+const LANG_NAMES = {de:"Deutsch", en:"English", da:"Dansk", no:"Norsk", sv:"Svenska", fi:"Suomi", nl:"Nederlands", fr:"Français", pl:"Polski"};
+const SUB = {de:"Richtpreis in 40 Sekunden", en:"Estimate in 40 seconds", da:"Overslag på 40 sekunder", no:"Prisantydning på 40 sekunder", sv:"Prisuppskattning på 40 sekunder",
+  fi:"Hinta-arvio 40 sekunnissa", nl:"Richtprijs in 40 seconden", fr:"Estimation en 40 secondes", pl:"Wycena w 40 sekund"};
+const PH = {de:"z. B. Länge 9,8 m, Doppelkiel, Tiefgang 1,2 m …", en:"e.g. length 9.8 m, twin keel, draft 1.2 m …",
+  da:"fx længde 9,8 m, tvillingekøl, dybgang 1,2 m …", no:"f.eks. lengde 9,8 m, tvillingkjøl, dypgang 1,2 m …", sv:"t.ex. längd 9,8 m, tvillingköl, djupgående 1,2 m …",
+  fi:"esim. pituus 9,8 m, kaksoiskölit, syväys 1,2 m …", nl:"bijv. lengte 9,8 m, dubbele kiel, diepgang 1,2 m …",
+  fr:"p. ex. longueur 9,8 m, bi-quille, tirant d'eau 1,2 m …", pl:"np. długość 9,8 m, kil bliźniaczy, zanurzenie 1,2 m …"};
+const SEL = {uws:"af", det:"pflege"};
+let LAST_TAGE = 4;
+const pkg = () => SEL[PROD];
+const pk = () => PROD === "det" ? T().pkgsD : T().pkgs;
+const needsOsmose = () => PROD === "uws" && $("material").value === "gfk";
+const FILES = [], URLS = new Map();
+const CHECK = {osmose:false, marina:false, pay:false};
+const CAL = {sel:null, view:null};
+const MAX_FILES = 12, MAX_IMG = 15*1024*1024, MAX_VID = 150*1024*1024;
+const num1 = n => n.toLocaleString(T().locale, {minimumFractionDigits:1, maximumFractionDigits:1});
+
+function chips(el, items, current, onPick){
+  el.innerHTML = items.map(([k,label])=>`<button type="button" class="chip${k===current?" on":""}" data-k="${k}" aria-pressed="${k===current}">${label}</button>`).join("");
+  el.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>onPick(b.dataset.k)));
+}
+function fillSlider(el){ el.style.setProperty("--p", ((el.value - el.min) / (el.max - el.min) * 100) + "%"); }
+function syncSliders(){
+  for (const [id,out] of [["lwl","vLwl"],["breite","vBreite"],["tiefgang","vTief"]]){
+    fillSlider($(id)); $(out).textContent = num1(+$(id).value) + " m";
+  }
+}
+
+function render(){
+  const t = T();
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k = el.dataset.i18n, d = PROD === "det";
+    const key = ({mediaHint:d?"mediaHintD":"mediaHint", eco:d?"ecoD":"eco", binding:d?"bindingD":"binding", lLwl:d?"lLenD":"lLwl", lCond:d?"lCondD":"lCond", claim:d?"claimD":"claim"})[k] || k;
+    el.innerHTML = k === "calcSub" ? SUB[LANG] : (t[key] || "");
+  });
+  $("hero").innerHTML = t.hero.map(x=>`<span>${x}<i>.</i></span>`).join(" ");
+  $("dropText").innerHTML = t.mediaDrop;
+  $("lOther").placeholder = PH[LANG];
+  $("langSel").innerHTML = Object.keys(I18N).map(l=>`<option value="${l}"${l===LANG?" selected":""}>${LANG_NAMES[l]}</option>`).join("");
+
+  const pr = (PROD === "det" ? PROCD : PROC)[LANG];
+  $("procT").textContent = pr.t;
+  $("procList").innerHTML = pr.steps.map((s,i)=>
+    `<li><span class="n">${String(i+1).padStart(2,"0")}</span><strong>${s[0]}</strong><small>${s[1]}</small></li>`).join("");
+
+  chips($("prodChips"), Object.keys(t.prods).map(k=>[k,t.prods[k]]), PROD, k=>{ PROD = k; render(); });
+  chips($("pkgChips"), Object.entries(pk()).map(([k,v])=>[k,v.t]), pkg(), k=>{ SEL[PROD] = k; render(); });
+  $("pkgDesc").textContent = pk()[pkg()].d + (PROD === "det" && pkg() === "pflege" && $("zustand").value === "stark" ? " " + t.hintChalk : "");
+  $("grpTief").style.display = PROD === "det" ? "none" : "";
+  chips($("matChips"), Object.keys(CFG.material).map(k=>[k,t.mats[k]]), $("material").value, k=>{ $("material").value = k; render(); });
+  const nm = $("material").value !== "gfk";
+  $("matHint").style.display = nm ? "" : "none";
+  $("matHint").textContent = nm ? (PROD === "det" ? t.matNoteD : t.matNote) : "";
+
+  const selBoat = $("bootSelect").value || "6";
+  $("bootSelect").innerHTML = CFG.boote.map((b,i)=>`<option value="${i}">${t.boat[b.key]} ${b.rng}</option>`).join("")
+    + `<option value="other">${t.boatOther}</option>`;
+  $("bootSelect").value = selBoat;
+  $("otherBox").style.display = selBoat === "other" ? "" : "none";
+
+  chips($("hullChips"), Object.keys(CFG.formeln).map(k=>[k,t.hull[k]]), $("bootstyp").value, k=>{ $("bootstyp").value = k; render(); });
+  chips($("condChips"), Object.keys(CFG.zustand).map(k=>[k,(PROD === "det" ? t.condD : t.cond)[k]]), $("zustand").value, k=>{ $("zustand").value = k; render(); });
+  syncSliders();
+  renderChecks();
+  renderMedia();
+  zeigeErgebnis(pkg());
+}
+
+$("langSel").addEventListener("change", e=>{ LANG = e.target.value; render(); });
+["lwl","breite","tiefgang"].forEach(id=>$(id).addEventListener("input", ()=>{ syncSliders(); zeigeErgebnis(pkg()); }));
+
+/* Boot aus Liste / andere Größe */
+$("bootSelect").addEventListener("change", e=>{
+  if (e.target.value !== "other"){
+    const b = CFG.boote[e.target.value];
+    $("lwl").value=b.lwl; $("breite").value=b.b; $("tiefgang").value=b.t; $("bootstyp").value=b.typ;
+  }
+  render();
+});
+
+/* ---------- Bestätigungen ---------- */
+function renderChecks(){
+  const t = T(), items = [];
+  if (needsOsmose()) items.push(["osmose", t.cOsmose]);
+  items.push(["marina", PROD === "det" ? t.cMarinaD : t.cMarina], ["pay", t.cPay]);
+  $("checks").innerHTML = items.map(([k,txt])=>
+    `<label class="chk"><input type="checkbox" data-c="${k}"${CHECK[k]?" checked":""}><span>${txt}</span></label>`).join("");
+  $("checks").querySelectorAll("input").forEach(cb=>cb.addEventListener("change",()=>{ CHECK[cb.dataset.c] = cb.checked; }));
+}
+
+/* ---------- Medien (min. 3 Fotos oder 1 Video) ---------- */
+const isImg = f => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name);
+const isVid = f => f.type.startsWith("video/") || /\.(mp4|mov|m4v|webm)$/i.test(f.name);
+const mediaCounts = () => ({p:FILES.filter(isImg).length, v:FILES.filter(isVid).length});
+const mediaOk = () => { const c = mediaCounts(); return c.p >= 3 || c.v >= 1; };
+
+function renderMedia(msg){
+  const t = T(), c = mediaCounts();
+  $("thumbs").innerHTML = FILES.map((f,i)=>`<div class="th">${isImg(f) ? `<img src="${URLS.get(f)}" alt="" onerror="this.remove()">` : ""}<span>${isVid(f) ? "▶ " : ""}${f.name.slice(0,22)}</span><button type="button" data-i="${i}" aria-label="×">×</button></div>`).join("");
+  $("thumbs").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    const f = FILES.splice(+b.dataset.i,1)[0]; URL.revokeObjectURL(URLS.get(f)); URLS.delete(f); renderMedia();
+  }));
+  const st = $("mStat");
+  if (msg){ st.textContent = msg; st.className = "mstat bad"; return; }
+  st.textContent = t.mediaCount.replace("{p}", c.p).replace("{v}", c.v) + (mediaOk() ? " · " + t.mediaOk : "");
+  st.className = "mstat" + (mediaOk() ? " good" : "");
+}
+function addFiles(list){
+  let msg = "";
+  for (const f of list){
+    if (!isImg(f) && !isVid(f)) { msg = T().errSize; continue; }
+    if (f.size > (isVid(f) ? MAX_VID : MAX_IMG)) { msg = T().errSize; continue; }
+    if (FILES.length >= MAX_FILES) { msg = T().errMax; break; }
+    FILES.push(f); URLS.set(f, URL.createObjectURL(f));
+  }
+  renderMedia(msg);
+}
+$("drop").addEventListener("click", ()=>$("fileInput").click());
+$("drop").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("fileInput").click(); } });
+$("drop").addEventListener("dragover", e=>e.preventDefault());
+$("drop").addEventListener("drop", e=>{ e.preventDefault(); addFiles([...e.dataTransfer.files]); });
+$("fileInput").addEventListener("change", e=>{ addFiles([...e.target.files]); e.target.value = ""; });
+
+/* ---------- Buchungskalender ---------- */
+const pad = n => String(n).padStart(2,"0");
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseIso = x => { const [y,m,d] = x.split("-").map(Number); return new Date(y, m-1, d); };
+const fmtD = d => d.toLocaleDateString(T().locale, {day:"2-digit", month:"2-digit", year:"numeric"});
+const istArbeitstag = d => d.getDay() !== 0 && d.getDay() !== 6;
+function startMin(){ const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + CFG.kalender.vorlauf_tage); return d; }
+const buchbar = d => d >= startMin() && istArbeitstag(d) && !CFG.kalender.gesperrt.includes(iso(d));
+function fensterEnde(start, tage){
+  const d = new Date(start); let n = 1;
+  while (n < tage){ d.setDate(d.getDate()+1); if (istArbeitstag(d)) n++; }
+  return d;
+}
+function renderCal(){
+  const t = T(), K = CFG.kalender, min = startMin();
+  if (!CAL.view) CAL.view = new Date(min.getFullYear(), min.getMonth(), 1);
+  const v = CAL.view, last = new Date(v.getFullYear(), v.getMonth()+1, 0);
+  const lead = (new Date(v.getFullYear(), v.getMonth(), 1).getDay() + 6) % 7;
+  const wd = [...Array(7)].map((_,i)=> new Date(2024,0,1+i).toLocaleDateString(t.locale,{weekday:"short"}).slice(0,2));
+  const range = CAL.sel ? [parseIso(CAL.sel), fensterEnde(parseIso(CAL.sel), LAST_TAGE)] : null;
+  let cells = "";
+  for (let i=0;i<lead;i++) cells += "<span></span>";
+  for (let n=1;n<=last.getDate();n++){
+    const d = new Date(v.getFullYear(), v.getMonth(), n), id = iso(d), ok = buchbar(d), c = ["cal-d"];
+    if (ok) c.push("ok");
+    if (CAL.sel === id) c.push("on"); else if (range && d >= range[0] && d <= range[1]) c.push("in");
+    cells += `<button type="button" class="${c.join(" ")}" data-d="${id}"${ok?"":" disabled"}>${n}</button>`;
+  }
+  const prevOk = v > new Date(min.getFullYear(), min.getMonth(), 1);
+  const nextOk = new Date(v.getFullYear(), v.getMonth()+1, 1) < new Date(min.getFullYear(), min.getMonth()+K.max_monate, 1);
+  $("cal").innerHTML = `<div class="cal-h"><button type="button" id="calPrev"${prevOk?"":" disabled"} aria-label="‹">‹</button>
+    <span>${v.toLocaleDateString(t.locale,{month:"long",year:"numeric"})}</span>
+    <button type="button" id="calNext"${nextOk?"":" disabled"} aria-label="›">›</button></div>
+    <div class="cal-g">${wd.map(w=>`<div class="cal-w">${w}</div>`).join("")}${cells}</div>`;
+  $("calPrev").onclick = ()=>{ CAL.view = new Date(v.getFullYear(), v.getMonth()-1, 1); renderCal(); };
+  $("calNext").onclick = ()=>{ CAL.view = new Date(v.getFullYear(), v.getMonth()+1, 1); renderCal(); };
+  $("cal").querySelectorAll(".cal-d.ok").forEach(b=>b.addEventListener("click",()=>{ CAL.sel = b.dataset.d; renderCal(); }));
+  $("calSel").textContent = range ? t.calSel.replace("{s}", fmtD(range[0])).replace("{e}", fmtD(range[1])) : t.calNone;
+  $("calSel").className = "mstat" + (range ? " good" : "");
+}
+
+/* ---------- Ergebnis (live) ---------- */
+function zeigeErgebnis(pkg){   /* pkg = Paketschlüssel des aktiven Produkts */
+  const t = T(), d = kalkuliere(pkg);
+  LAST_TAGE = d.tageBis;
+  letzteKalkulation = {produkt:PROD === "det" ? "detailing" : "unterwasserschiff", paket:pkg, sprache:LANG, flaeche_m2:d.flaeche, material:$("material").value,
+    boot_vorlage:$("bootSelect").value === "other" ? "andere" : $("bootSelect").value,
+    land:d.land, land_quelle:CFG.sprache_land[LANG] ? "sprache" : (REGION_MANUELL ? "manuell" : REGION.quelle),
+    mwst_satz:d.mwst_satz,
+    preis_netto_von:d.netto_von, preis_netto_bis:d.netto_bis,
+    preis_brutto_von:d.mwst_satz === null ? null : d.von, preis_brutto_bis:d.mwst_satz === null ? null : d.bis,
+    tage:`${d.tageVon}-${d.tageBis}`,
+    boot:{lwl:+$("lwl").value, breite:+$("breite").value, tiefgang:+$("tiefgang").value,
+          rumpf:$("bootstyp").value, zustand:$("zustand").value}};
+  renderRegion();
+  const w = waehrung(), shownVon = conv(d.von), shownBis = conv(d.bis);
+  letzteKalkulation.waehrung = w; letzteKalkulation.kurs = w === "EUR" ? 1 : kurs(); letzteKalkulation.kurs_quelle = CFG.fx.quelle;
+  letzteKalkulation.preis_anzeige_von = shownVon; letzteKalkulation.preis_anzeige_bis = shownBis;
+  $("preisSpanne").textContent = spanneTxt(shownVon, shownBis);
+  $("netLine").textContent = d.mwst_satz === null ? "" : `${t.net}: ${spanneTxt(conv(d.netto_von), conv(d.netto_bis))}`;
+  /* Abo */
+  const ab = kalkuliereAbo(pkg);
+  $("aboBox").style.display = ab ? "" : "none";
+  if (!ab) ABO.chk = false;
+  letzteKalkulation.abo = ab ? {verfuegbar:true, angefragt:ABO.chk, preis_netto_von:ab.netto_von, preis_netto_bis:ab.netto_bis,
+    preis_brutto_von:d.mwst_satz === null ? null : ab.von, preis_brutto_bis:d.mwst_satz === null ? null : ab.bis, intervall:"jaehrlich"} : {verfuegbar:false, angefragt:false};
+  if (ab){
+    const d2 = PROD === "det";
+    $("aboChk").checked = ABO.chk;
+    $("aboT").textContent = d2 ? t.aboTD : t.aboT;
+    $("aboD").textContent = d2 ? t.aboDD : t.aboD;
+    $("aboList").innerHTML = (d2 ? t.aboIncD : t.aboInc).map(x=>`<li>${x}</li>`).join("");
+    $("aboPreis").textContent = spanneTxt(conv(ab.von), conv(ab.bis));
+    $("aboPer").textContent = t.aboPer + (d.mwst_satz === null ? " · " + t.vatExcl : "");
+  }
+  $("dauer").textContent = `${d.tageVon}–${d.tageBis}`;
+  $("inklListe").innerHTML = pk()[pkg].inc.map(x=>`<li>${x}</li>`).join("");
+  renderCal();
+}
+$("aboChk").addEventListener("change", e=>{ ABO.chk = e.target.checked; if (letzteKalkulation && letzteKalkulation.abo) letzteKalkulation.abo.angefragt = ABO.chk && letzteKalkulation.abo.verfuegbar; });
+$("regionSel").addEventListener("change", e=>{
+  REGION = {land:e.target.value || null, quelle:"manuell"}; REGION_MANUELL = true;
+  zeigeErgebnis(pkg());
+});
+
+/* ---------- Anfrage senden (multipart: Daten + Fotos/Video) ---------- */
+$("leadBtn").addEventListener("click", async ()=>{
+  const err = $("leadErr"), t = T();
+  const fail = m => { err.textContent = m; err.style.display = "block"; };
+  if(!$("lName").value.trim() || !$("lEmail").value.trim()) return fail(t.errReq);
+  if(!/^[0-9A-Za-z][0-9A-Za-z\- ]{2,7}$/.test($("lPlz").value.trim())) return fail(t.errZip);
+  if($("bootSelect").value === "other" && !$("lOther").value.trim()) return fail(t.errOther);
+  if(!mediaOk()) return fail(t.errMedia);
+  if(!CAL.sel) return fail(t.errDate);
+  if(!CHECK.marina || !CHECK.pay || (needsOsmose() && !CHECK.osmose)) return fail(t.errConfirm);
+  err.style.display = "none";
+  const data = {name:$("lName").value, email:$("lEmail").value, plz:$("lPlz").value.trim(),
+    telefon:$("lTel").value, nachricht:$("lMsg").value, wunschtermin:CAL.sel,
+    groesse_freitext:$("bootSelect").value === "other" ? $("lOther").value.trim() : "",
+    bestaetigungen:{osmosefrei:needsOsmose() ? CHECK.osmose : null, marina_selbst:CHECK.marina, anzahlung_50:CHECK.pay},
+    abo:{angefragt:!!(letzteKalkulation.abo && letzteKalkulation.abo.verfuegbar && ABO.chk)},
+    kalkulation:letzteKalkulation};
+  const fd = new FormData();
+  fd.append("data", JSON.stringify(data));
+  FILES.forEach(f=>fd.append("files", f, f.name));
+  $("leadBtn").disabled = true;
+  const ok = true;   /* Demo im Partner-Prototyp: Anfrage und Medien werden nicht versendet */
+  $("leadBtn").disabled = false;
+  if(ok){ $("leadForm").style.display="none"; $("leadOk").style.display=""; }
+  else fail(t.errSend);
+});
+
+
+/* ===== Laser-Fokus: Texte Unterwasserschiff (Detailing unverändert) ===== */
+const LASER_TXT = {
+ de:{claim:"Antifouling per Laser entfernen & neu aufbauen — schnell, sauber, planbar",
+  eco:"Die Altbeschichtung nehmen wir mit dem Laser ab — ohne Schleifen, ohne Strahlmittel, ohne Chemie. Bis zu 10 Schichten Antifouling, das Gelcoat bleibt unversehrt.",
+  step5:"Laserabtrag und Neuaufbau — staubarm, schnell, umweltschonend.",af0:"Altes Antifouling per Laser komplett entfernen",full0:"Komplette Entschichtung per Laser bis auf den Untergrund",strip0:"Alle Altschichten per Laser entfernen"},
+ en:{claim:"Laser antifouling removal & recoating — fast, clean, on schedule",
+  eco:"We remove the old coating with a laser — no sanding, no blast media, no chemicals. Up to 10 layers of antifouling, and the gelcoat stays intact.",
+  step5:"Laser removal and recoating — low-dust, fast, eco-friendly.",af0:"Complete laser removal of old antifouling",full0:"Full laser stripping down to the substrate",strip0:"Laser removal of all old coatings"},
+ da:{claim:"Bundmaling fjernet med laser & ny opbygning — hurtigt, rent, til tiden",
+  eco:"Vi fjerner den gamle belægning med laser — uden slibning, uden blæsemiddel, uden kemi. Op til 10 lag bundmaling, og gelcoaten forbliver intakt.",
+  step5:"Laserafrensning og ny opbygning — støvfattigt, hurtigt, miljøvenligt.",af0:"Komplet fjernelse af gammel bundmaling med laser",full0:"Fuld laserafrensning ned til underlaget",strip0:"Fjernelse af alle gamle lag med laser"},
+ no:{claim:"Bunnstoff fjernet med laser & ny oppbygging — raskt, rent, som avtalt",
+  eco:"Vi fjerner det gamle belegget med laser — uten sliping, uten blåsemiddel, uten kjemikalier. Opptil 10 lag bunnstoff, og gelcoaten forblir intakt.",
+  step5:"Laseravtak og ny oppbygging — støvfattig, raskt, miljøvennlig.",af0:"Komplett fjerning av gammelt bunnstoff med laser",full0:"Full laserfjerning ned til underlaget",strip0:"Fjerning av alle gamle lag med laser"},
+ sv:{claim:"Bottenfärg bort med laser & ny uppbyggnad — snabbt, rent, i tid",
+  eco:"Vi tar bort den gamla beläggningen med laser — utan slipning, utan blästermedel, utan kemikalier. Upp till 10 lager bottenfärg, och gelcoaten förblir intakt.",
+  step5:"Laseravverkning och ny uppbyggnad — dammsnålt, snabbt, miljövänligt.",af0:"Komplett borttagning av gammal bottenfärg med laser",full0:"Full laserborttagning ner till underlaget",strip0:"Borttagning av alla gamla lager med laser"},
+ fi:{claim:"Kasvuestemaalin poisto laserilla & uusi pinnoitus — nopeasti, siististi, aikataulussa",
+  eco:"Poistamme vanhan pinnoitteen laserilla — ilman hiontaa, ilman puhallusainetta, ilman kemikaaleja. Jopa 10 kerrosta kasvuestemaalia, ja geelikuori säilyy ehjänä.",
+  step5:"Laserpoisto ja uusi pinnoitus — vähäpölyisesti, nopeasti, ympäristöystävällisesti.",af0:"Vanhan kasvuestemaalin täydellinen poisto laserilla",full0:"Täydellinen laserpoisto alustaan asti",strip0:"Kaikkien vanhojen kerrosten poisto laserilla"},
+ nl:{claim:"Antifouling verwijderen met laser & opnieuw opbouwen — snel, schoon, op afspraak",
+  eco:"Wij verwijderen de oude coating met een laser — zonder schuren, zonder straalmiddel, zonder chemie. Tot 10 lagen antifouling, en de gelcoat blijft intact.",
+  step5:"Laserverwijdering en nieuwe opbouw — stofarm, snel, milieuvriendelijk.",af0:"Volledige laserverwijdering van oude antifouling",full0:"Volledig strippen met laser tot op de ondergrond",strip0:"Laserverwijdering van alle oude lagen"},
+ fr:{claim:"Antifouling retiré au laser & nouvelle application — rapide, propre, à date fixe",
+  eco:"Nous retirons l'ancien revêtement au laser — sans ponçage, sans abrasif, sans produits chimiques. Jusqu'à 10 couches d'antifouling, et le gelcoat reste intact.",
+  step5:"Décapage laser et nouvelle application — peu de poussière, rapide, écologique.",af0:"Retrait complet de l'ancien antifouling au laser",full0:"Décapage laser complet jusqu'au support",strip0:"Retrait au laser de toutes les anciennes couches"},
+ pl:{claim:"Usuwanie antyfoulingu laserem & nowa powłoka — szybko, czysto, w terminie",
+  eco:"Starą powłokę usuwamy laserem — bez szlifowania, bez ścierniwa, bez chemii. Do 10 warstw antyfoulingu, a żelkot pozostaje nienaruszony.",
+  step5:"Usuwanie laserem i nowa powłoka — mało pyłu, szybko, ekologicznie.",af0:"Pełne usunięcie starego antyfoulingu laserem",full0:"Pełne usunięcie powłok laserem do podłoża",strip0:"Usunięcie wszystkich starych powłok laserem"}
+};
+for (const l in LASER_TXT){ const x = LASER_TXT[l], t = I18N[l]; if(!t) continue;
+  t.claim = x.claim; t.eco = x.eco;
+  t.pkgs.af.inc[0] = x.af0; t.pkgs.full.inc[0] = x.full0; t.pkgs.strip.inc[0] = x.strip0;
+  if (PROC[l]) PROC[l].steps[4] = [PROC[l].steps[4][0], x.step5];
+}
+
+/* Init: Browsersprache erkennen */
+const nav = (navigator.language||"de").slice(0,2).toLowerCase();
+if (I18N[nav]) LANG = nav;
+else if (nav === "nb" || nav === "nn") LANG = "no";
+$("bootSelect").value = "6";
+render();
+Promise.all([regionErkennen(), fxLaden()]).then(()=>zeigeErgebnis(pkg()));
+</script>
+</body>
+</html>

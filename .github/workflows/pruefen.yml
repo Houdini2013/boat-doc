@@ -1,0 +1,21 @@
+# Prüft jeden Stand: Server startet und liefert die Seiten aus.
+# Ausgerollt wird nicht von hier: der Server holt sich neue Stände selbst (deploy/update.sh).
+name: Prüfen
+on:
+  push:
+  pull_request:
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Server startet und liefert aus
+        run: |
+          DATA_DIR=$RUNNER_TEMP/d PORT=8099 node server/server.cjs & sleep 3
+          curl -fsS http://127.0.0.1:8099/api/ping
+          for s in index.html kalkulator.html partner.html angebot.html; do curl -fsS -o /dev/null http://127.0.0.1:8099/$s; done
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8099/server/server.cjs)" = 404
+      - name: Skripte fehlerfrei
+        run: for f in deploy/*.sh; do bash -n "$f"; done
