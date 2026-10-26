@@ -230,6 +230,22 @@ const server = http.createServer(async (req, res) => {
     /* Wechselkurse: hier kann ein EZB-Abruf angebunden werden; ohne Angabe nutzt der Kalkulator seine hinterlegten Kurse */
     if (p === "/api/fx") return json(res, 200, { kurse: {}, quelle: "config" });
     if (p === "/api/upload" && req.method === "PUT") return upload(req, res, url);
+    /* Logo direkt von der Website der Marina übernehmen (nur angemeldet, nur https, nur Bilder bis 3 MB) */
+    if (p === "/api/logo-von-url" && req.method === "POST") {
+      const se = sitzung(req); if (!se || !se.partner) return json(res, 401, { code: "login", message: "Bitte anmelden." });
+      const b = JSON.parse((await body(req, 4096)).toString("utf8") || "{}");
+      let q; try { q = new URL(String(b.url || "")); } catch (_) { return json(res, 400, { code: "eingabe", message: "Ungültige Adresse." }); }
+      if (q.protocol !== "https:" || /^(localhost|\d+\.\d+\.\d+\.\d+|\[.*\])$/i.test(q.hostname)) return json(res, 400, { code: "eingabe", message: "Nur https-Adressen von Websites." });
+      const r = await fetch(q, { signal: AbortSignal.timeout(10000), redirect: "follow" }).catch(() => null);
+      const ct = r ? String(r.headers.get("content-type") || "").toLowerCase() : "";
+      const endung = { "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/svg+xml": ".svg" }[ct.split(";")[0].trim()];
+      if (!r || !r.ok || !endung) return json(res, 400, { code: "typ", message: "Unter dieser Adresse liegt kein Bild (PNG, JPG, WEBP, SVG)." });
+      const buf = Buffer.from(await r.arrayBuffer());
+      if (buf.length > 3 * 1024 * 1024) return json(res, 413, { code: "gross", message: "Bild zu groß." });
+      const id = crypto.randomBytes(15).toString("base64url") + endung;
+      fs.writeFileSync(path.join(UPL, id), buf);
+      return json(res, 201, { url: "/uploads/" + id });
+    }
     if (p.startsWith("/api/")) {
       if (req.method !== "GET" && p.startsWith("/api/public/") && gedrosselt(req, 20)) return json(res, 429, { code: "langsam", message: "Zu viele Anfragen. Bitte kurz warten." });
       if (p === "/api/probe" && req.method === "POST" && gedrosselt(req, Number(process.env.PROBE_PRO_MINUTE || 5))) return json(res, 429, { code: "langsam", message: "Zu viele neue Probezugänge. Bitte eine Minute warten." });

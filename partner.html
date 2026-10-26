@@ -255,7 +255,24 @@ async function start(){
   try { S.me = (await B.call("GET","/api/me")).partner; } catch(_){ S.me = null; }
   if (S.me && I18N_P[S.me.sprache] && !localStorage.getItem("bd_lang")) L = S.me.sprache;
   if (S.me && !location.hash && S.me.modus !== "live") S.view = "start";
+  const ein = /^#einladung=([a-z0-9]+)$/.exec(location.hash);
+  if (ein) return renderEinladung(ein[1]);
   S.me ? await zeige(S.view) : renderLogin();
+}
+/* Einladung: Partner setzt E-Mail und Passwort selbst (Sales hat den Zugang vorbereitet) */
+async function renderEinladung(token){
+  let info; try { info = await B.call("GET","/api/einladung/"+token); } catch(x){ return renderLogin(x.message); }
+  if (I18N_P[info.sprache] && !localStorage.getItem("bd_lang")) L = info.sprache;
+  $("#app").innerHTML = `<div class="login"><div class="box">
+    <div class="row" style="justify-content:space-between"><div class="brand" style="color:var(--ink)"><i></i>BOATSDOC <span class="muted" style="font-weight:600">Partner</span></div>${langSel()}</div>
+    <h1 style="margin-top:18px">${t("ei_h",{n:esc(info.name)})}</h1><p class="muted">${t("ei_p")}</p>
+    <form id="eiF" class="stack"><label class="f">E-Mail<input type="email" id="eiMail" required autocomplete="email"></label>
+      <label class="f">${t("passwort")}<input type="password" id="eiPw" minlength="8" required autocomplete="new-password"></label>
+      <p class="hint" id="eiErr" style="color:var(--accent)"></p><button class="btn acc" type="submit">${t("ei_btn")}</button></form></div></div>`;
+  bindLang();
+  $("#eiF").onsubmit = async e => { e.preventDefault();
+    try { const r = await B.call("POST","/api/einladung/"+token,{email:$("#eiMail").value, passwort:$("#eiPw").value}); S.me = r.partner; history.replaceState(null,"",location.pathname); zeige(S.me.modus !== "live" ? "start" : "uebersicht"); }
+    catch(x){ $("#eiErr").textContent = x.message; } };
 }
 
 /* ---------- Anmeldung ---------- */
@@ -607,6 +624,7 @@ async function vTeilen(){
           <label class="btn ghost" style="cursor:pointer">${t("logo_waehlen")}<input type="file" id="logoIn" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden></label>
           ${p.logo ? `<button class="btn ghost" type="button" id="logoWeg">${t("logo_entf")}</button>` : ""}</div>
         <span class="hint">${t("logo_hint")}</span>
+        <div class="row" style="gap:6px"><input type="url" id="logoUrl" placeholder="${t("logo_url")}" style="flex:1;min-width:0"><button class="btn ghost" type="button" id="logoUrlBtn">${t("logo_url_btn")}</button></div>
         <h3 style="margin-top:10px">${t("design_h")}</h3><span class="hint">${t("design_p")}</span>
         <div class="row"><label class="f">${t("bg")}<input type="color" id="dBg" value="${esc(D.bg || "#0e1816")}"></label>
           <label class="f">${t("akzent2")}<input type="color" id="dAk2" value="${esc(D.akzent2 || "#5fb88a")}"></label>
@@ -648,6 +666,7 @@ async function vTeilen(){
   $("#logoIn").onchange = async e => { const f = e.target.files[0]; if (!f) return;
     try { const u = await B.upload(f); S.me = await B.call("PUT","/api/partner",{logo:u.url}); toast(t("gespeichert")); vTeilen(); } catch(x){ toast(x.message); } };
   if ($("#logoWeg")) $("#logoWeg").onclick = async () => { S.me = await B.call("PUT","/api/partner",{logo:null}); vTeilen(); };
+  $("#logoUrlBtn").onclick = async () => { try { const r = await B.call("POST","/api/logo-von-url",{url:$("#logoUrl").value.trim()}); S.me = await B.call("PUT","/api/partner",{logo:r.url}); toast(t("gespeichert")); vTeilen(); } catch(x){ toast(x.message); } };
   $("#aSave").onclick = async () => { try { S.me = await B.call("PUT","/api/partner",{name:$("#aName").value, farbe:$("#aFarbe").value, sprache:$("#aSpr").value,
       kontakt:{tel:$("#aTel").value, web:$("#aWeb").value, adresse:$("#aAdr").value},
       design:{bg:$("#dBg").value === "#0e1816" ? "" : $("#dBg").value, akzent2:$("#dAk2").value === "#5fb88a" ? "" : $("#dAk2").value, schrift:$("#dSchrift").value},
@@ -737,15 +756,31 @@ async function vAdmin(){
   $("#main").innerHTML = `<div class="head"><div><h1>${t("nav_admin")}</h1><p>${t("cp_p")}</p></div></div>
     <div class="kpis">${["probe","konto","live","haengt"].map(k=>`<div class="kpi${k==="haengt"&&n(k)?" hi":""}"><div class="eye">${t("cp_"+k)}</div><div class="v">${n(k)}</div><div class="s">${t("cp_"+k+"_s")}</div></div>`).join("")}</div>
     <div class="chips">${Object.keys(F).map(k=>`<button class="chip" type="button" data-f="${k}" aria-pressed="${k===S.cpf}">${t(k==="alle"?"f_alle":"cp_"+k)} <span class="muted">${n(k)}</span></button>`).join("")}</div>
-    <section class="panel"><div class="scroll"><table class="t"><tr><th>${t("partner")}</th><th>${t("cp_stufe")}</th><th>${t("cp_fortschritt")}</th><th style="text-align:right">${t("liegeplaetze")}</th><th style="text-align:right">${t("anfragen")}</th><th>${t("cp_aktiv")}</th><th>${t("kontakt")}</th><th>${t("gebietsschutz")}</th></tr>
+    <section class="panel"><div class="scroll"><table class="t"><tr><th>${t("partner")}</th><th>${t("cp_stufe")}</th><th>${t("cp_fortschritt")}</th><th style="text-align:right">${t("liegeplaetze")}</th><th style="text-align:right">${t("anfragen")}</th><th>${t("cp_aktiv")}</th><th>${t("kontakt")}</th><th>${t("gebietsschutz")}</th><th>${t("cp_aktionen")}</th></tr>
       ${liste.filter(F[S.cpf]).map(x=>`<tr class="${x.haengt?"haengt":""}"><td><b>${esc(x.name)}</b><br><span class="hint">${x.land} · ${x.rolle==="ausfuehrend"?t("rolle_ausfuehrend"):t("rolle_vermittler")}</span></td>
         <td>${stufePill(x)}${x.haengt?`<br><span class="hint" style="color:var(--accent)">${t("cp_haengt")}</span>`:""}</td>
         <td><span class="mini"><i style="width:${Math.round(x.fortschritt/x.schritte_gesamt*100)}%"></i></span><span class="num small">${x.fortschritt}/${x.schritte_gesamt}</span></td>
         <td class="n">${x.liegeplaetze || "–"}</td><td class="n">${x.anfragen}<span class="hint"> / ${x.probe_anfragen} ${t("probe_pill")}</span></td>
         <td class="small">${aktiv(x)}</td>
         <td class="small">${x.email ? esc(x.email) : `<span class="muted">${t("cp_ohne_konto")}</span>`}${x.kontakt && x.kontakt.tel ? `<br>${esc(x.kontakt.tel)}` : ""}</td>
-        <td>${x.rolle==="ausfuehrend" ? `<button class="btn ghost" type="button" data-gs="${x.id}" data-on="${x.gebietsschutz_bis?0:1}">${x.gebietsschutz_bis ? t("schutz_entziehen") : t("schutz_vergeben")}</button>` : "–"}</td></tr>`).join("") || `<tr><td colspan="8" class="muted">${t("cp_leer")}</td></tr>`}
-    </table></div></section>`;
+        <td>${x.rolle==="ausfuehrend" ? `<button class="btn ghost" type="button" data-gs="${x.id}" data-on="${x.gebietsschutz_bis?0:1}">${x.gebietsschutz_bis ? t("schutz_entziehen") : t("schutz_vergeben")}</button>` : "–"}</td>
+        <td class="small" style="min-width:250px"><div class="row" style="gap:6px;flex-wrap:wrap">
+          <button class="btn ghost" type="button" data-oe="${x.id}">${t("cp_oeffnen")}</button>
+          ${x.email ? "" : `<button class="btn ghost" type="button" data-ei="${x.id}">${t("cp_einladen")}</button>`}</div>
+          ${x.einladung && x.einladung.token ? `<div class="code" style="margin-top:6px;font-size:.72rem">${esc(location.origin + location.pathname + "#einladung=" + x.einladung.token)}</div>` : ""}
+          <div class="row" style="gap:6px;margin-top:6px"><input type="text" data-dm="${x.id}" value="${esc((x.domains||[]).join(", "))}" placeholder="${t("cp_domain_ph")}" style="flex:1;min-width:120px"><button class="btn ghost" type="button" data-dms="${x.id}">${t("speichern")}</button></div></td></tr>`).join("") || `<tr><td colspan="9" class="muted">${t("cp_leer")}</td></tr>`}
+    </table></div></section>
+    <section class="panel stack" style="max-width:640px"><h3>${t("cp_neu_h")}</h3><span class="hint">${t("cp_neu_p")}</span>
+      <form id="neuP" class="row" style="gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <label class="f" style="flex:2;min-width:180px">${t("firmenname")}<input type="text" id="npName" required></label>
+        <label class="f">${t("land")}<select id="npLand">${["DE","SE","NO","DK","FI"].map(c=>`<option value="${c}">${landName(c)}</option>`).join("")}</select></label>
+        <label class="f">${t("rolle")}<select id="npRolle"><option value="vermittler">${t("rolle_vermittler")}</option><option value="ausfuehrend">${t("rolle_ausfuehrend")}</option></select></label>
+        <button class="btn acc" type="submit">${t("cp_neu_btn")}</button></form></section>`;
+  document.querySelectorAll("[data-oe]").forEach(b => b.onclick = async () => { S.me = await B.call("POST","/api/admin/partner/"+b.dataset.oe+"/oeffnen"); zeige("teilen"); });
+  document.querySelectorAll("[data-ei]").forEach(b => b.onclick = async () => { await B.call("PUT","/api/admin/partner/"+b.dataset.ei,{einladung:true}); toast(t("gespeichert")); vAdmin(); });
+  document.querySelectorAll("[data-dms]").forEach(b => b.onclick = async () => { const v = document.querySelector(`[data-dm="${b.dataset.dms}"]`).value;
+    try { await B.call("PUT","/api/admin/partner/"+b.dataset.dms,{domains: v.split(/[,\s]+/).filter(Boolean)}); toast(t("gespeichert")); vAdmin(); } catch(x){ toast(x.message); } });
+  $("#neuP").onsubmit = async e => { e.preventDefault(); try { await B.call("POST","/api/admin/partner",{name:$("#npName").value, land:$("#npLand").value, rolle:$("#npRolle").value}); toast(t("gespeichert")); vAdmin(); } catch(x){ toast(x.message); } };
   document.querySelectorAll(".chip[data-f]").forEach(b => b.onclick = () => { S.cpf = b.dataset.f; vAdmin(); });
   document.querySelectorAll("[data-gs]").forEach(b => b.onclick = async () => { await B.call("PUT","/api/admin/partner/"+b.dataset.gs,{gebietsschutz: b.dataset.on === "1"}); toast(t("gespeichert")); vAdmin(); });
 }

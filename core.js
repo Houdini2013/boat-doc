@@ -309,6 +309,34 @@
       db.put("partner", p); beispiele(p);
       return { status: 201, data: { partner: privat(p) }, login: p.id, mail: { intern: true, typ: "neuer_probezugang", partner: p.name } };
     });
+    /* Sales legt einen Partner an (z. B. GBM Marin), richtet ihn ein und schickt einen Einladungslink */
+    R("POST", "/api/admin/partner", ({ session, body }) => {
+      const a = brauchtLogin(session); if (!a.admin) throw fehler(403, "recht", "Nur für Boatsdoc.");
+      const name = String(body.name || "").trim().slice(0, 80);
+      if (!name) throw fehler(400, "eingabe", "Name angeben.");
+      const p = neuerPartner({ name, land: body.land, sprache: body.sprache, rolle: body.rolle, slug: eindeutigerSlug(name), quelle: "sales" });
+      db.put("partner", p);
+      return { status: 201, data: privat(p) };
+    });
+    /* Sales öffnet das Backend eines Partners, um es für ihn einzurichten */
+    R("POST", "/api/admin/partner/:id/oeffnen", ({ session, params }) => {
+      const a = brauchtLogin(session); if (!a.admin) throw fehler(403, "recht", "Nur für Boatsdoc.");
+      const x = db.get("partner", params.id); if (!x) throw fehler(404, "unbekannt", "Partner nicht gefunden.");
+      return { data: privat(x), login: x.id };
+    });
+    /* Einladung: Partner setzt über den Link selbst E-Mail und Passwort */
+    const perEinladung = t => { const p = partnerAlle().find(x => x.einladung && x.einladung.token === t && Date.parse(x.einladung.bis) > Date.now());
+      if (!p) throw fehler(404, "abgelaufen", "Dieser Einladungslink ist ungültig oder abgelaufen."); return p; };
+    R("GET", "/api/einladung/:token", ({ params }) => { const p = perEinladung(params.token); return { data: { name: p.name, sprache: p.sprache } }; });
+    R("POST", "/api/einladung/:token", ({ params, body }) => {
+      const p = Object.assign({}, perEinladung(params.token));
+      const email = String(body.email || "").trim().toLowerCase();
+      if (!istEmail(email) || String(body.passwort || "").length < 8) throw fehler(400, "eingabe", "Gültige E-Mail und ein Passwort mit mindestens 8 Zeichen angeben.");
+      if (partnerAlle().some(x => x.email === email && x.id !== p.id)) throw fehler(409, "vorhanden", "Für diese E-Mail gibt es schon ein Konto. Bitte anmelden.");
+      Object.assign(p, { email, pw: hash(String(body.passwort)), sandbox: false, einladung: null });
+      db.put("partner", p);
+      return { data: { partner: privat(p) }, login: p.id, mail: { intern: true, typ: "einladung_angenommen", partner: p.name } };
+    });
     R("POST", "/api/konto/sichern", ({ session, body }) => {
       const p = Object.assign({}, brauchtLogin(session));
       const email = String(body.email || "").trim().toLowerCase();
@@ -573,6 +601,7 @@
       if (body.gebietsschutz === false) c.gebietsschutz_bis = null;
       if (body.region) c.region = Object.assign({}, c.region, body.region);
       if (body.aktiv !== undefined) c.aktiv = !!body.aktiv;
+      if (body.einladung === true) { const d = new Date(); d.setDate(d.getDate() + 14); c.einladung = { token: zufall(24), bis: d.toISOString() }; }
       if (Array.isArray(body.domains)) c.domains = body.domains.map(d => String(d).trim().toLowerCase()).filter(d => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d));
       db.put("partner", c);
       return { data: privat(c) };
