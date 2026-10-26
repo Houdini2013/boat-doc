@@ -32,6 +32,13 @@ if [ "$NEU" = "$ALT" ] && [ "${1:-}" != "--force" ]; then exit 0; fi
 git checkout -q -B "$BRANCH" FETCH_HEAD
 rsync -a --delete --exclude .git --exclude .github --exclude data ./ "$APP/"
 chown -R boatsdoc:boatsdoc "$APP"
+# Hilfsskripte und Dienste mitziehen (wirken ab dem nächsten Lauf)
+install -m 755 deploy/update.sh /usr/local/bin/boatsdoc-update
+install -m 755 deploy/backup.sh /usr/local/bin/boatsdoc-backup
+for u in boatsdoc.service boatsdoc-backup.service boatsdoc-backup.timer boatsdoc-update.service boatsdoc-update.timer; do
+  cmp -s "deploy/$u" "/etc/systemd/system/$u" || { install -m 644 "deploy/$u" "/etc/systemd/system/$u"; NEU_LADEN=1; }
+done
+[ -n "${NEU_LADEN:-}" ] && systemctl daemon-reload
 systemctl restart boatsdoc
 
 # Caddy-Konfiguration mitziehen, wenn sie sich im Repo geändert hat
